@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ffmpeg -version)",
+      "Bash(ffprobe *)",
+      "Bash(ffmpeg -y -i sitesynchero.mp4 -vf \"scale=1920:-2\" -an -g 1 -pix_fmt yuv420p -movflags +faststart sitesynchero-scrub.mp4)",
+      "Bash(py -3 --version)",
+      "Bash(ffprobe -v error -show_entries format=duration -show_entries stream=width,height,codec_name -of default=noprint_wrappers=1 sitesynchero-scrub.mp4)",
+      "Bash(py *)",
+      "Bash(ffmpeg -y -i sitesynchero-scrub.mp4 -vf \"scale=1920:-2\" -frames:v 1 -q:v 2 sitesync-poster.jpg)",
+      "Bash(ffmpeg -y -ss 2.1 -i sitesynchero-scrub.mp4 -frames:v 1 -q:v 3 preview-mid.jpg)",
+      "Bash(ffmpeg -y -ss 4.0 -i sitesynchero-scrub.mp4 -frames:v 1 -q:v 3 preview-end.jpg)",
+      "Skill(run)",
+      "Bash(curl *)",
+      "Bash(py -3 -m http.server 8743)",
+      "Bash(npx --yes playwright --version)",
+      "Bash(py -3 -c \"import playwright; print\\('py-playwright available'\\)\")",
+      "Bash(npx --yes playwright install chromium --with-deps)",
+      "Bash(ffprobe -v error -show_entries stream=index,codec_name,width,height,r_frame_rate,avg_frame_rate,time_base,start_time,duration,nb_frames,duration_ts -show_entries format=duration,size,bit_rate -of json sitesynchero-scrub.mp4)",
+      "Bash(ffmpeg -y -i sitesynchero.mp4 -vf \"scale=1920:-2\" -an -pix_fmt yuv420p -movflags +faststart test-nog1.mp4)",
+      "Bash(ffmpeg -y -i sitesynchero.mp4 -vf \"scale=1920:-2\" -an -g 1 -pix_fmt yuv420p -movflags +faststart -c:v libx264 -preset fast test-g1-remux-src.mp4)",
+      "Bash(ffmpeg -y -i test-g1-remux-src.mp4 -c copy -movflags +faststart test-g1-remuxed.mp4)",
+      "Bash(powershell -Command 'Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.Path -like '\\\\''*node*'\\\\''} | Select-Object Id')"
+    ]
+  }
+}
