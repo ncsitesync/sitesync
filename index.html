@@ -32,6 +32,11 @@
     --dur:260ms;
     --container:1280px;
     --nav-h:76px;
+    --bg-page:var(--blue-tint);
+    --blue-tint:#EEF4FF;
+    --mesh-1:rgba(59,91,255,0.30);
+    --mesh-2:rgba(2,51,234,0.22);
+    --mesh-3:rgba(2,31,158,0.18);
   }
 
   *,*::before,*::after{box-sizing:border-box;}
@@ -42,7 +47,7 @@
     margin:0;
     font-family:'Inter',system-ui,-apple-system,sans-serif;
     color:var(--ink);
-    background:var(--white);
+    background:var(--bg-page);
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
   }
@@ -295,7 +300,7 @@
   .hero-wrap{
     position:relative;
     width:100%;
-    background:var(--white);
+    background:var(--bg-page);
     padding:calc(var(--nav-h) + 40px) 24px 56px;
     overflow:hidden;
   }
@@ -303,6 +308,8 @@
   @media (min-width:1100px){ .hero-wrap{padding:calc(var(--nav-h) + 64px) 56px 88px;} }
 
   .hero-content{
+    position:relative;
+    z-index:1;
     max-width:var(--container);
     margin:0 auto;
     display:flex;
@@ -384,6 +391,59 @@
     .hero-icon{max-width:260px;}
   }
 
+  /* ---------- Hero gradient mesh ----------
+     Decorative only: pointer-events:none, z-index:0 (behind
+     .hero-content which is z-index:1), never intercepts clicks.
+     Only transform/opacity are animated so the browser can run it
+     on the compositor without triggering layout or paint. */
+  .hero-mesh{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .hero-mesh span{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(70px);
+    opacity:0.55;
+    will-change:transform;
+  }
+  .hero-mesh span:nth-child(1){
+    width:46vw;height:46vw;max-width:620px;max-height:620px;
+    top:-14%;left:-10%;
+    background:radial-gradient(circle, var(--mesh-1) 0%, transparent 72%);
+    animation:mesh-drift-a 46s ease-in-out infinite;
+  }
+  .hero-mesh span:nth-child(2){
+    width:38vw;height:38vw;max-width:520px;max-height:520px;
+    top:8%;right:-12%;
+    background:radial-gradient(circle, var(--mesh-2) 0%, transparent 72%);
+    animation:mesh-drift-b 58s ease-in-out infinite;
+  }
+  .hero-mesh span:nth-child(3){
+    width:34vw;height:34vw;max-width:460px;max-height:460px;
+    bottom:-18%;left:24%;
+    background:radial-gradient(circle, var(--mesh-3) 0%, transparent 72%);
+    animation:mesh-drift-c 52s ease-in-out infinite;
+  }
+  @keyframes mesh-drift-a{
+    0%,100%{transform:translate(0,0) scale(1);}
+    50%{transform:translate(6%,8%) scale(1.08);}
+  }
+  @keyframes mesh-drift-b{
+    0%,100%{transform:translate(0,0) scale(1);}
+    50%{transform:translate(-8%,6%) scale(1.05);}
+  }
+  @keyframes mesh-drift-c{
+    0%,100%{transform:translate(0,0) scale(1);opacity:0.55;}
+    50%{transform:translate(5%,-6%) scale(1.1);opacity:0.4;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .hero-mesh span{animation:none !important;}
+  }
+
   /* ---------- Sections ---------- */
   .section{padding:104px 0;}
   .section-alt{background:var(--mist);}
@@ -413,6 +473,88 @@
   .reveal.is-visible{opacity:1;transform:translateY(0);}
   @media (prefers-reduced-motion:reduce){
     .reveal{transition:none !important;opacity:1 !important;transform:none !important;}
+  }
+
+  /* ---------- Before / After ----------
+     Mount points are bare <div class="ba-slider" data-before data-after
+     data-label-before data-label-after data-caption> — js/main.js builds
+     the frame from those data attributes (see beforeAfterSliders()), so
+     adding another comparison later is just another data-driven div.
+     The divider is a real <input type="range"> spanning the frame,
+     styled so its native thumb IS the thin line — free keyboard/AT
+     support. The visible grip+line (.ba-slider-divider) is decorative
+     and only mirrors the input's value via --ba-pos. */
+  .ba-slider{
+    max-width:820px;
+    margin:0 auto;
+  }
+  .ba-slider-frame{
+    position:relative;
+    aspect-ratio:16/10;
+    border-radius:var(--radius-l);
+    overflow:hidden;
+    background:var(--mist);
+    border:1px solid var(--line);
+    touch-action:pan-y;
+    --ba-pos:50%;
+  }
+  .ba-slider-media{position:absolute;inset:0;}
+  .ba-slider-media img,
+  .ba-slider-media .ba-placeholder{width:100%;height:100%;object-fit:cover;display:block;}
+  .ba-placeholder{
+    width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+    padding:16px;
+    text-align:center;
+    background:linear-gradient(155deg, #D7E0FF, #A9BCFF);
+    color:var(--blue-deep);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+  }
+  .ba-slider-media-after{
+    clip-path:inset(0 calc(100% - var(--ba-pos)) 0 0);
+    transition:clip-path 0.05s linear;
+  }
+  .ba-badge{
+    position:absolute;bottom:16px;z-index:2;pointer-events:none;
+    font-size:11.5px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;
+    background:rgba(11,13,20,0.66);color:#fff;
+    padding:7px 13px;border-radius:999px;
+  }
+  .ba-badge-before{left:16px;}
+  .ba-badge-after{right:16px;}
+  .ba-slider-divider{
+    position:absolute;top:0;bottom:0;left:var(--ba-pos);z-index:3;
+    transform:translateX(-50%);pointer-events:none;
+    display:flex;align-items:center;justify-content:center;
+    transition:left 0.05s linear;
+  }
+  .ba-slider-divider::before{
+    content:"";position:absolute;top:0;bottom:0;left:50%;width:2px;
+    background:#fff;box-shadow:0 0 0 1px rgba(11,13,20,0.18);
+    transform:translateX(-50%);
+  }
+  .ba-slider-divider::after{
+    content:"";width:44px;height:44px;border-radius:50%;
+    background:#fff;border:3px solid var(--blue);
+    box-shadow:0 6px 16px -4px rgba(11,13,20,0.35);
+  }
+  .ba-slider-input{
+    position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;z-index:4;
+    -webkit-appearance:none;appearance:none;background:transparent;cursor:ew-resize;
+  }
+  .ba-slider-input::-webkit-slider-runnable-track{width:100%;height:100%;background:transparent;}
+  .ba-slider-input::-moz-range-track{width:100%;height:100%;background:transparent;border:none;}
+  .ba-slider-input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:3px;height:100%;border-radius:0;background:transparent;cursor:ew-resize;}
+  .ba-slider-input::-moz-range-thumb{width:3px;height:100%;border-radius:0;background:transparent;border:none;cursor:ew-resize;}
+  .ba-slider-input:focus-visible ~ .ba-slider-divider::after{
+    outline:2.5px solid var(--blue);outline-offset:3px;
+  }
+  @media (prefers-reduced-motion:reduce){
+    .ba-slider-media-after,.ba-slider-divider{transition:none !important;}
   }
 
   /* ---------- What we do ---------- */
@@ -534,6 +676,7 @@
   .gallery .gallery-item:nth-child(3){transition-delay:160ms;}
   .gallery .gallery-item:nth-child(4){transition-delay:240ms;}
   .gallery .gallery-item:nth-child(5){transition-delay:320ms;}
+  .gallery .gallery-item:nth-child(6){transition-delay:400ms;}
 
   /* ---------- Pricing ---------- */
   .pricing{
@@ -875,6 +1018,9 @@
 
   <div id="top"></div>
   <section class="hero-wrap" id="heroWrap" aria-label="SiteSync introduction">
+    <div class="hero-mesh" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
     <div class="hero-content">
       <div class="hero-copy">
         <div class="hero-logo">
@@ -892,6 +1038,24 @@
       <div class="hero-media">
         <img class="hero-icon" src="sitesync-icon.png" alt="SiteSync icon" loading="eager">
       </div>
+    </div>
+  </section>
+
+  <!-- ================= BEFORE / AFTER ================= -->
+  <section class="section section-alt" id="before-after" aria-labelledby="before-after-heading">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Real results</span>
+        <h2 id="before-after-heading">See the difference.</h2>
+        <p>Drag to compare — this is the kind of jump a Signature rebuild makes for a local business.</p>
+      </div>
+
+      <div class="ba-slider reveal"
+           data-before=""
+           data-after=""
+           data-label-before="Before"
+           data-label-after="After"
+           data-caption="Website Redesign"></div>
     </div>
   </section>
 
@@ -946,47 +1110,66 @@
           <div class="gallery-bg"></div>
           <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
           <div class="gallery-iframe-wrap">
-            <iframe src="https://fouroaksfitness.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no"></iframe>
+            <iframe src="https://fouroaksfitness.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
           </div>
           <div class="gallery-label">
             <span class="gallery-tag">Fitness</span>
             <h3>Four Oaks Fitness</h3>
           </div>
         </a>
-        <!-- TODO: replace .gallery-bg gradient with a real screenshot — save as images/work-biglarrys.jpg and swap in an <img class="gallery-bg-img"> (see the Four Oaks Fitness card above for the live-preview pattern) -->
-        <a class="gallery-item reveal" href="https://biglarrys.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#2A52F0;--tile-b:#0A1C7A;" aria-label="Big Larry's Cookers — custom BBQ cooker builder in La Grange, NC — view live site (opens in new tab)">
+        <a class="gallery-item gallery-item--live reveal" href="https://biglarrys.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#2A52F0;--tile-b:#0A1C7A;" aria-label="Big Larry's Cookers — custom BBQ cooker builder in La Grange, NC — view live site (opens in new tab)">
           <div class="gallery-bg"></div>
           <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
+          <div class="gallery-iframe-wrap">
+            <iframe src="https://biglarrys.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+          </div>
           <div class="gallery-label">
             <span class="gallery-tag">Fabrication</span>
             <h3>Big Larry's Cookers</h3>
           </div>
         </a>
-        <!-- TODO: replace .gallery-bg gradient with a real screenshot — save as images/work-oasis.jpg and swap in an <img class="gallery-bg-img"> (see the Four Oaks Fitness card above for the live-preview pattern) -->
-        <a class="gallery-item reveal" href="https://oasis-clearing.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#123AF0;--tile-b:#050B4A;" aria-label="Oasis J&amp;R Land Clearing — bilingual residential land clearing and site work — view live site (opens in new tab)">
+        <a class="gallery-item gallery-item--live reveal" href="https://oasis-clearing.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#123AF0;--tile-b:#050B4A;" aria-label="Oasis J&amp;R Land Clearing — bilingual residential land clearing and site work — view live site (opens in new tab)">
           <div class="gallery-bg"></div>
           <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
+          <div class="gallery-iframe-wrap">
+            <iframe src="https://oasis-clearing.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+          </div>
           <div class="gallery-label">
             <span class="gallery-tag">Land Clearing</span>
             <h3>Oasis J&amp;R Land Clearing</h3>
           </div>
         </a>
-        <!-- TODO: replace .gallery-bg gradient with a real screenshot — save as images/work-supreme.jpg and swap in an <img class="gallery-bg-img"> (see the Four Oaks Fitness card above for the live-preview pattern) -->
-        <a class="gallery-item reveal" href="https://supremelandscaping.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#3358F5;--tile-b:#0D1F8C;" aria-label="Supreme Landscaping — full-service landscaping and hardscaping in Greensboro, NC — view live site (opens in new tab)">
+        <a class="gallery-item gallery-item--live reveal" href="https://supremelandscaping.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#3358F5;--tile-b:#0D1F8C;" aria-label="Supreme Landscaping — full-service landscaping and hardscaping in Greensboro, NC — view live site (opens in new tab)">
           <div class="gallery-bg"></div>
           <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
+          <div class="gallery-iframe-wrap">
+            <iframe src="https://supremelandscaping.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+          </div>
           <div class="gallery-label">
             <span class="gallery-tag">Landscaping</span>
             <h3>Supreme Landscaping</h3>
           </div>
         </a>
-        <!-- TODO: replace .gallery-bg gradient with a real screenshot — save as images/work-wizardworks.jpg and swap in an <img class="gallery-bg-img"> (see the Four Oaks Fitness card above for the live-preview pattern) -->
-        <a class="gallery-item gallery-item--wide reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#1E44F5;--tile-b:#071440;" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
+        <a class="gallery-item gallery-item--wide gallery-item--live reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#1E44F5;--tile-b:#071440;" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
           <div class="gallery-bg"></div>
           <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
+          <div class="gallery-iframe-wrap">
+            <iframe src="https://wizardworks.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+          </div>
           <div class="gallery-label">
             <span class="gallery-tag">Hardscaping &amp; Driveways</span>
             <h3>WizardWorks</h3>
+          </div>
+        </a>
+        <a class="gallery-item gallery-item--live reveal" href="https://jlovesrestore.com/" target="_blank" rel="noopener" style="--tile-a:#3B5BFF;--tile-b:#152D9E;" aria-label="JLove Restorations — sneaker restoration and cleaning, RDU &amp; Charlotte — view live site (opens in new tab)">
+          <div class="gallery-bg"></div>
+          <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
+          <div class="gallery-iframe-wrap">
+            <iframe src="https://jlovesrestore.com/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+          </div>
+          <div class="gallery-label">
+            <span class="gallery-tag">Sneaker Restoration</span>
+            <h3>JLove Restorations</h3>
           </div>
         </a>
       </div>
@@ -1267,6 +1450,89 @@
     });
 
     window.addEventListener('resize', function(){ wraps.forEach(layout); }, {passive:true});
+  })();
+
+
+  /* ---------- Before / After slider ----------
+     Builds each .ba-slider from its data attributes (data-before,
+     data-after, data-label-before, data-label-after, data-caption).
+     Falls back to a placeholder on a side with no data-before/after
+     yet. The divider is a real <input type="range"> spanning the
+     full frame so keyboard/AT support comes free; the visible
+     grip+line is purely decorative and just mirrors the input's
+     value through the --ba-pos custom property. */
+  (function beforeAfterSliders(){
+    var sliders = document.querySelectorAll('.ba-slider');
+    if (!sliders.length) return;
+
+    var counter = 0;
+
+    function buildMedia(side, src, label, caption){
+      var media = document.createElement('div');
+      media.className = 'ba-slider-media ba-slider-media-' + side;
+      if (src){
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = caption ? caption + ' — ' + label : label;
+        img.loading = 'lazy';
+        media.appendChild(img);
+      } else {
+        var placeholder = document.createElement('div');
+        placeholder.className = 'ba-placeholder';
+        placeholder.textContent = caption ? label + ' — ' + caption : label;
+        media.appendChild(placeholder);
+      }
+      return media;
+    }
+
+    function buildBadge(side, label){
+      var badge = document.createElement('span');
+      badge.className = 'ba-badge ba-badge-' + side;
+      badge.textContent = label;
+      return badge;
+    }
+
+    sliders.forEach(function(root){
+      counter += 1;
+      var before = root.dataset.before || '';
+      var after = root.dataset.after || '';
+      var labelBefore = root.dataset.labelBefore || 'Before';
+      var labelAfter = root.dataset.labelAfter || 'After';
+      var caption = root.dataset.caption || '';
+      var inputId = 'baSliderRange' + counter;
+
+      var frame = document.createElement('div');
+      frame.className = 'ba-slider-frame';
+      frame.appendChild(buildMedia('before', before, labelBefore, caption));
+      frame.appendChild(buildMedia('after', after, labelAfter, caption));
+      frame.appendChild(buildBadge('before', labelBefore));
+      frame.appendChild(buildBadge('after', labelAfter));
+
+      // Input appended before the divider so the CSS focus-visible
+      // rule (`.ba-slider-input:focus-visible ~ .ba-slider-divider`)
+      // can match — ~ only selects *following* siblings.
+      var input = document.createElement('input');
+      input.type = 'range';
+      input.className = 'ba-slider-input';
+      input.id = inputId;
+      input.min = '0';
+      input.max = '100';
+      input.step = '1';
+      input.value = '50';
+      input.setAttribute('aria-label', 'Drag to compare ' + (caption ? caption + ': ' : '') + labelBefore + ' and ' + labelAfter);
+      frame.appendChild(input);
+
+      var divider = document.createElement('div');
+      divider.className = 'ba-slider-divider';
+      divider.setAttribute('aria-hidden', 'true');
+      frame.appendChild(divider);
+
+      root.appendChild(frame);
+
+      function update(){ frame.style.setProperty('--ba-pos', input.value + '%'); }
+      update();
+      input.addEventListener('input', update);
+    });
   })();
 
 
