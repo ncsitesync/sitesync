@@ -165,12 +165,12 @@
     background:rgba(255,255,255,0.72);
     backdrop-filter:blur(14px) saturate(140%);
     -webkit-backdrop-filter:blur(14px) saturate(140%);
-    border-bottom:1px solid transparent;
+    border-bottom:1px solid rgba(11,13,20,0.08);
     transition:box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease);
   }
   .nav.is-scrolled{
     box-shadow:0 8px 24px -12px rgba(11,13,20,0.16);
-    border-bottom-color:var(--line);
+    border-bottom-color:transparent;
     background:rgba(255,255,255,0.92);
   }
   .nav-inner{
@@ -1150,7 +1150,7 @@
             <h3>Supreme Landscaping</h3>
           </div>
         </a>
-        <a class="gallery-item gallery-item--wide gallery-item--live reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#1E44F5;--tile-b:#071440;" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
+        <a class="gallery-item gallery-item--live reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#1E44F5;--tile-b:#071440;" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
           <div class="gallery-bg"></div>
           <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
           <div class="gallery-iframe-wrap">
@@ -1437,7 +1437,7 @@
       var loaded = false;
       var failTimer = setTimeout(function(){
         if (!loaded) wrap.closest('.gallery-item').classList.add('preview-failed');
-      }, 6000);
+      }, 9000);
       iframe.addEventListener('load', function(){
         loaded = true;
         clearTimeout(failTimer);
