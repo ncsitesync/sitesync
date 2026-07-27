@@ -354,7 +354,6 @@
   }
   .nav-mobile .btn{margin-top:20px;}
   body.menu-open{overflow:hidden;}
-  body.modal-open{overflow:hidden;}
 
   @media (min-width:900px){
     .nav-links{display:flex;}
@@ -1052,59 +1051,122 @@
     .footer-bottom{flex-direction:row;justify-content:space-between;}
   }
 
-  /* ---------- Book a demo modal ---------- */
-  .modal-backdrop{
-    position:fixed;inset:0;
-    background:rgba(11,13,20,0.55);
-    display:flex;align-items:center;justify-content:center;
-    padding:24px;
-    z-index:900;
-    opacity:0;
-    transition:opacity 300ms var(--ease);
+  /* ---------- Book a demo toast ----------
+     Non-modal: no backdrop, no focus trap. Card and pill share one
+     CSS Grid cell (grid-area:1/1) so they cross-fade in place without
+     ever animating width/height — only opacity/transform move.
+     visibility is toggled with a transition-delay so the element
+     that's fading out stops being focusable/AT-exposed only once its
+     fade finishes, and the one fading in is focusable immediately. */
+  .toast{
+    position:fixed;
+    right:24px;bottom:24px;
+    z-index:850;
+    display:grid;
+    justify-items:end;
+    align-items:end;
   }
-  .modal-backdrop[hidden]{display:none;}
-  .modal-backdrop.is-open{opacity:1;}
-  .modal-sheet{
+  .toast[hidden]{display:none;}
+
+  .toast-card{
+    grid-area:1/1;
     position:relative;
+    width:340px;
+    max-width:calc(100vw - 48px);
     background:#fff;
-    border-radius:24px;
-    padding:44px 36px 36px;
-    max-width:420px;width:100%;
-    text-align:center;
-    box-shadow:0 40px 90px -24px rgba(11,13,20,0.4);
-    transform:scale(0.95);
+    border-radius:20px;
+    padding:28px 28px 24px;
+    text-align:left;
+    box-shadow:0 24px 60px -20px rgba(11,13,20,0.4);
     opacity:0;
-    transition:transform 300ms var(--ease), opacity 300ms var(--ease);
+    visibility:hidden;
+    transform:translateX(48px);
+    transition:opacity 550ms var(--ease), transform 550ms var(--ease), visibility 0s linear 550ms;
+    pointer-events:none;
   }
-  .modal-backdrop.is-open .modal-sheet{transform:scale(1);opacity:1;}
-  .modal-logo{height:26px;width:auto;margin:0 auto 22px;}
-  .modal-sheet h3{font-size:25px;margin-bottom:10px;}
-  .modal-sheet p{color:var(--ink-soft);font-size:15px;line-height:1.6;margin-bottom:26px;}
-  .modal-actions{display:flex;flex-direction:column;gap:12px;}
-  .modal-close{
+  .toast.is-visible .toast-card{
+    opacity:1;
+    visibility:visible;
+    transform:translateX(0);
+    transition:opacity 550ms var(--ease), transform 550ms var(--ease), visibility 0s linear 0s;
+    pointer-events:auto;
+  }
+  .toast.is-collapsed .toast-card{
+    opacity:0;
+    visibility:hidden;
+    transform:scale(0.92);
+    transition:opacity 320ms var(--ease), transform 320ms var(--ease), visibility 0s linear 320ms;
+    pointer-events:none;
+  }
+  .toast-card .modal-logo{height:26px;width:auto;margin:0 0 18px;}
+  .toast-card h3{font-size:21px;margin-bottom:10px;}
+  .toast-card p{color:var(--ink-soft);font-size:14.5px;line-height:1.6;margin-bottom:22px;}
+  .toast-actions{display:flex;flex-direction:column;gap:12px;}
+  .toast-close{
     position:absolute;top:14px;right:14px;
-    width:36px;height:36px;border-radius:999px;border:none;
+    width:32px;height:32px;border-radius:999px;border:none;
     background:var(--mist);display:flex;align-items:center;justify-content:center;
     cursor:pointer;color:var(--ink-soft);
     transition:background 200ms var(--ease), color 200ms var(--ease);
   }
-  .modal-close:hover{background:var(--line);color:var(--ink);}
-  .modal-close svg{width:16px;height:16px;}
+  .toast-close:hover{background:var(--line);color:var(--ink);}
+  .toast-close svg{width:15px;height:15px;}
+
+  .toast-pill{
+    grid-area:1/1;
+    display:flex;
+    align-items:center;
+    background:var(--blue);
+    border-radius:999px;
+    min-height:52px;
+    padding-right:8px;
+    box-shadow:0 14px 30px -10px rgba(2,51,234,0.55);
+    opacity:0;
+    visibility:hidden;
+    transform:scale(0.85);
+    transition:opacity 320ms var(--ease), transform 320ms var(--ease), background 200ms var(--ease), visibility 0s linear 320ms;
+    pointer-events:none;
+  }
+  .toast-pill:hover{background:var(--blue-deep);}
+  .toast.is-collapsed .toast-pill{
+    opacity:1;
+    visibility:visible;
+    transform:scale(1);
+    transition:opacity 320ms var(--ease), transform 320ms var(--ease), background 200ms var(--ease), visibility 0s linear 0s;
+    pointer-events:auto;
+  }
+  .toast-pill-main{
+    background:none;border:none;
+    color:#fff;
+    font-family:inherit;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:-0.01em;
+    height:52px;
+    padding:0 8px 0 22px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .toast-pill-close{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;
+    margin-right:2px;
+    border-radius:999px;border:none;
+    background:rgba(255,255,255,0.22);
+    color:#fff;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:background 200ms var(--ease);
+  }
+  .toast-pill-close:hover{background:rgba(255,255,255,0.35);}
+  .toast-pill-close svg{width:11px;height:11px;display:block;}
 
   @media (max-width:640px){
-    .modal-backdrop{align-items:flex-end;padding:0;}
-    .modal-sheet{
-      border-radius:24px 24px 0 0;
-      max-width:100%;
-      padding:36px 24px 40px;
-      transform:translateY(100%);
-      opacity:1;
-      transition:transform 320ms var(--ease);
-    }
-    .modal-backdrop.is-open .modal-sheet{transform:translateY(0);}
+    .toast{left:16px;right:16px;bottom:16px;}
+    .toast-card{width:100%;max-width:none;justify-self:stretch;}
   }
   @media (prefers-reduced-motion:reduce){
-    .modal-backdrop, .modal-sheet{transition:none !important;}
+    .toast-card,.toast-pill{transition:none !important;}
   }
 
   /* utility */
@@ -1478,19 +1540,25 @@
   </div>
 </footer>
 
-<!-- ================= BOOK A DEMO MODAL ================= -->
-<div class="modal-backdrop" id="demoBackdrop" hidden>
-  <div class="modal-sheet" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoModalTitle">
-    <button class="modal-close" id="demoClose" aria-label="Close">
+<!-- ================= BOOK A DEMO TOAST ================= -->
+<div class="toast" id="demoToast" hidden>
+  <div class="toast-card" id="toastCard" role="complementary" aria-live="polite" aria-label="Book a demo">
+    <button class="toast-close" id="toastClose" aria-label="Close">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
     </button>
     <img class="modal-logo" src="sitesync-logo.png" alt="SiteSync" loading="lazy">
-    <h3 id="demoModalTitle">Book a demo today!</h3>
+    <h3 id="toastTitle">Book a demo today!</h3>
     <p>See exactly how a Signature site would look and work for your business — no obligation.</p>
-    <div class="modal-actions">
+    <div class="toast-actions">
       <a class="btn btn-primary btn-block" href="tel:+19109901576">Call (910) 990-1576</a>
       <a class="btn btn-ghost btn-block" href="mailto:ncsitesync@gmail.com?subject=Demo%20Request">Email us</a>
     </div>
+  </div>
+  <div class="toast-pill" id="toastPill">
+    <button class="toast-pill-main" id="toastPillMain" aria-label="Reopen: book a demo message">Call (910) 990-1576</button>
+    <button class="toast-pill-close" id="toastPillClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
   </div>
 </div>
 
@@ -1894,71 +1962,127 @@
   })();
 
 
-  /* ---------- Book a demo modal ---------- */
-  (function initDemoModal(){
-    var backdrop = document.getElementById('demoBackdrop');
-    var sheet = document.getElementById('demoModal');
-    var closeBtn = document.getElementById('demoClose');
-    if (!backdrop || !sheet || !closeBtn) return;
+  /* ---------- Book a demo toast ----------
+     Non-modal replacement for the old centered popup: no backdrop, no
+     focus trap, no body scroll-lock. Appears bottom-right (bottom-
+     centered/full-width on narrow viewports), auto-collapses to a
+     persistent pill after a read-time delay, and remembers a manual
+     dismissal in localStorage so it doesn't nag on every page view.
 
-    var shown = false;
-    var isClosing = false;
-    var lastFocused = null;
+     TOAST_COLLAPSE_DELAY_MS is the single source of truth for the
+     read-time delay — 2000ms as specified. To compare against 6000ms
+     without editing this constant, append ?toastDelay=6000 to the URL
+     (any positive integer works) and reload. */
+  (function initDemoToast(){
+    var TOAST_COLLAPSE_DELAY_MS = 2000;
+    var DISMISS_KEY = 'sitesync-demo-toast-dismissed';
 
-    function onKeydown(e){
-      if (e.key === 'Escape' || e.key === 'Esc') closeModal();
+    var toast = document.getElementById('demoToast');
+    var card = document.getElementById('toastCard');
+    var closeBtn = document.getElementById('toastClose');
+    var pillMain = document.getElementById('toastPillMain');
+    var pillClose = document.getElementById('toastPillClose');
+    if (!toast || !card || !closeBtn || !pillMain || !pillClose) return;
+
+    try {
+      if (localStorage.getItem(DISMISS_KEY)) return;
+    } catch (e){ /* localStorage unavailable (private mode etc.) — proceed without persistence */ }
+
+    var collapseDelay = TOAST_COLLAPSE_DELAY_MS;
+    try {
+      var override = parseInt(new URLSearchParams(window.location.search).get('toastDelay'), 10);
+      if (override > 0) collapseDelay = override;
+    } catch (e){}
+
+    var collapseTimer = null;
+    var remaining = collapseDelay;
+    var timerStartedAt = null;
+    var cancelled = false;
+
+    function clearCollapseTimer(){
+      if (collapseTimer){ clearTimeout(collapseTimer); collapseTimer = null; }
     }
 
-    function openModal(){
-      if (shown || isClosing) return;
-      if (document.body.classList.contains('menu-open')) return;
-      shown = true;
-      lastFocused = document.activeElement;
-      backdrop.hidden = false;
-      void backdrop.offsetWidth;
-      backdrop.classList.add('is-open');
-      document.body.classList.add('modal-open');
-      var focusTarget = sheet.querySelector('a, button');
-      if (focusTarget) focusTarget.focus();
-      document.addEventListener('keydown', onKeydown);
+    function collapse(){
+      if (cancelled) return;
+      toast.classList.add('is-collapsed');
     }
 
-    function closeModal(){
-      if (backdrop.hidden || isClosing) return;
-      isClosing = true;
-      backdrop.classList.remove('is-open');
-      document.body.classList.remove('modal-open');
-      document.removeEventListener('keydown', onKeydown);
-      function finish(){
-        backdrop.hidden = true;
-        isClosing = false;
-        if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
-      }
+    function scheduleCollapse(ms){
+      clearCollapseTimer();
+      remaining = ms;
+      timerStartedAt = Date.now();
+      collapseTimer = setTimeout(collapse, ms);
+    }
+
+    // Hovering only pauses — the countdown resumes with whatever time
+    // was left. Genuinely interacting (focusing or clicking something
+    // inside the card) cancels the auto-collapse for good, since
+    // shrinking the message out from under someone actively using it
+    // would be worse than leaving it expanded.
+    function pauseCollapse(){
+      if (cancelled || !collapseTimer) return;
+      remaining = Math.max(0, remaining - (Date.now() - timerStartedAt));
+      clearCollapseTimer();
+    }
+
+    function resumeCollapse(){
+      if (cancelled || toast.classList.contains('is-collapsed')) return;
+      scheduleCollapse(remaining);
+    }
+
+    function cancelCollapseForGood(){
+      cancelled = true;
+      clearCollapseTimer();
+    }
+
+    function expand(){
+      toast.classList.remove('is-collapsed');
+      cancelCollapseForGood();
+    }
+
+    function dismissForever(){
+      cancelCollapseForGood();
+      toast.hidden = true;
+      try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e){}
+    }
+
+    function show(){
+      toast.hidden = false;
+      void toast.offsetWidth;
+      toast.classList.add('is-visible');
       if (reduceMotion){
-        finish();
+        scheduleCollapse(collapseDelay);
       } else {
-        var done = false;
-        var onEnd = function(e){
-          if (e.target !== sheet) return;
-          if (done) return;
-          done = true;
-          finish();
-        };
-        sheet.addEventListener('transitionend', onEnd, {once:true});
-        setTimeout(function(){ if (!done){ done = true; finish(); } }, 420);
+        // Let the entrance transition finish before the read-time
+        // countdown starts, so the countdown reflects time actually
+        // spent reading rather than time spent watching it slide in.
+        setTimeout(function(){ scheduleCollapse(collapseDelay); }, 600);
       }
     }
 
-    closeBtn.addEventListener('click', closeModal);
-    backdrop.addEventListener('click', function(e){ if (e.target === backdrop) closeModal(); });
+    card.addEventListener('mouseenter', pauseCollapse);
+    card.addEventListener('mouseleave', resumeCollapse);
+    card.addEventListener('focusin', cancelCollapseForGood);
+    card.addEventListener('click', function(e){
+      if (e.target.closest('a')) cancelCollapseForGood();
+    });
 
-    function attemptOpen(retries){
+    closeBtn.addEventListener('click', dismissForever);
+    pillClose.addEventListener('click', dismissForever);
+    pillMain.addEventListener('click', expand);
+
+    toast.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' || e.key === 'Esc') dismissForever();
+    });
+
+    function attemptShow(retries){
       setTimeout(function(){
         if (document.body.classList.contains('menu-open')){
-          if (retries < 6) attemptOpen(retries + 1);
+          if (retries < 6) attemptShow(retries + 1);
           return;
         }
-        openModal();
+        show();
       }, retries === 0 ? 1500 : 300);
     }
 
@@ -1970,7 +2094,7 @@
           if (entry.isIntersecting && !fired){
             fired = true;
             workIO.unobserve(entry.target);
-            attemptOpen(0);
+            attemptShow(0);
           }
         });
       }, {threshold: 0.3});
