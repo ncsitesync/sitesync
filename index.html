@@ -394,7 +394,6 @@
     display:flex;
     flex-direction:column;
     gap:40px;
-    animation:hero-fade-up 900ms var(--ease) 150ms both;
   }
   @media (min-width:1000px){
     .hero-content{
@@ -405,13 +404,57 @@
     .hero-copy{flex:1 1 50%;}
     .hero-media{flex:1 1 50%;}
   }
-  @keyframes hero-fade-up{
-    from{opacity:0; transform:translateY(22px);}
-    to{opacity:1; transform:translateY(0);}
+
+  /* ---------- Hero load-in sequence ----------
+     Pure CSS keyframes + animation-delay (via --d, set inline per
+     element) — no JS involved in showing anything. fill-mode is
+     `backwards`, not `both`/`forwards`: `backwards` only borrows the
+     "from" state during the animation-delay (so nothing flashes fully
+     visible before its turn), then lets go completely once the
+     animation ends. A `forwards`-filling animation would instead keep
+     owning `transform`/`opacity` forever — which matters here because
+     the icon's cursor-tilt (item 4) sets `transform` via JS on a
+     nested element afterwards; with `backwards` there is no ownership
+     conflict to even worry about, and if animations are unsupported
+     at all, this whole block simply never applies and every element
+     renders in its normal, fully visible state immediately. */
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes hero-rise-in{
+      from{ opacity:0; transform:translateY(16px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+    @keyframes hero-icon-rise-in{
+      from{ opacity:0; transform:translateY(28px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+    @keyframes hero-line-reveal{
+      from{ transform:translateY(108%); }
+      to{ transform:translateY(0); }
+    }
+    .hero-anim{
+      animation:hero-rise-in 750ms var(--ease) var(--d,0ms) backwards;
+    }
+    .hero-icon-entrance{
+      animation:hero-icon-rise-in 950ms var(--ease) var(--d,0ms) backwards;
+    }
+    .hero-line{
+      animation:hero-line-reveal 750ms var(--ease) var(--d,0ms) backwards;
+    }
   }
-  @media (prefers-reduced-motion:reduce){
-    .hero-content{animation:none;}
+
+  /* The mask itself: overflow:hidden clips the line to its own
+     natural (untransformed) footprint, so translateY(108%) on the
+     inner span moves it below that box and out of view — a real
+     clipped reveal, not a fade. Works the same whether .hero-line
+     wraps one line or several. */
+  .hero-line-mask{
+    display:block;
+    overflow:hidden;
   }
+  .hero-line{
+    display:block;
+  }
+
   .hero-logo{
     width:min(46vw, 200px);
     margin:0 0 24px;
@@ -462,35 +505,75 @@
   }
   @media (min-width:640px){ .hero-media{padding:40px 24px;} }
   @media (min-width:1000px){ .hero-media{padding:0 24px;} }
-  /* The icon keeps its native gradient blue (rather than a white
-     knockout like the wordmark) so it doesn't flatten to a silhouette —
-     the plate is what gives it contrast against the saturated hero. */
-  .hero-icon-plate{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:min(46vw, 200px);
-    aspect-ratio:1/1;
-    border-radius:50%;
-    background:radial-gradient(circle at 32% 28%, #fff 0%, #F0F4FF 100%);
-    box-shadow:0 24px 50px -18px rgba(1,10,60,0.45);
-    animation:hero-icon-float 39s ease-in-out infinite;
+  /* No container this time — the circle read as a sticker and wasn't
+     part of the brand system. The icon is now a white knockout of the
+     actual mark (generated from sitesync-icon.png, alpha preserved),
+     sitting directly on the blue, scaled up now that it isn't
+     constrained by a plate, with a soft wide glow behind it for depth.
+
+     Three nested layers, each owning exactly one transform so none of
+     them can fight each other or the JS tilt:
+       .hero-icon-entrance  — load-in keyframe (opacity + translateY)
+       .hero-icon-float     — ambient bob, CSS keyframe, infinite
+       .hero-icon-stage     — cursor tilt, JS-driven inline transform */
+  .hero-icon-entrance{
+    perspective:1000px;
+  }
+  .hero-icon-float{
+    width:min(60vw, 320px);
+    animation:hero-icon-float-bob 39s ease-in-out infinite;
     will-change:transform;
   }
   @media (min-width:1000px){
-    .hero-icon-plate{width:min(30vw, 300px);}
+    .hero-icon-float{width:min(32vw, 440px);}
   }
-  .hero-icon{
-    display:block;
-    width:64%;
-    height:auto;
-  }
-  @keyframes hero-icon-float{
+  @keyframes hero-icon-float-bob{
     0%,100%{transform:translateY(0);}
     50%{transform:translateY(-13px);}
   }
   @media (prefers-reduced-motion:reduce){
-    .hero-icon{animation:none;}
+    .hero-icon-float{animation:none;}
+  }
+  .hero-icon-stage{
+    position:relative;
+    width:100%;
+    will-change:transform;
+  }
+  .hero-icon-glow{
+    position:absolute;
+    inset:-32%;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 66%);
+    filter:blur(46px);
+    z-index:-1;
+    pointer-events:none;
+  }
+  .hero-icon{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+
+  /* ---------- Hero grain ----------
+     Fine static noise, baked into a small tiled SVG (feTurbulence runs
+     once at decode time inside the image itself) rather than a live
+     CSS `filter` on the hero — the governing rule against animating
+     `filter` on large elements is about continuous recomputation, and
+     a live filter on the whole hero would be exactly that. This is a
+     static background-image; only its own opacity is set, and it never
+     changes. z-index:0 (behind .hero-content, z-index:1) and
+     pointer-events:none so it can't sit above text or intercept
+     clicks. At 4.5% opacity the luminance shift it adds to the blue
+     backdrop is negligible — well under what would move any of the
+     hero's text pairs (all 6.3:1+) across a WCAG threshold. */
+  .hero-grain{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxODAnIGhlaWdodD0nMTgwJz4KICA8ZmlsdGVyIGlkPSduJz4KICAgIDxmZVR1cmJ1bGVuY2UgdHlwZT0nZnJhY3RhbE5vaXNlJyBiYXNlRnJlcXVlbmN5PScwLjg1JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJyByZXN1bHQ9J25vaXNlJy8+CiAgICA8ZmVDb2xvck1hdHJpeCBpbj0nbm9pc2UnIHR5cGU9J21hdHJpeCcgdmFsdWVzPScwIDAgMCAwIDEgIDAgMCAwIDAgMSAgMCAwIDAgMCAxICAwIDAgMCAwLjYgMCcvPgogIDwvZmlsdGVyPgogIDxyZWN0IHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnIGZpbHRlcj0ndXJsKCNuKScvPgo8L3N2Zz4K");
+    background-repeat:repeat;
+    opacity:0.045;
+    pointer-events:none;
   }
 
   /* ---------- Hero gradient mesh ----------
@@ -564,6 +647,31 @@
     font-size:17px;
     line-height:1.6;
     color:var(--ink-soft);
+  }
+
+  /* ---------- Scroll-triggered line-mask reveal ----------
+     Reuses the existing .reveal/.is-visible mechanism (same
+     fire-once IntersectionObserver, same no-IO/reduced-motion
+     fallback that adds .is-visible immediately) rather than a second
+     observer — .line-mask-inner is always a descendant of whatever
+     element carries .reveal, whether that's a wrapping .section-head
+     or (for the closing CTA) the h2 itself, so one selector covers
+     both. If the observer never fires, the fallback already covers
+     it: nothing here depends on a script running to become visible. */
+  .line-mask{
+    display:block;
+    overflow:hidden;
+  }
+  .line-mask-inner{
+    display:block;
+    transform:translateY(108%);
+    transition:transform 800ms var(--ease);
+  }
+  .reveal.is-visible .line-mask-inner{
+    transform:translateY(0);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .line-mask-inner{transition:none !important; transform:none !important;}
   }
 
   /* reveal */
@@ -763,7 +871,9 @@
   }
   .gallery-item:hover .gallery-bg{transform:scale(1.08);}
   .gallery-item:hover .gallery-watermark{transform:scale(1.14) rotate(4deg);opacity:0.24;}
-  .gallery-item:hover{transform:translateY(-4px);box-shadow:0 26px 46px -24px rgba(11,13,20,0.4);}
+  /* Lift + tinted shadow, pure CSS — no JS. Shadow uses the brand
+     blue instead of grey. */
+  .gallery-item:hover{transform:translateY(-4px);box-shadow:0 26px 46px -24px rgba(2,51,234,0.4);}
   .gallery-label{
     position:absolute;
     left:24px;bottom:22px;right:24px;
@@ -1205,6 +1315,21 @@
     .toast-card,.toast-pill{transition:none !important;}
   }
 
+  /* ---------- Scroll progress ----------
+     transform:scaleX only (never width) so it's compositor-only.
+     z-index:1000 — above the toast (850) and nav (500) — so the pinned
+     top edge is never partially covered by anything else on the page. */
+  .scroll-progress{
+    position:fixed;
+    top:0;left:0;right:0;
+    height:3px;
+    background:var(--gold);
+    transform:scaleX(0);
+    transform-origin:0 0;
+    z-index:1000;
+    pointer-events:none;
+  }
+
   /* utility */
   .visually-hidden{
     position:absolute !important;
@@ -1219,6 +1344,7 @@
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
 <header class="nav" id="nav">
   <div class="nav-inner">
@@ -1258,30 +1384,39 @@
 
   <div id="top"></div>
   <section class="hero-wrap" id="heroWrap" aria-label="SiteSync introduction">
+    <div class="hero-grain" aria-hidden="true"></div>
     <div class="hero-mesh" aria-hidden="true">
       <span></span><span></span><span></span>
     </div>
     <div class="hero-content">
       <div class="hero-copy">
-        <div class="hero-logo">
+        <div class="hero-logo hero-anim" style="--d:0ms">
           <img src="sitesync-logo-white.png" alt="" loading="eager">
         </div>
-        <span class="hero-eyebrow">Web design &amp; automation studio</span>
-        <h1 class="hero-headline">You run the business.</h1>
-        <p class="hero-sub">Your website, bookings, and follow-ups run themselves. Built for contractors, barbershops, gyms, and trades across North Carolina.</p>
+        <span class="hero-eyebrow hero-anim" style="--d:130ms">Web design &amp; automation studio</span>
+        <h1 class="hero-headline">
+          <span class="hero-line-mask"><span class="hero-line" style="--d:260ms">You run the</span></span>
+          <span class="hero-line-mask"><span class="hero-line" style="--d:390ms">business.</span></span>
+        </h1>
+        <p class="hero-sub hero-anim" style="--d:520ms">Your website, bookings, and follow-ups run themselves. Built for contractors, barbershops, gyms, and trades across North Carolina.</p>
         <div class="hero-ctas">
-          <a class="btn btn-gold" href="#selected-work">
+          <a class="btn btn-gold hero-anim" style="--d:650ms" href="#selected-work">
             <span class="btn-label">See Our Work</span>
             <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
-          <a class="btn btn-ghost-on-blue" href="mailto:ncsitesync@gmail.com?subject=Quote%20Request">Get a Quote</a>
-          <a class="btn btn-ghost-on-blue" href="#pricing">See Pricing</a>
+          <a class="btn btn-ghost-on-blue hero-anim" style="--d:780ms" href="mailto:ncsitesync@gmail.com?subject=Quote%20Request">Get a Quote</a>
+          <a class="btn btn-ghost-on-blue hero-anim" style="--d:910ms" href="#pricing">See Pricing</a>
         </div>
       </div>
 
       <div class="hero-media">
-        <div class="hero-icon-plate">
-          <img class="hero-icon" src="sitesync-icon.png" alt="SiteSync icon" loading="eager">
+        <div class="hero-icon-entrance" style="--d:1040ms">
+          <div class="hero-icon-float">
+            <div class="hero-icon-stage" id="heroIconStage">
+              <span class="hero-icon-glow" aria-hidden="true"></span>
+              <img class="hero-icon" src="sitesync-icon-white.png" alt="SiteSync icon" loading="eager">
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1292,7 +1427,7 @@
     <div class="container">
       <div class="section-head reveal">
         <span class="eyebrow">Real results</span>
-        <h2 id="before-after-heading">See the difference.</h2>
+        <h2 id="before-after-heading" class="line-mask"><span class="line-mask-inner">See the difference.</span></h2>
         <p>Drag to compare — this is the kind of jump a Signature rebuild makes for a local business.</p>
       </div>
 
@@ -1320,7 +1455,7 @@
     <div class="container">
       <div class="section-head reveal">
         <span class="eyebrow">What we do</span>
-        <h2>Three things, done properly.</h2>
+        <h2 class="line-mask"><span class="line-mask-inner">Three things, done properly.</span></h2>
         <p>No packages full of things you don't need. Just the parts that make a local business look sharp and run smoother.</p>
       </div>
 
@@ -1357,7 +1492,7 @@
     <div class="container">
       <div class="section-head reveal">
         <span class="eyebrow">Selected work</span>
-        <h2>Real businesses, sharper online.</h2>
+        <h2 class="line-mask"><span class="line-mask-inner">Real businesses, sharper online.</span></h2>
         <p>A look at the kind of sites we build for the trades, fitness, and service businesses that keep towns running.</p>
       </div>
 
@@ -1437,7 +1572,7 @@
     <div class="container">
       <div class="section-head reveal">
         <span class="eyebrow">Pricing</span>
-        <h2>Straightforward pricing, no surprises.</h2>
+        <h2 class="line-mask"><span class="line-mask-inner">Straightforward pricing, no surprises.</span></h2>
         <p>Pick where you want to start. Every tier is built to look and perform like the one above the last website you had.</p>
       </div>
 
@@ -1493,7 +1628,7 @@
     <div class="container">
       <div class="section-head reveal">
         <span class="eyebrow">How it works</span>
-        <h2>Three steps. No runaround.</h2>
+        <h2 class="line-mask"><span class="line-mask-inner">Three steps. No runaround.</span></h2>
       </div>
 
       <div class="steps">
@@ -1533,7 +1668,7 @@
   <section class="cta-band" id="contact">
     <div class="cta-glow" aria-hidden="true"><span></span></div>
     <div class="container">
-      <h2 class="reveal">Ready to look like the best option in town?</h2>
+      <h2 class="reveal line-mask"><span class="line-mask-inner">Ready to look like the best option in town?</span></h2>
       <p class="reveal">Tell me a bit about your business and I'll put together a plan — no pressure, no commitment.</p>
       <div class="cta-band-actions reveal">
         <a class="btn btn-on-blue" href="mailto:ncsitesync@gmail.com?subject=Quote%20Request">Get a Quote</a>
@@ -1610,14 +1745,37 @@
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  /* ---------- Nav scroll shadow ---------- */
+  /* ---------- Shared scroll handler ----------
+     One scroll listener, coalesced into a single requestAnimationFrame
+     tick, driving everything that's tied to scroll position: the
+     nav's scrolled-shadow state and the top progress bar. Additional
+     scroll-linked behavior should be added inside updateOnScroll()
+     rather than as its own listener. */
   var nav = document.getElementById('nav');
-  function onNavScroll(){
-    if (window.scrollY > 8) nav.classList.add('is-scrolled');
+  var scrollProgress = document.getElementById('scrollProgress');
+  var scrollTicking = false;
+
+  function updateOnScroll(){
+    var y = window.scrollY;
+
+    if (y > 8) nav.classList.add('is-scrolled');
     else nav.classList.remove('is-scrolled');
+
+    if (scrollProgress){
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - doc.clientHeight;
+      var frac = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+      scrollProgress.style.transform = 'scaleX(' + frac + ')';
+    }
+
+    scrollTicking = false;
   }
-  window.addEventListener('scroll', onNavScroll, {passive:true});
-  onNavScroll();
+  function requestScrollTick(){
+    if (!scrollTicking){ scrollTicking = true; requestAnimationFrame(updateOnScroll); }
+  }
+  window.addEventListener('scroll', requestScrollTick, {passive:true});
+  window.addEventListener('resize', requestScrollTick, {passive:true});
+  requestScrollTick();
 
   /* ---------- Mobile nav (hamburger) ---------- */
   var navToggle = document.getElementById('navToggle');
@@ -2139,6 +2297,73 @@
       workIO.observe(workSection);
     }
   })();
+
+  /* ---------- Hero icon: cursor tilt ----------
+     Damped via a continuous requestAnimationFrame lerp loop rather
+     than a CSS transition — a transition chases each new mousemove
+     target from scratch, which reads as stepped; lerping the current
+     angle a fraction of the way toward the target every frame is what
+     actually reads as weight, and the same loop naturally eases back
+     to rest when the target resets to (0,0) on mouseleave, no
+     separate "return" animation needed.
+
+     Applied to #heroIconStage specifically — a nested element inside
+     the load-in-animated .hero-icon-entrance and the ambient-bob
+     .hero-icon-float — so this can never fight either of those for
+     ownership of `transform`; all three sit on different elements and
+     compose visually. Doesn't attach its listeners until 2000ms after
+     load (the icon's own entrance finishes at 1040ms delay + 950ms
+     duration = 1990ms), so the tilt only ever becomes active once the
+     entrance sequence is actually done, per the brief. Disabled
+     entirely on touch/coarse-pointer devices and under reduced
+     motion. */
+  (function heroIconTilt(){
+    var stage = document.getElementById('heroIconStage');
+    var heroWrap = document.getElementById('heroWrap');
+    if (!stage || !heroWrap || reduceMotion) return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    var MAX_DEG = 9;
+    var DAMP = 0.08;
+    var ACTIVATE_DELAY_MS = 2000;
+
+    var targetX = 0, targetY = 0, curX = 0, curY = 0;
+    var ticking = false;
+
+    function tick(){
+      curX += (targetX - curX) * DAMP;
+      curY += (targetY - curY) * DAMP;
+      stage.style.transform = 'rotateX(' + curX.toFixed(2) + 'deg) rotateY(' + curY.toFixed(2) + 'deg)';
+      var settled = Math.abs(targetX - curX) < 0.01 && Math.abs(targetY - curY) < 0.01 &&
+                    Math.abs(curX) < 0.01 && Math.abs(curY) < 0.01;
+      if (!settled){
+        requestAnimationFrame(tick);
+      } else {
+        ticking = false;
+      }
+    }
+    function requestTick(){
+      if (!ticking){ ticking = true; requestAnimationFrame(tick); }
+    }
+    function onMove(e){
+      var rect = heroWrap.getBoundingClientRect();
+      var relX = (e.clientX - rect.left) / rect.width;
+      var relY = (e.clientY - rect.top) / rect.height;
+      targetY = (relX - 0.5) * 2 * MAX_DEG;
+      targetX = -(relY - 0.5) * 2 * MAX_DEG;
+      requestTick();
+    }
+    function onLeave(){
+      targetX = 0; targetY = 0;
+      requestTick();
+    }
+
+    setTimeout(function(){
+      heroWrap.addEventListener('mousemove', onMove, {passive:true});
+      heroWrap.addEventListener('mouseleave', onLeave, {passive:true});
+    }, ACTIVATE_DELAY_MS);
+  })();
+
 })();
 </script>
 
