@@ -34,9 +34,14 @@
     --nav-h:76px;
     --bg-page:var(--blue-tint);
     --blue-tint:#EEF4FF;
-    --mesh-1:rgba(59,91,255,0.30);
-    --mesh-2:rgba(2,51,234,0.22);
-    --mesh-3:rgba(2,31,158,0.18);
+    /* Measured directly from sitesync-icon.png (mean of every fully-opaque
+       pixel — the mark is a subtle gradient, not a flat fill, so this is
+       the closest thing to a single "true" value). Kept separate from
+       --blue so the rest of the page is untouched. */
+    --blue-logo:#0030EC;
+    --mesh-1:rgba(255,255,255,0.22);
+    --mesh-2:rgba(255,255,255,0.16);
+    --mesh-3:rgba(255,255,255,0.12);
     --gold:#AD781C;
     --gold-rgb:173,120,28;
   }
@@ -163,11 +168,15 @@
     overflow:hidden;
     background:var(--gold);
     color:var(--ink);
-    box-shadow:0 8px 20px -8px rgba(var(--gold-rgb),0.5);
+    /* The inset ring exists purely so the button's own edge clears the
+       3:1 UI-component contrast floor against a saturated blue backdrop
+       (gold-on-blue alone measures ~2.08:1) — it does not change the
+       gold fill or the label contrast, both already fine. */
+    box-shadow:0 8px 20px -8px rgba(var(--gold-rgb),0.5), inset 0 0 0 1.5px rgba(255,255,255,0.35);
   }
   .btn-gold:hover{
     transform:translateY(-2px);
-    box-shadow:0 16px 32px -10px rgba(var(--gold-rgb),0.6);
+    box-shadow:0 16px 32px -10px rgba(var(--gold-rgb),0.6), inset 0 0 0 1.5px rgba(255,255,255,0.35);
   }
   /* Glimmer: a soft diagonal highlight that sweeps once, then pauses,
      on a loop. Pure transform (translateX + a static skew) so it's
@@ -220,7 +229,10 @@
     display:flex;
     align-items:center;
     z-index:500;
-    background:rgba(255,255,255,0.72);
+    /* 0.72 (was) composites to a visible periwinkle tint over the
+       saturated blue hero at the top of the page — raised to 0.85 so
+       the unscrolled header still reads as white, not blue-tinted. */
+    background:rgba(255,255,255,0.85);
     backdrop-filter:blur(14px) saturate(140%);
     -webkit-backdrop-filter:blur(14px) saturate(140%);
     border-bottom:1px solid rgba(11,13,20,0.08);
@@ -367,7 +379,7 @@
   .hero-wrap{
     position:relative;
     width:100%;
-    background:var(--bg-page);
+    background:var(--blue-logo);
     padding:calc(var(--nav-h) + 40px) 24px 56px;
     overflow:hidden;
   }
@@ -403,31 +415,34 @@
   .hero-logo{
     width:min(46vw, 200px);
     margin:0 0 24px;
-    filter:drop-shadow(0 8px 20px rgba(2,51,234,0.12));
+    /* Was a blue-tinted shadow tuned for the old light background —
+       on the saturated blue hero that color is nearly invisible
+       against itself, so this is now a neutral dark shadow instead. */
+    filter:drop-shadow(0 8px 20px rgba(1,8,40,0.35));
   }
   .hero-logo img{width:100%;height:auto;display:block;}
 
   .hero-copy{
-    color:var(--ink);
+    color:#fff;
   }
   .hero-eyebrow{
     font-size:12.5px;
     font-weight:600;
     letter-spacing:0.16em;
     text-transform:uppercase;
-    color:var(--blue-deep);
+    color:#fff;
     margin-bottom:18px;
     display:block;
   }
   .hero-headline{
     font-size:clamp(2.2rem, 6vw, 4.6rem);
-    color:var(--ink);
+    color:#fff;
     max-width:16ch;
   }
   .hero-sub{
     margin-top:20px;
     font-size:clamp(1rem, 1.7vw, 1.25rem);
-    color:var(--ink-soft);
+    color:#DCE4FF;
     max-width:44ch;
     line-height:1.55;
     font-weight:400;
@@ -447,17 +462,28 @@
   }
   @media (min-width:640px){ .hero-media{padding:40px 24px;} }
   @media (min-width:1000px){ .hero-media{padding:0 24px;} }
-  .hero-icon{
-    display:block;
-    width:100%;
-    max-width:150px;
-    height:auto;
-    filter:drop-shadow(0 18px 36px rgba(2,51,234,0.16));
+  /* The icon keeps its native gradient blue (rather than a white
+     knockout like the wordmark) so it doesn't flatten to a silhouette —
+     the plate is what gives it contrast against the saturated hero. */
+  .hero-icon-plate{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:min(46vw, 200px);
+    aspect-ratio:1/1;
+    border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, #fff 0%, #F0F4FF 100%);
+    box-shadow:0 24px 50px -18px rgba(1,10,60,0.45);
     animation:hero-icon-float 39s ease-in-out infinite;
     will-change:transform;
   }
   @media (min-width:1000px){
-    .hero-icon{max-width:260px;}
+    .hero-icon-plate{width:min(30vw, 300px);}
+  }
+  .hero-icon{
+    display:block;
+    width:64%;
+    height:auto;
   }
   @keyframes hero-icon-float{
     0%,100%{transform:translateY(0);}
@@ -1238,7 +1264,7 @@
     <div class="hero-content">
       <div class="hero-copy">
         <div class="hero-logo">
-          <img src="sitesync-logo.png" alt="" loading="eager">
+          <img src="sitesync-logo-white.png" alt="" loading="eager">
         </div>
         <span class="hero-eyebrow">Web design &amp; automation studio</span>
         <h1 class="hero-headline">You run the business.</h1>
@@ -1248,13 +1274,15 @@
             <span class="btn-label">See Our Work</span>
             <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
-          <a class="btn btn-ghost" href="mailto:ncsitesync@gmail.com?subject=Quote%20Request">Get a Quote</a>
-          <a class="btn btn-ghost" href="#pricing">See Pricing</a>
+          <a class="btn btn-ghost-on-blue" href="mailto:ncsitesync@gmail.com?subject=Quote%20Request">Get a Quote</a>
+          <a class="btn btn-ghost-on-blue" href="#pricing">See Pricing</a>
         </div>
       </div>
 
       <div class="hero-media">
-        <img class="hero-icon" src="sitesync-icon.png" alt="SiteSync icon" loading="eager">
+        <div class="hero-icon-plate">
+          <img class="hero-icon" src="sitesync-icon.png" alt="SiteSync icon" loading="eager">
+        </div>
       </div>
     </div>
   </section>
