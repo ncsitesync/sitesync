@@ -772,6 +772,16 @@
   .gallery-item.preview-failed .gallery-iframe-wrap{display:none;}
   .gallery-item:hover .gallery-iframe-wrap iframe{transform-origin:top left;}
 
+  .gallery-static-preview{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    object-position:top center;
+    z-index:1;
+    transition:transform 480ms var(--ease);
+  }
+  .gallery-item:hover .gallery-static-preview{transform:scale(1.04);}
+
   .gallery .gallery-item:nth-child(1){transition-delay:0ms;}
   .gallery .gallery-item:nth-child(2){transition-delay:80ms;}
   .gallery .gallery-item:nth-child(3){transition-delay:160ms;}
@@ -1357,15 +1367,16 @@
             <h3>Oasis J&amp;R Land Clearing</h3>
           </div>
         </a>
-        <a class="gallery-item gallery-item--live reveal" href="https://supremelandscaping.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#3358F5;--tile-b:#0D1F8C;" aria-label="Supreme Landscaping — full-service landscaping and hardscaping in Greensboro, NC — view live site (opens in new tab)">
+        <a class="gallery-item gallery-item--static reveal" href="[COASTAL_GROVE_URL]" target="_blank" rel="noopener" style="--tile-a:#2E6F5E;--tile-b:#0B2E24;" aria-label="Coastal Grove Builders — custom building and renovation, est. 2025">
           <div class="gallery-bg"></div>
           <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
-          <div class="gallery-iframe-wrap">
-            <iframe src="https://supremelandscaping.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
-          </div>
+          <picture>
+            <source type="image/webp" srcset="media/coastalgrove-preview-480.webp 480w, media/coastalgrove-preview-800.webp 800w, media/coastalgrove-preview-1200.webp 1200w" sizes="(min-width:640px) 50vw, 100vw">
+            <img class="gallery-static-preview" src="media/coastalgrove-preview-800.png" srcset="media/coastalgrove-preview-480.png 480w, media/coastalgrove-preview-800.png 800w, media/coastalgrove-preview-1200.png 1200w" sizes="(min-width:640px) 50vw, 100vw" width="1200" height="900" loading="lazy" alt="Coastal Grove Builders LLC homepage hero — logo crest over a custom home framing photo">
+          </picture>
           <div class="gallery-label">
-            <span class="gallery-tag">Landscaping</span>
-            <h3>Supreme Landscaping</h3>
+            <span class="gallery-tag">Custom Building &amp; Renovation</span>
+            <h3>Coastal Grove Builders</h3>
           </div>
         </a>
         <a class="gallery-item gallery-item--live reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#1E44F5;--tile-b:#071440;" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
