@@ -415,11 +415,6 @@
   .social-strip svg{width:18px;height:18px;display:block;}
 
   /* ---------- Hero ---------- */
-  /* background-color is the true fallback: it's what paints
-     immediately (zero flash-of-wrong-color), what shows if the video
-     fails to load or is blocked outright, and what .hero-video sits
-     on top of. No background-image here anymore — the video (see
-     .hero-video below) is the only photographic layer now. */
   .hero-wrap{
     position:relative;
     width:100%;
@@ -429,31 +424,6 @@
   }
   @media (min-width:640px){ .hero-wrap{padding:calc(var(--nav-h) + 56px) 40px 72px;} }
   @media (min-width:1100px){ .hero-wrap{padding:calc(var(--nav-h) + 64px) 56px 88px;} }
-
-  /* ---------- Hero video ----------
-     First child of .hero-wrap, z-index:0 like grain/mesh/scrim after
-     it — same "later DOM sibling paints on top" stacking they already
-     use, so paint order is video -> grain -> mesh -> scrim -> content,
-     all still above .hero-wrap's own background-color. object-fit:
-     cover crops the same way background-size:cover did for the old
-     image. No JS is required for the poster-on-autoplay-block
-     fallback: a paused <video poster> with no `controls` just shows
-     the poster as a static image, which is exactly the desired
-     behavior, so play().catch() below only needs to swallow the
-     rejection quietly. */
-  .hero-video{
-    position:absolute;
-    inset:0;
-    z-index:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    object-position:center;
-    pointer-events:none;
-  }
-  @media (prefers-reduced-motion:reduce){
-    .hero-video{display:none;}
-  }
 
   .hero-content{
     position:relative;
@@ -730,29 +700,6 @@
   }
   @media (prefers-reduced-motion:reduce){
     .hero-mesh span{animation:none !important;}
-  }
-
-  /* ---------- Hero scrim ----------
-     Sits after .hero-mesh in the DOM (same z-index:0, later source
-     order wins the paint) so it's the last thing composited before
-     .hero-content — the mesh's soft white blobs read as ambient
-     motion on top of the photo, and this flat dark layer is what
-     actually guarantees the text's contrast, regardless of what's
-     under it. Opacity 0.68 was picked arithmetically against the
-     background photo's own measured luma (ffmpeg signalstats on the
-     region behind the text: avg Y≈90/255, min 15, max 255 — see the
-     reply this shipped with for the full contrast math); it keeps
-     every hero text color at AA (4.5:1) or better against the photo's
-     bright wireframe linework, including its single brightest pixels,
-     while still letting the image read as a photo rather than a flat
-     panel. Static — the scrim itself doesn't need a reduced-motion
-     rule, it never moves. */
-  .hero-scrim{
-    position:absolute;
-    inset:0;
-    z-index:0;
-    background:rgba(8,12,30,0.68);
-    pointer-events:none;
   }
 
   /* ---------- Sections ---------- */
@@ -1445,15 +1392,10 @@
 
   <div id="top"></div>
   <section class="hero-wrap" id="heroWrap" aria-label="SiteSync introduction">
-    <video class="hero-video" id="heroVideo" autoplay muted loop playsinline preload="metadata" poster="media/herovideo-poster.jpg" width="1080" height="1080" aria-hidden="true">
-      <source src="media/herovideo.webm" type="video/webm">
-      <source src="media/herovideo.mp4" type="video/mp4">
-    </video>
     <div class="hero-grain" aria-hidden="true"></div>
     <div class="hero-mesh" aria-hidden="true">
       <span></span><span></span><span></span>
     </div>
-    <div class="hero-scrim" aria-hidden="true"></div>
     <div class="hero-content">
       <div class="hero-copy">
         <div class="hero-logo hero-anim" style="--d:0ms">
@@ -1784,28 +1726,6 @@
   /* ---------- Footer year ---------- */
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-  /* ---------- Hero video ----------
-     The `autoplay` attribute already does the real work; this just
-     (a) makes sure a reduced-motion visitor never has it playing even
-     off-screen behind display:none, since CSS alone stops it being
-     seen but not necessarily heard/decoded, and (b) swallows the
-     play() rejection if autoplay is blocked (Low Power Mode etc.) —
-     the video simply stays paused on its poster frame in that case,
-     which is already the correct fallback with zero extra markup. */
-  (function heroVideo(){
-    var video = document.getElementById('heroVideo');
-    if (!video) return;
-    if (reduceMotion){
-      video.removeAttribute('autoplay');
-      video.pause();
-      return;
-    }
-    var playPromise = video.play();
-    if (playPromise && typeof playPromise.catch === 'function'){
-      playPromise.catch(function(){ /* autoplay blocked — poster frame stays visible */ });
-    }
-  })();
 
   /* ---------- Shared scroll handler ----------
      One scroll listener, coalesced into a single requestAnimationFrame
