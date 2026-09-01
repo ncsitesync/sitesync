@@ -3,51 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SiteSync — Web Design &amp; Automation for Local Service Businesses in North Carolina</title>
+<title>SiteSync — Automation &amp; Web Design for Local Service Businesses in North Carolina</title>
 <meta name="description" content="SiteSync builds premium websites, booking systems, and automated follow-ups for contractors, barbershops, gyms, and local trades across North Carolina. You run the business — your website runs itself.">
-<meta name="theme-color" content="#0233EA">
+<meta name="theme-color" content="#050507">
 <meta property="og:image" content="https://ncsitesync.com/sitesync-poster.jpg">
 <meta name="twitter:image" content="https://ncsitesync.com/sitesync-poster.jpg">
 <link rel="icon" href="/favicon.png" sizes="any" type="image/png">
 <link rel="apple-touch-icon" href="/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --blue:#0233EA;
-    --blue-deep:#021F9E;
-    --blue-bright:#3B5BFF;
+    --ink:#050507;
+    --surface:#0E0E12;
+    --light:#F4F4F6;
     --white:#FFFFFF;
-    --ink:#0B0D14;
-    --ink-soft:#565B66;
-    --ink-faint:#8A8F99;
-    --mist:#F3F5FB;
-    --line:#E3E7F0;
-    --line-strong:#D3D9E6;
-    --radius-s:10px;
-    --radius-m:16px;
-    --radius-l:24px;
-    --ease:cubic-bezier(.22,.61,.36,1);
-    --dur:260ms;
+    --muted:#8A8A94;
+    --muted-on-light:#5B5B63;
+    --accent:#1E40AF;
+    /* Brand blue on its own (#1E40AF) measures ~2.3:1 against --ink —
+       below the 3:1 floor for UI components/large text, let alone body
+       text. --accent-bright is the same hue lifted just enough to clear
+       4.5:1 on --ink/--surface, and is what every on-dark accent use
+       (buttons, dots, the headline highlight) actually renders in.
+       --accent itself stays reserved for the light section, where the
+       original value already reads at ~7.9:1. */
+    --accent-bright:#4870E5;
+    /* Darker step of the true brand blue, for hover states on the new
+       Cloth-Barn-pattern light components (header, hero button/badge,
+       capability cards) — mirrors Cloth Barn's own --accent-hover role. */
+    --accent-hover:#16357F;
+    --line:rgba(255,255,255,0.08);
+    --line-on-light:rgba(10,10,10,0.08);
+    --line-on-light-hover:rgba(30,64,175,0.35);
+    --line-hover:rgba(255,255,255,0.18);
+    --radius-card:16px;
+    --radius-pill:999px;
+    --ease:cubic-bezier(0.16,1,0.3,1);
+    --dur:400ms;
     --container:1280px;
-    --nav-h:76px;
-    --bg-page:var(--blue-tint);
-    --blue-tint:#EEF4FF;
-    /* Measured directly from sitesync-icon.png (mean of every fully-opaque
-       pixel — the mark is a subtle gradient, not a flat fill, so this is
-       the closest thing to a single "true" value). Kept separate from
-       --blue so the rest of the page is untouched. */
-    --blue-logo:#0030EC;
-    /* Muted, desaturated blue for the social icons under the header —
-       distinct from --blue/--blue-bright (both saturated CTA tones)
-       so the icons read as quiet, not another call-to-action. */
-    --blue-soft:#8FB0F0;
-    --mesh-1:rgba(255,255,255,0.22);
-    --mesh-2:rgba(255,255,255,0.16);
-    --mesh-3:rgba(255,255,255,0.12);
-    --gold:#AD781C;
-    --gold-rgb:173,120,28;
+    --nav-clear:108px;
   }
 
   *,*::before,*::after{box-sizing:border-box;}
@@ -56,30 +52,38 @@
 
   body{
     margin:0;
-    font-family:'Inter',system-ui,-apple-system,sans-serif;
-    color:var(--ink);
-    background:var(--bg-page);
+    font-family:'Manrope',system-ui,-apple-system,sans-serif;
+    color:var(--white);
+    background:var(--ink);
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
   }
 
   h1,h2,h3{
-    font-family:'Space Grotesk',system-ui,-apple-system,sans-serif;
     margin:0;
-    font-weight:600;
-    letter-spacing:-0.02em;
+    font-weight:700;
     line-height:1.05;
+    letter-spacing:-0.03em;
+    color:var(--white);
   }
 
-  p{margin:0;}
+  p{
+    margin:0;
+    font-size:15px;
+    line-height:1.65;
+    color:var(--muted);
+    max-width:60ch;
+  }
   a{color:inherit;text-decoration:none;}
-  img{max-width:100%;display:block;}
+  img,video{max-width:100%;display:block;}
   button{font-family:inherit;}
+
+  [id]{scroll-margin-top:var(--nav-clear);}
 
   a:focus-visible,
   button:focus-visible,
   [tabindex]:focus-visible{
-    outline:2.5px solid var(--blue);
+    outline:2px solid var(--accent-bright);
     outline-offset:3px;
     border-radius:4px;
   }
@@ -88,11 +92,11 @@
     position:absolute;
     left:-9999px;
     top:0;
-    background:var(--blue);
+    background:var(--accent-bright);
     color:var(--white);
     padding:12px 20px;
-    z-index:1000;
-    border-radius:0 0 8px 0;
+    border-radius:0 0 12px 0;
+    z-index:1200;
   }
   .skip-link:focus{left:0;}
 
@@ -104,23 +108,50 @@
   @media (min-width:640px){ .container{padding:0 40px;} }
   @media (min-width:1100px){ .container{padding:0 56px;} }
 
-  .eyebrow{
-    font-family:'Inter',sans-serif;
-    font-weight:600;
-    font-size:12.5px;
-    letter-spacing:0.14em;
+  /* ---------- Type registers ---------- */
+  .micro-label{
+    font-size:11px;
+    font-weight:500;
     text-transform:uppercase;
-    color:var(--blue);
+    letter-spacing:0.16em;
+    color:var(--muted);
+    display:inline-block;
+  }
+  .on-light .micro-label{color:var(--muted-on-light);}
+
+  .display{
+    font-size:clamp(2.5rem, 5vw, 4.5rem);
+    font-weight:700;
+    line-height:1.05;
+    letter-spacing:-0.03em;
+    margin:0;
+  }
+
+  .on-light{color:var(--ink);}
+  .on-light h1,.on-light h2,.on-light h3{color:var(--ink);}
+  .on-light p{color:var(--muted-on-light);}
+
+  .dot{
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--accent-bright);
+    display:inline-block;
+    flex-shrink:0;
+  }
+
+  .chip{
     display:inline-flex;
     align-items:center;
-    gap:10px;
-  }
-  .eyebrow::before{
-    content:"";
-    width:20px;
-    height:1.5px;
-    background:var(--blue);
-    display:inline-block;
+    padding:6px 14px;
+    border-radius:var(--radius-pill);
+    background:rgba(255,255,255,0.06);
+    border:1px solid var(--line);
+    font-size:11px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    color:var(--muted);
+    width:fit-content;
   }
 
   /* ---------- Buttons ---------- */
@@ -129,181 +160,151 @@
     align-items:center;
     justify-content:center;
     gap:8px;
-    min-height:48px;
-    padding:0 26px;
-    border-radius:999px;
-    font-weight:600;
-    font-size:15px;
-    letter-spacing:-0.01em;
-    border:1.5px solid transparent;
+    padding:16px 32px;
+    font-size:12.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    border-radius:var(--radius-pill);
+    border:1px solid transparent;
     cursor:pointer;
-    transition:transform var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
     white-space:nowrap;
   }
-  .btn-primary{
-    background:var(--blue);
-    color:var(--white);
-    box-shadow:0 8px 20px -8px rgba(2,51,234,0.55);
-  }
-  .btn-primary:hover{background:var(--blue-deep);transform:translateY(-2px);box-shadow:0 12px 26px -8px rgba(2,51,234,0.6);}
-  .btn-ghost{
-    background:transparent;
-    color:var(--ink);
-    border-color:var(--line-strong);
-  }
-  .btn-ghost:hover{border-color:var(--blue);color:var(--blue);transform:translateY(-2px);}
-  .btn-ghost-on-blue{
-    background:transparent;
-    color:#fff;
-    border-color:rgba(255,255,255,0.55);
-  }
-  .btn-ghost-on-blue:hover{background:rgba(255,255,255,0.12);border-color:#fff;transform:translateY(-2px);}
-  .btn-on-blue{
-    background:var(--white);
-    color:var(--blue-deep);
-  }
-  .btn-on-blue:hover{background:#EAF0FF;transform:translateY(-2px);}
-  /* Gold fill — the single loudest CTA on the page. Hover is
-     deliberately NOT a background darken (darkening this gold enough
-     to look "pressed" drops ink-on-gold text below 4.5:1); instead the
-     button lifts, its shadow blooms, and the arrow shifts right. */
-  .btn-gold{
-    position:relative;
-    overflow:hidden;
-    background:var(--gold);
-    color:var(--ink);
-    /* The inset ring exists purely so the button's own edge clears the
-       3:1 UI-component contrast floor against a saturated blue backdrop
-       (gold-on-blue alone measures ~2.08:1) — it does not change the
-       gold fill or the label contrast, both already fine. */
-    box-shadow:0 8px 20px -8px rgba(var(--gold-rgb),0.5), inset 0 0 0 1.5px rgba(255,255,255,0.35);
-  }
-  .btn-gold:hover{
-    transform:translateY(-2px);
-    box-shadow:0 16px 32px -10px rgba(var(--gold-rgb),0.6), inset 0 0 0 1.5px rgba(255,255,255,0.35);
-  }
-  /* Glimmer: a soft diagonal highlight that sweeps once, then pauses,
-     on a loop. Pure transform (translateX + a static skew) so it's
-     compositor-only — background-position is never touched. The pill
-     shape clips it via the button's own overflow:hidden. It paints
-     BELOW the label/arrow (see z-index below) so it can never reduce
-     text contrast — the opaque ink-colored label always sits on top
-     of it, regardless of where the sweep is in its cycle. */
-  .btn-gold::before{
-    content:"";
-    position:absolute;
-    top:-40%;
-    left:0;
-    width:42%;
-    height:180%;
-    background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%);
-    transform:translateX(-220%) skewX(-18deg);
-    pointer-events:none;
-    animation:btn-gold-glimmer 4.5s ease-in-out infinite;
-  }
-  @keyframes btn-gold-glimmer{
-    0%{transform:translateX(-220%) skewX(-18deg);}
-    35%{transform:translateX(320%) skewX(-18deg);}
-    100%{transform:translateX(320%) skewX(-18deg);}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .btn-gold::before{animation:none;display:none;}
-  }
-  .btn-label,
-  .btn-arrow{
-    position:relative;
-    z-index:1;
-  }
-  .btn-arrow{
-    width:18px;height:18px;
-    flex-shrink:0;
-    transition:transform var(--dur) var(--ease);
-  }
-  .btn-gold:hover .btn-arrow{transform:translateX(4px);}
-  @media (prefers-reduced-motion:reduce){
-    .btn-gold:hover .btn-arrow{transform:none;}
-  }
+  .btn-primary{background:var(--accent-bright);color:#fff;}
+  .btn-primary:hover{background:#5C81EF;transform:translateY(-2px);}
+  /* True brand blue (#1E40AF), not the brightened --accent-bright — for
+     buttons sitting on the new light/photo contexts (hero, light cards)
+     rather than flat --ink, where the plain brand blue already reads fine. */
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-accent:hover{background:var(--accent-hover);transform:translateY(-2px);}
+  .btn-outline{background:transparent;color:#fff;border-color:var(--line);}
+  .btn-outline:hover{background:rgba(255,255,255,0.06);border-color:var(--line-hover);}
+  .btn-sm{padding:12px 22px;font-size:11px;}
   .btn-block{width:100%;}
+  @media (prefers-reduced-motion:reduce){
+    .btn{transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);}
+    .btn:hover{transform:none;}
+  }
 
-  /* ---------- Nav ---------- */
+  /* ---------- Header: sticky light bar (Cloth Barn pattern) ----------
+     #navWrap/#nav/#navToggle/#navMobile keep their existing ids — only
+     their layout changed — so the hamburger and scrollspy JS need no
+     edits at all.
+
+     The scroll-shrink used to animate .nav's height (92px->68px) and
+     the logo/brand-name's own height/font-size directly. All four are
+     layout-affecting properties, so every scroll-tick that crossed the
+     threshold forced a full reflow of the header (and, since height
+     changed, everything below it) on top of the paint/composite work —
+     that reflow-on-every-frame is what read as jitter/flicker,
+     especially with the scroll position hovering right at the single
+     old threshold. .nav's height is now a fixed constant (never
+     transitions), and the "shrink" look comes from scaling .brand via
+     transform — composite-only, no layout impact — so .nav-actions and
+     everything else never has to reflow on scroll. */
+  .nav-wrap{
+    position:sticky;
+    top:0;
+    z-index:600;
+    background:rgba(250,250,250,0.92);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line-on-light);
+    transition:box-shadow var(--dur) var(--ease);
+    will-change:transform;
+    backface-visibility:hidden;
+  }
+  .nav-wrap.is-scrolled{ box-shadow:0 4px 24px rgba(10,10,10,0.08); }
+
   .nav{
-    position:fixed;
-    top:0;left:0;right:0;
-    height:var(--nav-h);
-    display:flex;
-    align-items:center;
-    z-index:500;
-    /* 0.72 (was) composites to a visible periwinkle tint over the
-       saturated blue hero at the top of the page — raised to 0.85 so
-       the unscrolled header still reads as white, not blue-tinted. */
-    background:rgba(255,255,255,0.85);
-    backdrop-filter:blur(14px) saturate(140%);
-    -webkit-backdrop-filter:blur(14px) saturate(140%);
-    border-bottom:1px solid rgba(11,13,20,0.08);
-    transition:box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease);
-  }
-  .nav.is-scrolled{
-    box-shadow:0 8px 24px -12px rgba(11,13,20,0.16);
-    border-bottom-color:transparent;
-    background:rgba(255,255,255,0.92);
-  }
-  .nav-inner{
-    width:100%;
     max-width:var(--container);
     margin:0 auto;
     padding:0 24px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:20px;
+    gap:24px;
+    height:92px;
   }
-  @media (min-width:640px){ .nav-inner{padding:0 40px;} }
-  @media (min-width:1100px){ .nav-inner{padding:0 56px;} }
+  @media (min-width:640px){ .nav{padding:0 40px;} }
+  @media (min-width:1100px){ .nav{padding:0 56px;} }
 
-  .brand{display:flex;align-items:center;flex-shrink:0;}
-  .brand img{height:27px;width:auto;}
+  .brand{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+    min-width:0;
+    flex-shrink:0;
+    transform-origin:left center;
+    transition:transform var(--dur) var(--ease);
+  }
+  .nav-wrap.is-scrolled .brand{ transform:scale(0.85); }
+  @media (prefers-reduced-motion:reduce){ .brand{transition:none;} }
+  .brand img{
+    height:36px;
+    width:auto;
+  }
+  /* herologo.png is icon-only (no baked-in wordmark, unlike the old
+     sitesync-logo.png) — this is the text that used to come from the
+     image itself, added back so the brand name doesn't disappear. */
+  .brand-row{display:flex;align-items:center;gap:8px;}
+  .brand-name{
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+  }
+  .brand-tagline{
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--muted-on-light);
+    white-space:nowrap;
+  }
 
   .nav-links{
     display:none;
     align-items:center;
-    gap:34px;
+    justify-content:center;
+    gap:36px;
     list-style:none;
     margin:0;padding:0;
   }
   .nav-links a{
-    font-size:14.5px;
-    font-weight:500;
-    color:var(--ink-soft);
     position:relative;
-    padding:6px 0;
-    transition:color var(--dur) var(--ease);
+    padding-block:0.25em;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink);
     white-space:nowrap;
   }
   .nav-links a::after{
     content:"";
     position:absolute;
-    left:0;bottom:0;
-    width:100%;
-    height:1.5px;
-    background:var(--blue);
-    transform:scaleX(0);
-    transform-origin:right;
-    transition:transform var(--dur) var(--ease);
+    left:0;right:100%;
+    bottom:0;
+    height:2px;
+    background:var(--accent);
+    transition:right var(--dur) var(--ease);
   }
-  .nav-links a:hover{color:var(--ink);}
-  .nav-links a:hover::after{transform:scaleX(1);transform-origin:left;}
-  .nav-links a.is-active{color:var(--ink);}
-  .nav-links a.is-active::after{transform:scaleX(1);transform-origin:left;}
+  .nav-links a:hover::after,
+  .nav-links a.is-active::after{ right:0; }
 
-  .nav-actions{display:flex;align-items:center;gap:14px;flex-shrink:0;}
-  .nav-phone{
-    display:none;
-    font-size:14.5px;
-    font-weight:600;
-    color:var(--ink-soft);
+  .nav-actions{display:flex;align-items:center;gap:18px;flex-shrink:0;}
+  .header-phone{
+    display:flex;
+    align-items:center;
+    gap:0.5em;
+    font-weight:700;
+    font-size:13px;
     white-space:nowrap;
+    color:var(--accent-hover);
   }
-  .nav-cta{display:none;}
+  .header-phone svg{flex-shrink:0;}
+  @media (max-width:899px){ .header-phone span{display:none;} }
 
   .nav-toggle{
     display:flex;
@@ -311,552 +312,518 @@
     justify-content:center;
     width:44px;height:44px;
     background:none;
-    border:1.5px solid var(--line-strong);
-    border-radius:999px;
+    border:1px solid var(--line-on-light);
+    border-radius:50%;
     cursor:pointer;
     color:var(--ink);
     flex-shrink:0;
   }
-  .nav-toggle-bars{position:relative;width:18px;height:13px;display:block;}
+  .nav-toggle-bars{position:relative;width:16px;height:11px;display:block;}
   .nav-toggle .bar{
-    position:absolute;left:0;width:100%;height:1.6px;
-    background:currentColor;border-radius:2px;
+    position:absolute;left:0;width:100%;height:1px;
+    background:currentColor;
     transition:transform 280ms var(--ease), opacity 200ms var(--ease), top 280ms var(--ease);
   }
   .nav-toggle .bar-1{top:0;}
-  .nav-toggle .bar-2{top:50%;margin-top:-0.8px;}
-  .nav-toggle .bar-3{top:100%;margin-top:-1.6px;}
-  .nav-toggle[aria-expanded="true"] .bar-1{top:50%;margin-top:-0.8px;transform:rotate(45deg);}
+  .nav-toggle .bar-2{top:50%;margin-top:-0.5px;}
+  .nav-toggle .bar-3{top:100%;margin-top:-1px;}
+  .nav-toggle[aria-expanded="true"] .bar-1{top:50%;margin-top:-0.5px;transform:rotate(45deg);}
   .nav-toggle[aria-expanded="true"] .bar-2{opacity:0;}
-  .nav-toggle[aria-expanded="true"] .bar-3{top:50%;margin-top:-0.8px;transform:rotate(-45deg);}
+  .nav-toggle[aria-expanded="true"] .bar-3{top:50%;margin-top:-0.5px;transform:rotate(-45deg);}
 
   .nav-mobile{
     position:fixed;
-    top:var(--nav-h);left:0;right:0;
-    bottom:0;
+    top:92px;left:0;right:0;
     background:var(--white);
-    z-index:490;
+    border-bottom:1px solid var(--line-on-light);
+    box-shadow:0 4px 24px rgba(10,10,10,0.08);
+    z-index:590;
     display:flex;
     flex-direction:column;
-    padding:28px 24px 40px;
-    gap:4px;
-    transform:translateY(-16px);
+    padding:8px 24px 20px;
+    transform:translateY(-8px);
     opacity:0;
     pointer-events:none;
-    transition:opacity 260ms var(--ease), transform 260ms var(--ease);
-    overflow-y:auto;
+    transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
   .nav-mobile.is-open{opacity:1;transform:translateY(0);pointer-events:auto;}
-  .nav-mobile a,
-  .nav-mobile .btn{
+  .nav-mobile a{
     opacity:0;
     transform:translateX(-18px);
     transition:opacity 320ms var(--ease), transform 320ms var(--ease);
   }
-  .nav-mobile.is-open a,
-  .nav-mobile.is-open .btn{
+  .nav-mobile.is-open a{
     opacity:1;
     transform:translateX(0);
   }
   .nav-mobile a{
-    font-size:22px;
-    font-family:'Space Grotesk',sans-serif;
-    font-weight:600;
-    padding:16px 4px;
-    border-bottom:1px solid var(--line);
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    padding-block:14px;
+    border-bottom:1px solid var(--line-on-light);
     min-height:44px;
     display:flex;
     align-items:center;
+    color:var(--ink);
   }
-  .nav-mobile .btn{margin-top:20px;}
+  .nav-mobile a:last-child{border-bottom:none;}
   body.menu-open{overflow:hidden;}
 
   @media (min-width:900px){
     .nav-links{display:flex;}
-    .nav-phone{display:inline-flex;}
-    .nav-cta{display:inline-flex;}
     .nav-toggle{display:none;}
     .nav-mobile{display:none;}
   }
 
-  /* ---------- Social strip ----------
-     A separate fixed strip pinned at top:var(--nav-h), just below the
-     header — never touches .nav's own box model, height, or its
-     is-scrolled state. z-index:480 keeps it under both .nav (500) and
-     .nav-mobile (490) so the mobile menu still fully covers it when
-     open. The strip itself ignores pointer events so it can't block
-     clicks on hero content beside it; only the links opt back in. */
-  .social-strip{
-    position:fixed;
-    top:var(--nav-h);
-    left:0;right:0;
-    z-index:480;
+  /* ---------- Reveal-on-scroll ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(var(--reveal-y, 40px));
+    transition:opacity 900ms var(--ease), transform 900ms var(--ease);
+  }
+  .reveal.is-visible{opacity:1;transform:translateY(0);}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{transition:opacity 900ms var(--ease) !important;transform:none !important;}
+  }
+
+  .line-mask{display:block;overflow:hidden;}
+  .line-mask-inner{
+    display:block;
+    transform:translateY(108%);
+    transition:transform 900ms var(--ease);
+  }
+  .reveal.is-visible .line-mask-inner{transform:translateY(0);}
+  @media (prefers-reduced-motion:reduce){
+    .line-mask-inner{transition:none !important;transform:none !important;}
+  }
+
+  /* ---------- Sections ---------- */
+  .section{padding:120px 0;}
+  @media (max-width:640px){ .section{padding:80px 0;} }
+
+  .section-head{max-width:640px;margin-bottom:56px;}
+  .section-head .display{font-size:clamp(2rem, 4.4vw, 3rem);margin-top:16px;}
+  .section-head p{margin-top:18px;font-size:16px;}
+
+  /* Dark surface card — the one card component shared by the
+     capability cards and the selected-work items, so hover language
+     (border brighten + lift + glow) only has to be defined once. */
+  .dark-card{
+    position:relative;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-card);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
+    padding:20px;
+    transition:border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .dark-card:hover{border-color:var(--line-hover);transform:translateY(-6px);}
+  .dark-card-glow{
+    position:absolute;
+    inset:-1px;
+    border-radius:var(--radius-card);
+    background:radial-gradient(circle at 50% 0%, rgba(72,112,229,0.28), transparent 62%);
+    opacity:0;
+    transition:opacity var(--dur) var(--ease);
+    z-index:-1;
     pointer-events:none;
   }
-  .social-strip-inner{
-    max-width:var(--container);
-    margin:0 auto;
-    padding:8px 24px;
-    display:flex;
-    justify-content:flex-end;
-    gap:14px;
+  .dark-card:hover .dark-card-glow{opacity:1;}
+  @media (prefers-reduced-motion:reduce){
+    .dark-card{transition:border-color var(--dur) var(--ease);}
+    .dark-card:hover{transform:none;}
   }
-  @media (min-width:640px){ .social-strip-inner{padding:8px 40px;} }
-  @media (min-width:1100px){ .social-strip-inner{padding:8px 56px;} }
-  .social-strip a{
-    pointer-events:auto;
-    display:flex;
-    color:var(--blue-soft);
-    opacity:0.75;
-    transition:opacity 200ms var(--ease);
-  }
-  .social-strip a:hover,
-  .social-strip a:focus-visible{opacity:1;}
-  .social-strip svg{width:18px;height:18px;display:block;}
 
-  /* ---------- Hero ---------- */
-  .hero-wrap{
+  /* ---------- Hero (Cloth Barn full-bleed video-hero pattern) ----------
+     .hero-media/.hero-scrim are absolutely-positioned layers behind
+     .hero-content, exactly like Cloth Barn's .hero__media/.hero__scrim —
+     just a <video> in place of Cloth Barn's plain background-image div.
+     Load-in stagger (heroFadeUp) is Cloth Barn's own animation, ported
+     as-is rather than reusing the old line-mask reveal. */
+  /* height:100svh (not min-height) with the content column centered both
+     axes via flex on .hero. overflow-x stays clipped (needed to contain
+     the video edges); overflow-y is left visible so that if content ever
+     still exceeds the box on an extreme viewport, it pushes the page
+     rather than getting clipped invisible. */
+  .hero{
     position:relative;
-    width:100%;
-    background-color:var(--blue-logo);
-    padding:calc(var(--nav-h) + 40px) 24px 56px;
-    overflow:hidden;
+    height:100svh;
+    min-height:100svh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    isolation:isolate;
+    overflow-x:hidden;
+    overflow-y:visible;
   }
-  @media (min-width:640px){ .hero-wrap{padding:calc(var(--nav-h) + 56px) 40px 72px;} }
-  @media (min-width:1100px){ .hero-wrap{padding:calc(var(--nav-h) + 64px) 56px 88px;} }
+  @supports not (height:100svh){
+    .hero{height:100vh;min-height:100vh;}
+  }
+
+  .hero-media{position:absolute;inset:0;z-index:-2;}
+  .hero-media video{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    object-position:center 35%;
+  }
+  /* Flat, even wash across the whole hero — content is centered now, not
+     left-weighted, so contrast needs to hold everywhere behind it rather
+     than just on one side. */
+  .hero-scrim{
+    position:absolute;inset:0;z-index:-1;
+    background:rgba(0,0,0,0.55);
+  }
 
   .hero-content{
     position:relative;
     z-index:1;
-    max-width:var(--container);
+    max-width:900px;
+    width:100%;
     margin:0 auto;
+    padding:24px;
     display:flex;
     flex-direction:column;
-    gap:40px;
+    align-items:center;
+    text-align:center;
   }
-  @media (min-width:1000px){
-    .hero-content{
-      flex-direction:row;
-      align-items:center;
-      gap:64px;
-    }
-    .hero-copy{flex:1 1 50%;}
-    .hero-media{flex:1 1 50%;}
+  @media (min-width:640px){ .hero-content{padding-left:40px;padding-right:40px;} }
+  @media (min-width:1100px){ .hero-content{padding-left:56px;padding-right:56px;} }
+
+  /* Max-height guard: on short viewports the 100svh box has less room
+     than the content needs at its normal sizes, so step the crest/
+     headline/sub down in two tiers rather than letting anything clip. */
+  @media (max-height:820px){
+    .hero-headline{font-size:clamp(1.75rem, 4vw, 3rem);margin-bottom:14px;}
+    .hero-sub{font-size:16px;margin-bottom:20px;}
+    .hero-badge{margin-bottom:14px;}
+    .hero-crest{width:64px;margin-bottom:14px;}
+  }
+  @media (max-height:640px){
+    .hero-headline{font-size:clamp(1.5rem, 3.5vw, 2.25rem);}
+    .hero-sub{font-size:14px;margin-bottom:16px;}
+    .hero-crest{width:48px;margin-bottom:10px;}
   }
 
-  /* ---------- Hero load-in sequence ----------
-     Pure CSS keyframes + animation-delay (via --d, set inline per
-     element) — no JS involved in showing anything. fill-mode is
-     `backwards`, not `both`/`forwards`: `backwards` only borrows the
-     "from" state during the animation-delay (so nothing flashes fully
-     visible before its turn), then lets go completely once the
-     animation ends. A `forwards`-filling animation would instead keep
-     owning `transform`/`opacity` forever — which matters here because
-     the icon's cursor-tilt (item 4) sets `transform` via JS on a
-     nested element afterwards; with `backwards` there is no ownership
-     conflict to even worry about, and if animations are unsupported
-     at all, this whole block simply never applies and every element
-     renders in its normal, fully visible state immediately. */
-  @media (prefers-reduced-motion:no-preference){
-    @keyframes hero-rise-in{
-      from{ opacity:0; transform:translateY(16px); }
-      to{ opacity:1; transform:translateY(0); }
-    }
-    @keyframes hero-icon-rise-in{
-      from{ opacity:0; transform:translateY(28px); }
-      to{ opacity:1; transform:translateY(0); }
-    }
-    @keyframes hero-line-reveal{
-      from{ transform:translateY(108%); }
-      to{ transform:translateY(0); }
-    }
-    @keyframes hero-word-in{
-      from{ opacity:0; transform:translateY(14px); }
-      to{ opacity:1; transform:translateY(0); }
-    }
-    .hero-anim{
-      animation:hero-rise-in 750ms var(--ease) var(--d,0ms) backwards;
-    }
-    .hero-icon-entrance{
-      animation:hero-icon-rise-in 950ms var(--ease) var(--d,0ms) backwards;
-    }
-    .hero-line{
-      animation:hero-line-reveal 750ms var(--ease) var(--d,0ms) backwards;
-    }
-    /* Each word carries its own --d (520ms base, +30ms/word — same
-       "absolute delay from load" convention as every other --d in
-       this sequence), so the whole paragraph cascades in as 17 short
-       hops rather than one fade. Last word starts at 1000ms and
-       settles by 1420ms — under a second from the first word's own
-       520ms start. Living inside this same no-preference block means
-       reduced motion needs no extra override: outside it, .word never
-       gets an animation or an opacity:0 state, so it just renders as
-       normal, fully visible, static text. */
-    .hero-sub .word{
-      animation:hero-word-in 420ms var(--ease) var(--d,0ms) backwards;
-    }
+  @keyframes heroFadeUp{ from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
+  .hero-crest,.hero-badge,.hero-headline,.hero-sub,.hero-actions,.hero-reassurance{
+    animation:heroFadeUp 700ms var(--ease) both;
+  }
+  .hero-crest{animation-delay:0ms;}
+  .hero-badge{animation-delay:120ms;}
+  .hero-headline{animation-delay:240ms;}
+  .hero-sub{animation-delay:360ms;}
+  .hero-actions{animation-delay:480ms;}
+  .hero-reassurance{animation-delay:600ms;}
+  @media (prefers-reduced-motion:reduce){
+    .hero-crest,.hero-badge,.hero-headline,.hero-sub,.hero-actions,.hero-reassurance{animation:none;opacity:1;transform:none;}
   }
 
-  /* The mask itself: overflow:hidden clips the line to its own
-     natural (untransformed) footprint, so translateY(108%) on the
-     inner span moves it below that box and out of view — a real
-     clipped reveal, not a fade. Works the same whether .hero-line
-     wraps one line or several. */
-  .hero-line-mask{
-    display:block;
-    overflow:hidden;
-  }
-  .hero-line{
-    display:block;
-  }
-
-  .hero-logo{
-    width:min(46vw, 200px);
-    margin:0 0 24px;
-    /* Was a blue-tinted shadow tuned for the old light background —
-       on the saturated blue hero that color is nearly invisible
-       against itself, so this is now a neutral dark shadow instead. */
-    filter:drop-shadow(0 8px 20px rgba(1,8,40,0.35));
-  }
-  .hero-logo img{width:100%;height:auto;display:block;}
-
-  .hero-copy{
-    color:#fff;
-  }
-  .hero-eyebrow{
-    font-size:12.5px;
-    font-weight:600;
-    letter-spacing:0.16em;
+  .hero-badge{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.14em;
     text-transform:uppercase;
     color:#fff;
-    margin-bottom:18px;
-    display:block;
+    background:var(--accent);
+    padding:8px 16px;
+    border-radius:4px;
+    margin-bottom:20px;
   }
+  /* Single centered statement, allowed to wrap naturally over two lines
+     within .hero-content's 900px column — no forced <br>, no nowrap. */
   .hero-headline{
-    font-size:clamp(2.2rem, 6vw, 4.6rem);
+    font-size:clamp(2rem, 4.5vw, 4rem);
+    font-weight:700;
+    line-height:1.15;
+    padding-bottom:0.1em;
+    letter-spacing:-0.03em;
     color:#fff;
-    max-width:16ch;
+    margin-bottom:20px;
   }
   .hero-sub{
+    font-size:20px;
+    line-height:1.5;
+    color:rgba(255,255,255,0.92);
+    max-width:620px;
+    margin:0 auto 32px;
+  }
+  .hero-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;}
+  .hero-actions .btn{
+    padding:18px 40px;
+    font-size:15px;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow 300ms var(--ease);
+  }
+  .hero-actions .btn-accent{
+    box-shadow:0 0 32px rgba(30,64,175,0.55), 0 0 0 8px rgba(30,64,175,0.15);
+  }
+  .hero-actions .btn-accent:hover{
+    box-shadow:0 0 48px rgba(30,64,175,0.75), 0 0 0 10px rgba(30,64,175,0.22);
+  }
+  .hero-actions .btn-outline{
+    box-shadow:0 0 24px rgba(255,255,255,0.18);
+  }
+  .hero-actions .btn-outline:hover{
+    box-shadow:0 0 32px rgba(255,255,255,0.32);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .hero-actions .btn{transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow 300ms var(--ease);}
+  }
+
+  .hero-reassurance{
     margin-top:20px;
-    font-size:clamp(1rem, 1.7vw, 1.25rem);
-    color:#DCE4FF;
-    max-width:44ch;
-    line-height:1.55;
-    font-weight:400;
-  }
-  /* display:inline-block unconditionally (not just under motion) so
-     each word still wraps exactly like plain text at any width —
-     transform just doesn't apply to plain inline elements, which is
-     the only reason these need it at all. */
-  .hero-sub .word{
-    display:inline-block;
-  }
-  .hero-ctas{
-    display:flex;
-    flex-wrap:wrap;
-    gap:14px;
-    margin-top:34px;
-  }
-  .hero-media{
-    width:100%;
+    max-width:780px;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:32px 16px;
   }
-  @media (min-width:640px){ .hero-media{padding:40px 24px;} }
-  @media (min-width:1000px){ .hero-media{padding:0 24px;} }
-  /* No container this time — the circle read as a sticker and wasn't
-     part of the brand system. The icon is now a white knockout of the
-     actual mark (generated from sitesync-icon.png, alpha preserved),
-     sitting directly on the blue, scaled up now that it isn't
-     constrained by a plate, with a soft wide glow behind it for depth.
+  .hero-reassurance-item{
+    font-size:13px;
+    color:rgba(255,255,255,0.75);
+    text-align:center;
+  }
+  .hero-reassurance-divider{
+    width:1px;
+    height:14px;
+    background:rgba(255,255,255,0.25);
+    margin:0 16px;
+    flex-shrink:0;
+  }
+  @media (max-width:767px){
+    .hero-reassurance{ flex-direction:column; row-gap:8px; }
+    .hero-reassurance-divider{ display:none; }
+  }
 
-     Three nested layers, each owning exactly one transform so none of
-     them can fight each other or the JS tilt:
-       .hero-icon-entrance  — load-in keyframe (opacity + translateY)
-       .hero-icon-float     — ambient bob, CSS keyframe, infinite
-       .hero-icon-stage     — cursor tilt, JS-driven inline transform */
-  .hero-icon-entrance{
-    perspective:1000px;
+  /* Moved above the badge in the centered column — sized down from the
+     old ~200px side-floated mark so it reads as a small brand crest,
+     not a competing focal point. */
+  .hero-crest{
+    width:90px;
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
-  .hero-icon-float{
-    width:min(60vw, 320px);
-    animation:hero-icon-float-bob 39s ease-in-out infinite;
-    will-change:transform;
-  }
-  @media (min-width:1000px){
-    .hero-icon-float{width:min(32vw, 440px);}
-  }
-  @keyframes hero-icon-float-bob{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-13px);}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .hero-icon-float{animation:none;}
-  }
-  .hero-icon-stage{
-    position:relative;
-    width:100%;
-    will-change:transform;
-  }
-  .hero-icon-glow{
-    position:absolute;
-    inset:-32%;
-    border-radius:50%;
-    background:radial-gradient(circle, rgba(255,255,255,0.16) 0%, transparent 66%);
-    filter:blur(46px);
-    z-index:-1;
-    pointer-events:none;
-    animation:hero-icon-glow-pulse 5s ease-in-out infinite;
-    will-change:opacity, transform;
-  }
-  /* 5s pulse is deliberately off the mesh's 46s/58s drift cycles (line ~602)
-     so the two never read as synced. */
-  @keyframes hero-icon-glow-pulse{
-    0%,100%{opacity:0.3; transform:scale(0.9);}
-    50%{opacity:0.9; transform:scale(1.15);}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .hero-icon-glow{animation:none;}
-  }
-  .hero-icon{
-    display:block;
+  .hero-crest img{
     width:100%;
     height:auto;
+    filter:drop-shadow(0 8px 24px rgba(0,0,0,0.45));
   }
+  @media (max-width:480px){ .hero-crest{width:64px;margin-bottom:14px;} }
 
-  /* ---------- Hero grain ----------
-     Fine static noise, baked into a small tiled SVG (feTurbulence runs
-     once at decode time inside the image itself) rather than a live
-     CSS `filter` on the hero — the governing rule against animating
-     `filter` on large elements is about continuous recomputation, and
-     a live filter on the whole hero would be exactly that. This is a
-     static background-image; only its own opacity is set, and it never
-     changes. z-index:0 (behind .hero-content, z-index:1) and
-     pointer-events:none so it can't sit above text or intercept
-     clicks. At 4.5% opacity the luminance shift it adds to the blue
-     backdrop is negligible — well under what would move any of the
-     hero's text pairs (all 6.3:1+) across a WCAG threshold. */
-  .hero-grain{
-    position:absolute;
-    inset:0;
-    z-index:0;
-    background-image:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxODAnIGhlaWdodD0nMTgwJz4KICA8ZmlsdGVyIGlkPSduJz4KICAgIDxmZVR1cmJ1bGVuY2UgdHlwZT0nZnJhY3RhbE5vaXNlJyBiYXNlRnJlcXVlbmN5PScwLjg1JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJyByZXN1bHQ9J25vaXNlJy8+CiAgICA8ZmVDb2xvck1hdHJpeCBpbj0nbm9pc2UnIHR5cGU9J21hdHJpeCcgdmFsdWVzPScwIDAgMCAwIDEgIDAgMCAwIDAgMSAgMCAwIDAgMCAxICAwIDAgMCAwLjYgMCcvPgogIDwvZmlsdGVyPgogIDxyZWN0IHdpZHRoPScxMDAlJyBoZWlnaHQ9JzEwMCUnIGZpbHRlcj0ndXJsKCNuKScvPgo8L3N2Zz4K");
-    background-repeat:repeat;
-    opacity:0.045;
-    pointer-events:none;
-  }
+  /* ---------- Capability cards ----------
+     Light Cloth-Barn-palette card: white surface, hairline border, soft
+     card shadow — the light counterpart to .dark-card (used by Selected
+     Work, which stays dark). No glow-on-hover here; Cloth Barn's own
+     .service-card hover is just a lift + deeper shadow, so that's all
+     this gets too. */
+  .section--light-band{background:var(--light);}
 
-  /* ---------- Hero gradient mesh ----------
-     Decorative only: pointer-events:none, z-index:0 (behind
-     .hero-content which is z-index:1), never intercepts clicks.
-     Only transform/opacity are animated so the browser can run it
-     on the compositor without triggering layout or paint. */
-  .hero-mesh{
-    position:absolute;
-    inset:0;
-    z-index:0;
-    overflow:hidden;
-    pointer-events:none;
-  }
-  .hero-mesh span{
-    position:absolute;
-    border-radius:50%;
-    filter:blur(70px);
-    opacity:0.55;
-    will-change:transform;
-  }
-  .hero-mesh span:nth-child(1){
-    width:46vw;height:46vw;max-width:620px;max-height:620px;
-    top:-14%;left:-10%;
-    background:radial-gradient(circle, var(--mesh-1) 0%, transparent 72%);
-    animation:mesh-drift-a 46s ease-in-out infinite;
-  }
-  .hero-mesh span:nth-child(2){
-    width:38vw;height:38vw;max-width:520px;max-height:520px;
-    top:8%;right:-12%;
-    background:radial-gradient(circle, var(--mesh-2) 0%, transparent 72%);
-    animation:mesh-drift-b 58s ease-in-out infinite;
-  }
-  .hero-mesh span:nth-child(3){
-    width:34vw;height:34vw;max-width:460px;max-height:460px;
-    bottom:-18%;left:24%;
-    background:radial-gradient(circle, var(--mesh-3) 0%, transparent 72%);
-    animation:mesh-drift-c 52s ease-in-out infinite;
-  }
-  @keyframes mesh-drift-a{
-    0%,100%{transform:translate(0,0) scale(1);}
-    50%{transform:translate(6%,8%) scale(1.08);}
-  }
-  @keyframes mesh-drift-b{
-    0%,100%{transform:translate(0,0) scale(1);}
-    50%{transform:translate(-8%,6%) scale(1.05);}
-  }
-  @keyframes mesh-drift-c{
-    0%,100%{transform:translate(0,0) scale(1);opacity:0.55;}
-    50%{transform:translate(5%,-6%) scale(1.1);opacity:0.4;}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .hero-mesh span{animation:none !important;}
-  }
-
-  /* ---------- Sections ---------- */
-  .section{padding:104px 0;}
-  .section-alt{background:var(--mist);}
-  @media (max-width:640px){ .section{padding:72px 0;} }
-
-  .section-head{
-    max-width:640px;
-    margin-bottom:56px;
-  }
-  .section-head h2{
-    font-size:clamp(1.9rem, 4vw, 2.7rem);
-    margin-top:16px;
-  }
-  .section-head p{
-    margin-top:18px;
-    font-size:17px;
-    line-height:1.6;
-    color:var(--ink-soft);
-  }
-
-  /* ---------- Scroll-triggered line-mask reveal ----------
-     Reuses the existing .reveal/.is-visible mechanism (same
-     fire-once IntersectionObserver, same no-IO/reduced-motion
-     fallback that adds .is-visible immediately) rather than a second
-     observer — .line-mask-inner is always a descendant of whatever
-     element carries .reveal, whether that's a wrapping .section-head
-     or (for the closing CTA) the h2 itself, so one selector covers
-     both. If the observer never fires, the fallback already covers
-     it: nothing here depends on a script running to become visible. */
-  .line-mask{
-    display:block;
-    overflow:hidden;
-  }
-  .line-mask-inner{
-    display:block;
-    transform:translateY(108%);
-    transition:transform 800ms var(--ease);
-  }
-  .reveal.is-visible .line-mask-inner{
-    transform:translateY(0);
-  }
-  @media (prefers-reduced-motion:reduce){
-    .line-mask-inner{transition:none !important; transform:none !important;}
-  }
-
-  /* reveal */
-  .reveal{
-    opacity:0;
-    transform:translateY(var(--reveal-y, 22px));
-    transition:opacity 620ms var(--ease), transform 620ms var(--ease);
-  }
-  .reveal.is-visible{opacity:1;transform:translateY(0);}
-  @media (prefers-reduced-motion:reduce){
-    .reveal{transition:none !important;opacity:1 !important;transform:none !important;}
-  }
-
-  /* ---------- What we do ---------- */
-  .cards{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:20px;
-  }
-  @media (min-width:760px){
-    .cards{grid-template-columns:repeat(3,1fr);gap:24px;}
-  }
-  .card{
+  .light-card{
+    position:relative;
     background:var(--white);
-    border:1px solid var(--line);
-    border-radius:var(--radius-l);
-    padding:36px 30px;
-    transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+    border:1px solid var(--line-on-light);
+    border-radius:var(--radius-card);
+    box-shadow:0 1px 2px rgba(10,10,10,0.04), 0 8px 24px rgba(10,10,10,0.06);
+    padding:20px;
+    transition:border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
   }
-  .card:hover{
+  .light-card:hover{
+    border-color:var(--line-on-light-hover);
     transform:translateY(-6px);
-    box-shadow:0 22px 40px -22px rgba(11,13,20,0.22);
-    border-color:var(--line-strong);
+    box-shadow:0 2px 4px rgba(10,10,10,0.06), 0 20px 40px rgba(10,10,10,0.1);
   }
-  .card-icon{
-    width:52px;height:52px;
-    border-radius:14px;
-    background:linear-gradient(155deg, var(--blue), var(--blue-deep));
+  @media (prefers-reduced-motion:reduce){
+    .light-card{transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);}
+    .light-card:hover{transform:none;}
+  }
+
+  /* Blue-tinted chip/dot, scoped to light sections only — Selected
+     Work's dark .chip/.dot stay exactly as they were. */
+  .on-light .chip{background:rgba(30,64,175,0.06);border-color:rgba(30,64,175,0.18);color:var(--accent);}
+  .on-light .dot{background:var(--accent);}
+
+  /* ---------- Capability carousel ----------
+     Peek layout: the active card sits centered with roughly half of its
+     neighbors visible on each side. .carousel-wrap carries the single
+     .reveal fade-up — not the individual slides, which sit side-by-side
+     in a flex track and get shifted via translateX(); offscreen slides
+     would then sit far outside the viewport horizontally, so
+     IntersectionObserver would never see them intersect and they'd stay
+     permanently hidden if they carried their own .reveal.
+
+     .carousel itself is the overflow:hidden clip boundary AND the thing
+     centered on the page — sized to exactly card + 2*(gap+peek) so the
+     peek amount lands on the requested numbers (~half a card desktop,
+     12vw mobile) regardless of how wide the surrounding .container is.
+     A literal edge-to-edge (100vw) clip would reveal far more than
+     "roughly half" of each neighbor at typical desktop widths, so this
+     is deliberately narrower than the page while still being far wider
+     than the old single-card box — centered via the left:50%/negative-
+     margin technique so it's correct regardless of .container's own
+     padding or max-width.
+
+     The track's position used to be a CSS calc() reading a --pos custom
+     property. It's now a literal translate3d(Xpx,0,0) written by JS each
+     step (measuring real rendered px via getBoundingClientRect(), so it
+     still works across the vw-based mobile sizing and any breakpoint) —
+     a single hardware-accelerated transform instead of a recalculated
+     calc() expression, with will-change added only for the duration of
+     each transition. */
+  /* .carousel-wrap deliberately carries no width/overflow constraint —
+     .carousel below bleeds wider than .carousel-wrap's own (container-
+     constrained) box via the left:50%/negative-margin trick, and
+     clipping at this level would cut that bleed off on anything
+     narrower than ~1000px wide. */
+  .carousel{
+    position:relative;
+    overflow:hidden;
+    --card-w:460px;
+    --card-gap:24px;
+    --peek-w:230px;
+    --wrapper-w:calc(var(--card-w) + (var(--card-gap) + var(--peek-w)) * 2);
+    width:var(--wrapper-w);
+    left:50%;
+    margin-left:calc(-1 * var(--wrapper-w) / 2);
+  }
+  @media (max-width:640px){
+    .carousel{
+      --card-w:82vw;
+      --card-gap:4vw;
+      --peek-w:12vw;
+    }
+  }
+  .carousel-track{
+    display:flex;
+    gap:var(--card-gap);
+    transition:transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* Every card shares this exact transition (same properties, same
+     600ms/curve as the track above) so the active card and the peeking
+     neighbors move in lockstep instead of drifting out of sync.
+     translateZ(0), combined into the same transform as the peek/active
+     scale rather than kept as a separate `scale` property, plus
+     backface-visibility:hidden, forces each card onto its own GPU layer
+     and stops the subpixel shimmer the dimmed peek cards used to show
+     mid-transition. */
+  .carousel-slide{
+    flex:0 0 var(--card-w);
+    width:var(--card-w);
+    box-sizing:border-box;
+    cursor:pointer;
+    opacity:0.45;
+    transform:translateZ(0) scale(0.94);
+    box-shadow:none;
+    backface-visibility:hidden;
+    transition:transform 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms linear;
+  }
+  .carousel-slide.is-active{
+    opacity:1;
+    transform:translateZ(0) scale(1);
+    box-shadow:0 1px 2px rgba(10,10,10,0.04), 0 8px 24px rgba(10,10,10,0.06);
+    cursor:default;
+  }
+  /* .light-card:hover (border-color/transform/box-shadow, defined above)
+     would otherwise pop a peeking card back to full scale with a deep
+     shadow on mouse-over — override with enough specificity to keep the
+     dimmed/recessed peek look intact under hover too. */
+  .carousel-slide.light-card:not(.is-active):hover{
+    box-shadow:none;
+    transform:translateZ(0) scale(0.94);
+  }
+
+  .carousel-arrow{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--white);
+    border:1px solid var(--line-on-light);
+    box-shadow:0 1px 2px rgba(10,10,10,0.04), 0 8px 24px rgba(10,10,10,0.06);
     display:flex;align-items:center;justify-content:center;
-    margin-bottom:24px;
-    box-shadow:0 10px 20px -8px rgba(2,51,234,0.45);
+    color:var(--ink);
+    cursor:pointer;
+    z-index:2;
+    padding:0;
+    transition:background var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
-  .card-icon svg{width:24px;height:24px;stroke:#fff;}
-  .card h3{font-size:20px;margin-bottom:12px;}
-  .card p{color:var(--ink-soft);font-size:15.5px;line-height:1.65;}
+  .carousel-arrow:hover{
+    background:var(--light);
+    box-shadow:0 2px 4px rgba(10,10,10,0.06), 0 20px 40px rgba(10,10,10,0.1);
+    transform:translateY(-50%) translateY(-2px);
+  }
+  .carousel-arrow svg{ width:20px;height:20px; }
+  /* Anchored to the active card's own edge (inset by gap+peek from the
+     wide clip box), not the box's outer edge, so the arrow always sits
+     right against the active card regardless of how much peek shows. */
+  .carousel-arrow--prev{ left:calc(var(--card-gap) + var(--peek-w) - 22px); }
+  .carousel-arrow--next{ right:calc(var(--card-gap) + var(--peek-w) - 22px); }
 
-  .cards .card:nth-child(1){transition-delay:0ms;}
-  .cards .card:nth-child(2){transition-delay:100ms;}
-  .cards .card:nth-child(3){transition-delay:200ms;}
+  .carousel-dots{ display:flex; justify-content:center; gap:10px; margin-top:24px; }
+  .carousel-dot{
+    width:9px;height:9px;
+    border-radius:50%;
+    background:var(--line-on-light);
+    border:none;
+    padding:0;
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .carousel-dot:hover{ background:var(--line-on-light-hover); }
+  .carousel-dot.is-active{ background:var(--accent); transform:scale(1.25); }
 
-  /* ---------- Work gallery ---------- */
+  @media (prefers-reduced-motion:reduce){
+    .carousel-arrow{transition:background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);}
+    .carousel-arrow:hover{transform:translateY(-50%);}
+    .carousel-dot{transition:background var(--dur) var(--ease);}
+    .carousel-dot.is-active{transform:none;}
+    .carousel-slide{transition:opacity 400ms linear;}
+    .carousel-slide.light-card:not(.is-active):hover{transform:translateZ(0) scale(0.94);}
+  }
+
+  .capability-card-media{
+    position:relative;
+    aspect-ratio:4/3;
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:20px;
+    background:
+      radial-gradient(circle at 28% 22%, rgba(30,64,175,0.12), transparent 60%),
+      var(--light);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .capability-card-media svg{width:32%;height:32%;stroke:var(--accent);stroke-width:1;fill:none;opacity:0.75;}
+
+  .capability-card .chip{margin-bottom:0;}
+  .capability-card-title{
+    margin-top:16px;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .capability-card-title .dot{margin-top:8px;}
+  .capability-card-title h3{font-size:19px;line-height:1.25;letter-spacing:-0.01em;}
+  .capability-card p{margin-top:12px;font-size:14px;}
+
+  /* ---------- Selected work ---------- */
   .gallery{
     display:grid;
     grid-template-columns:1fr;
-    gap:20px;
+    gap:28px;
   }
-  @media (min-width:640px){
-    .gallery{grid-template-columns:repeat(2,1fr);gap:24px;}
-    .gallery-item--wide{grid-column:1 / -1;aspect-ratio:21/9;}
-  }
-  .gallery-item{
-    position:relative;
-    border-radius:var(--radius-l);
-    overflow:hidden;
-    aspect-ratio:4/3;
-    cursor:pointer;
-    isolation:isolate;
-    border:1px solid var(--line);
-    transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-  }
-  .gallery-bg{
-    position:absolute;inset:0;
-    background:linear-gradient(155deg, var(--tile-a,#123AF0), var(--tile-b,#020F63));
-    transition:transform 480ms var(--ease);
-    z-index:0;
-  }
-  .gallery-item::after{
-    content:"";
-    position:absolute;inset:0;
-    background:linear-gradient(180deg, rgba(5,6,8,0) 40%, rgba(5,6,8,0.72) 100%);
-    z-index:2;
-  }
-  .gallery-watermark{
-    position:absolute;
-    right:6%;top:8%;
-    width:44%;
-    opacity:0.16;
-    z-index:0;
-    transition:transform 480ms var(--ease), opacity 480ms var(--ease);
-  }
-  .gallery-item:hover .gallery-bg{transform:scale(1.08);}
-  .gallery-item:hover .gallery-watermark{transform:scale(1.14) rotate(4deg);opacity:0.24;}
-  /* Lift + tinted shadow, pure CSS — no JS. Shadow uses the brand
-     blue instead of grey. */
-  .gallery-item:hover{transform:translateY(-4px);box-shadow:0 26px 46px -24px rgba(2,51,234,0.4);}
-  .gallery-label{
-    position:absolute;
-    left:24px;bottom:22px;right:24px;
-    z-index:3;
-    color:#fff;
-  }
-  .gallery-tag{
-    font-size:11.5px;
-    font-weight:600;
-    letter-spacing:0.12em;
-    text-transform:uppercase;
-    color:#BFCCFF;
-    display:block;
-    margin-bottom:6px;
-  }
-  .gallery-label h3{font-size:21px;color:#fff;}
+  @media (min-width:760px){ .gallery{grid-template-columns:repeat(2,1fr);gap:24px;} }
 
+  .gallery-item{display:block;}
+  .gallery-frame{
+    position:relative;
+    aspect-ratio:4/3;
+    overflow:hidden;
+    border-radius:12px;
+    background:#08080b;
+  }
   .gallery-iframe-wrap{
     position:absolute;inset:0;
     overflow:hidden;
@@ -872,311 +839,315 @@
   }
   .gallery-iframe-wrap iframe.is-loaded{opacity:1;}
   .gallery-item.preview-failed .gallery-iframe-wrap{display:none;}
-  .gallery-item:hover .gallery-iframe-wrap iframe{transform-origin:top left;}
-
-  .gallery-static-preview{
+  .gallery-item:hover .gallery-iframe-wrap iframe{transform:scale(1.03);}
+  .gallery-frame::after{
+    content:"";
     position:absolute;inset:0;
-    width:100%;height:100%;
-    object-fit:cover;
-    object-position:top center;
-    z-index:1;
-    transition:transform 480ms var(--ease);
+    z-index:2;
+    background:linear-gradient(180deg, rgba(5,5,7,0) 45%, rgba(5,5,7,0.6) 100%);
+    opacity:1;
+    transition:opacity 400ms var(--ease);
+    pointer-events:none;
   }
-  .gallery-item:hover .gallery-static-preview{transform:scale(1.04);}
+  .gallery-item:hover .gallery-frame::after{opacity:0.4;}
+
+  .gallery-meta{margin-top:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+  .gallery-descriptor{font-size:clamp(1.1rem, 1.8vw, 1.4rem);margin-top:2px;}
 
   .gallery .gallery-item:nth-child(1){transition-delay:0ms;}
   .gallery .gallery-item:nth-child(2){transition-delay:80ms;}
   .gallery .gallery-item:nth-child(3){transition-delay:160ms;}
   .gallery .gallery-item:nth-child(4){transition-delay:240ms;}
-  .gallery .gallery-item:nth-child(5){transition-delay:320ms;}
-  .gallery .gallery-item:nth-child(6){transition-delay:400ms;}
-
-  /* ---------- Pricing ---------- */
-  .pricing{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:24px;
-    align-items:start;
-  }
-  @media (min-width:900px){
-    .pricing{grid-template-columns:repeat(3,1fr);gap:24px;}
-  }
-  .plan{
-    background:var(--white);
-    border:1.5px solid var(--line);
-    border-radius:var(--radius-l);
-    padding:40px 32px;
-    display:flex;
-    flex-direction:column;
-    height:100%;
-    transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
-  }
-  .plan:hover{transform:translateY(-6px);box-shadow:0 24px 44px -26px rgba(11,13,20,0.24);}
-  .plan-featured{
-    --reveal-y:32px;
-    border-color:var(--blue);
-    background:linear-gradient(180deg, #FBFCFF 0%, #FFFFFF 100%);
-    box-shadow:0 20px 50px -24px rgba(2,51,234,0.35);
-    position:relative;
-    animation:signature-glow 3s ease-in-out infinite;
-  }
-  @keyframes signature-glow{
-    0%,100%{ box-shadow:0 20px 50px -24px rgba(2,51,234,0.35); }
-    50%{ box-shadow:0 20px 50px -24px rgba(2,51,234,0.35), 0 0 30px 4px rgba(2,51,234,0.30); }
-  }
-  @media (prefers-reduced-motion:reduce){
-    .plan-featured{ animation:none; box-shadow:0 20px 50px -24px rgba(2,51,234,0.35), 0 0 0 1.5px rgba(2,51,234,0.4); }
-  }
-  @media (min-width:900px){ .plan-featured{margin-top:-14px;} }
-  .plan-featured:hover{transform:translateY(-14px);}
-  @media (max-width:899px){ .plan-featured:hover{transform:translateY(-6px);} }
-  .plan-badge{
-    position:absolute;
-    top:-14px;left:32px;
-    background:var(--blue);
-    color:#fff;
-    font-size:11.5px;
-    font-weight:700;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-    padding:7px 14px;
-    border-radius:999px;
-    box-shadow:0 8px 18px -6px rgba(2,51,234,0.5);
-  }
-  .plan-name{font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-soft);}
-  .plan-price{
-    margin-top:14px;
-    display:flex;
-    align-items:baseline;
-    gap:6px;
-  }
-  .plan-price .amount{font-family:'Space Grotesk',sans-serif;font-size:44px;font-weight:600;letter-spacing:-0.02em;}
-  .plan-price .cadence{font-size:14px;color:var(--ink-faint);}
-  .plan-desc{margin-top:14px;color:var(--ink-soft);font-size:15px;line-height:1.6;}
-  .plan-features{
-    list-style:none;
-    margin:28px 0 32px;
-    padding:0;
-    display:flex;
-    flex-direction:column;
-    gap:13px;
-    flex:1;
-  }
-  .plan-features li{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    font-size:14.5px;
-    color:var(--ink);
-    line-height:1.5;
-  }
-  .plan-features svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;stroke:var(--blue);}
-  .plan-note{
-    margin-top:12px;
-    font-size:13px;
-    color:var(--blue-deep);
-    font-weight:600;
-  }
-
-  .pricing .plan:nth-child(1){transition-delay:0ms;}
-  .pricing .plan:nth-child(3){transition-delay:90ms;}
-  .pricing .plan.plan-featured{transition-delay:200ms;}
-
-  .pricing-foot{
-    margin-top:44px;
-    text-align:center;
-    font-size:14.5px;
-    color:var(--ink-soft);
-  }
-  .pricing-foot strong{color:var(--ink);}
 
   /* ---------- How it works ---------- */
   .steps{
     display:grid;
     grid-template-columns:1fr;
-    gap:40px;
+    gap:64px;
   }
-  @media (min-width:760px){
-    .steps{grid-template-columns:repeat(3,1fr);gap:32px;}
+  @media (min-width:760px){ .steps{grid-template-columns:repeat(3,1fr);gap:40px;} }
+  .step{position:relative;padding-top:60px;}
+  .step-num-big{
+    position:absolute;
+    top:-22px;left:-4px;
+    font-size:clamp(5.5rem, 11vw, 8.5rem);
+    font-weight:700;
+    line-height:1;
+    letter-spacing:-0.03em;
+    color:rgba(255,255,255,0.05);
+    -webkit-text-stroke:1px rgba(255,255,255,0.2);
+    -webkit-text-fill-color:transparent;
+    z-index:0;
+    pointer-events:none;
+    user-select:none;
   }
-  .step-num{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:15px;
-    font-weight:600;
-    color:var(--blue);
-    letter-spacing:0.04em;
-  }
-  .step h3{font-size:21px;margin-top:16px;margin-bottom:12px;}
-  .step p{color:var(--ink-soft);font-size:15.5px;line-height:1.65;}
-  .step-line{
-    height:1px;
-    background:var(--line);
-    margin-top:20px;
-    display:block;
-  }
-  @media (min-width:760px){ .step-line{display:none;} }
+  .step-body{position:relative;z-index:1;}
+  .step h3{font-size:clamp(1.4rem, 2.2vw, 1.8rem);margin-bottom:10px;}
 
   .steps .step:nth-child(1){transition-delay:0ms;}
   .steps .step:nth-child(2){transition-delay:100ms;}
   .steps .step:nth-child(3){transition-delay:200ms;}
 
-  /* ---------- About ---------- */
-  .about{
-    max-width:760px;
+  /* ---------- Missed Revenue Calculator ----------
+     Vanilla JS, no dependencies. Light section (reuses .section--light-band
+     /.on-light from the capability cards) with one .light-card housing the
+     whole tool — inputs left, results right, one hairline divider between
+     them, no extra dashboard chrome. Range inputs get a JS-driven
+     background-gradient for the filled-track look in Chrome/Safari/Edge;
+     Firefox fills automatically via ::-moz-range-progress, styled to match. */
+  .calc-card.light-card{
+    padding:0;
+    overflow:hidden;
   }
-  .about p{
-    font-size:clamp(1.15rem, 2vw, 1.5rem);
-    line-height:1.55;
-    color:var(--ink);
-    font-family:'Space Grotesk',sans-serif;
-    font-weight:500;
-    letter-spacing:-0.01em;
-  }
-  /* Typewriter reveal for .about-lead — see aboutTyping() in the JS.
-     The paragraph's own real text is moved at runtime into a
-     .visually-hidden copy (for screen readers, read normally in one
-     go) and typed into this aria-hidden mirror one character at a
-     time, so no-JS/SEO/AT never depend on the animation running. */
-  .about-cursor{
-    display:inline-block;
-    width:2px;
-    height:1em;
-    margin-left:2px;
-    vertical-align:-0.15em;
-    background:currentColor;
-    animation:about-cursor-blink 900ms steps(1) infinite;
-  }
-  .about-cursor.is-done{
-    animation:none;
-    opacity:0;
-  }
-  @keyframes about-cursor-blink{
-    0%,49%{opacity:1;}
-    50%,100%{opacity:0;}
-  }
-  .about .about-sign{
-    margin-top:32px;
-    font-family:'Inter',sans-serif;
-    font-size:14.5px;
-    color:var(--ink-soft);
-    font-weight:500;
-    opacity:0;
-    transform:translateY(22px);
-    transition:opacity 620ms var(--ease), transform 620ms var(--ease);
-  }
-  .about .about-sign.is-visible{
-    opacity:1;
-    transform:translateY(0);
-  }
-  @media (prefers-reduced-motion:reduce){
-    .about .about-sign{transition:none !important;opacity:1 !important;transform:none !important;}
+  .calc-card.light-card:hover{
+    transform:none;
+    border-color:var(--line-on-light);
+    box-shadow:0 1px 2px rgba(10,10,10,0.04), 0 8px 24px rgba(10,10,10,0.06);
   }
 
-  /* ---------- Contact CTA ---------- */
+  /* Scenario pills — selected is solid accent, the rest are outlined.
+     Switching scenarios never rebuilds these buttons, only toggles
+     .is-active/aria-pressed, so there's no re-render flash anywhere
+     in the card. */
+  .calc-scenarios-wrap{padding:28px 24px 0;}
+  @media (min-width:640px){ .calc-scenarios-wrap{padding:32px 32px 0;} }
+  .calc-scenarios{display:flex;flex-wrap:wrap;gap:10px;}
+  .calc-scenario{
+    padding:10px 20px;
+    border-radius:999px;
+    border:1.5px solid var(--line-on-light);
+    background:transparent;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .calc-scenario:hover{border-color:var(--accent);}
+  .calc-scenario.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  /* Period toggle (Monthly/Weekly) — a sub-control scoped to whichever
+     scenario opts in via periodToggle:true, so it's deliberately a
+     lighter, smaller segmented control (gray track + white active pill,
+     no border, no accent fill) rather than a second row of bold tabs
+     that would compete with .calc-scenario above it. */
+  .calc-period-toggle{
+    display:inline-flex;
+    gap:4px;
+    padding:3px;
+    background:var(--light);
+    border-radius:999px;
+    margin-bottom:14px;
+  }
+  .calc-period-toggle[hidden]{display:none;}
+  .calc-period-btn{
+    padding:5px 14px;
+    border-radius:999px;
+    border:none;
+    background:transparent;
+    font-size:12px;
+    font-weight:600;
+    color:var(--muted-on-light);
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .calc-period-btn:hover{color:var(--ink);}
+  .calc-period-btn.is-active{background:var(--white);color:var(--ink);box-shadow:0 1px 2px rgba(10,10,10,0.08);}
+
+  .calc-grid{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  @media (min-width:900px){ .calc-grid{grid-template-columns:1fr 1fr;} }
+
+  .calc-inputs{
+    padding:32px 24px;
+    display:flex;
+    flex-direction:column;
+    gap:32px;
+  }
+  @media (min-width:640px){ .calc-inputs{padding:40px 32px;} }
+
+  .calc-results{
+    background:var(--light);
+    padding:32px 24px;
+    border-top:1px solid var(--line-on-light);
+  }
+  @media (min-width:640px){ .calc-results{padding:40px 32px;} }
+  @media (min-width:900px){
+    .calc-results{border-top:none;border-left:1px solid var(--line-on-light);}
+  }
+
+  .calc-slider-group{display:flex;flex-direction:column;}
+  .calc-question{
+    display:block;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    margin-bottom:10px;
+  }
+  .calc-value{
+    font-size:clamp(1.75rem, 4vw, 2.25rem);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:var(--accent);
+    line-height:1;
+    margin-bottom:14px;
+  }
+
+  /* Track fill: the element's own `background` is a two-stop gradient
+     JS keeps in sync with the current value (accent up to the thumb,
+     hairline gray after) — appearance:none strips native chrome in
+     WebKit/Blink so that background paints as the visible track. */
+  .calc-slider{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:8px;
+    border-radius:999px;
+    background:#E5E5E5;
+    cursor:pointer;
+  }
+  .calc-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:var(--accent);
+    border:3px solid #fff;
+    box-shadow:0 2px 8px rgba(10,10,10,0.28);
+    cursor:pointer;
+    transition:transform 200ms var(--ease);
+  }
+  .calc-slider::-webkit-slider-thumb:hover{transform:scale(1.08);}
+  .calc-slider::-moz-range-thumb{
+    width:28px;height:28px;
+    border-radius:50%;
+    background:var(--accent);
+    border:3px solid #fff;
+    box-shadow:0 2px 8px rgba(10,10,10,0.28);
+    cursor:pointer;
+  }
+  .calc-slider::-moz-range-track{height:8px;border-radius:999px;background:#E5E5E5;}
+  .calc-slider::-moz-range-progress{height:8px;border-radius:999px;background:var(--accent);}
+  .calc-slider:focus-visible{outline:2px solid var(--accent);outline-offset:6px;}
+  @media (prefers-reduced-motion:reduce){
+    .calc-slider::-webkit-slider-thumb{transition:none;}
+  }
+
+  .calc-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .calc-preset{
+    padding:8px 14px;
+    border-radius:999px;
+    border:1px solid var(--line-on-light);
+    background:var(--white);
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .calc-preset:hover{border-color:var(--accent);}
+  .calc-preset.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  .calc-results-label{display:block;margin-bottom:14px;}
+  .calc-big-number{
+    font-size:clamp(2rem, 5vw, 2.75rem);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+    line-height:1;
+  }
+  .calc-big-number--accent{color:var(--accent);}
+  .calc-unit{
+    font-size:15px;
+    font-weight:500;
+    color:var(--muted-on-light);
+    margin-left:6px;
+  }
+  .calc-sub-number{margin-top:8px;font-size:15px;font-weight:600;color:var(--muted-on-light);}
+  .calc-divider{height:1px;background:var(--line-on-light);margin:28px 0;}
+  .calc-recovery-question{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;}
+  .calc-recovery-slider{margin-top:24px;}
+  .calc-recovery-slider .calc-question{font-size:13px;margin-bottom:12px;}
+
+  .calc-disclaimer{font-size:12px;opacity:0.75;}
+  .calc-disclaimer--standalone{text-align:center;margin-top:20px;}
+
+  /* ---------- Footer CTA ----------
+     Tightened so the whole section — heading through phone number —
+     clears one 1366x768 view without scrolling: padding cut roughly in
+     half from the old 130px/88px, and the actions block's own top
+     margin trimmed to match. */
   .cta-band{
     position:relative;
     overflow:hidden;
-    background:linear-gradient(155deg, var(--blue) 0%, var(--blue-deep) 100%);
-    color:#fff;
-    padding:96px 0;
+    background:var(--ink);
+    padding:72px 0;
     text-align:center;
   }
-  @media (max-width:640px){ .cta-band{padding:68px 0;} }
+  @media (max-width:640px){ .cta-band{padding:56px 0;} }
   .cta-band .container{position:relative;z-index:1;}
-  /* Decorative ambient glow, same technique as the hero mesh: static
-     blur, only transform/opacity animate. Kept to one soft blob and a
-     conservative peak opacity so it never lightens the blue enough to
-     threaten the white/near-white text sitting on top of it. */
   .cta-glow{
     position:absolute;
-    inset:0;
+    top:50%;left:50%;
+    width:min(900px, 130vw);
+    height:min(900px, 130vw);
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(72,112,229,0.32) 0%, transparent 68%);
+    filter:blur(50px);
     z-index:0;
-    overflow:hidden;
     pointer-events:none;
   }
-  .cta-glow span{
-    position:absolute;
-    top:-34%;left:18%;
-    width:52vw;height:52vw;
-    max-width:640px;max-height:640px;
-    border-radius:50%;
-    background:radial-gradient(circle, rgba(255,255,255,0.20) 0%, transparent 70%);
-    filter:blur(80px);
-    opacity:0.5;
-    will-change:transform;
-    animation:cta-glow-drift 54s ease-in-out infinite;
-  }
-  @keyframes cta-glow-drift{
-    0%,100%{transform:translate(0,0) scale(1);}
-    50%{transform:translate(4%,5%) scale(1.08);}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .cta-glow span{animation:none !important;}
-  }
-  .cta-band h2{
-    font-size:clamp(2rem, 5vw, 3.2rem);
-    color:#fff;
-    max-width:16ch;
-    margin:0 auto;
-  }
-  .cta-band p{
-    margin-top:18px;
-    color:#DCE4FF;
-    font-size:17px;
-    max-width:46ch;
-    margin-left:auto;
-    margin-right:auto;
-  }
+  .cta-band .display{max-width:16ch;margin:0 auto;}
+  .cta-band-sub{margin-top:20px;font-size:16px;max-width:46ch;margin-left:auto;margin-right:auto;}
   .cta-band-actions{
     display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:14px;
-    margin-top:36px;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+    margin-top:32px;
   }
-  /* Entrance stagger: headline, then subhead, then buttons. All three
-     already carry .reveal, so this reuses the shared fire-once
-     IntersectionObserver — no new JS needed for sequencing. */
-  #contact h2.reveal{transition-delay:0ms;}
-  #contact p.reveal{transition-delay:100ms;}
+  .cta-band-note{font-size:13px;color:rgba(255,255,255,0.7);}
+  #contact .display.reveal{transition-delay:0ms;}
+  #contact .cta-band-sub.reveal{transition-delay:100ms;}
   #contact .cta-band-actions.reveal{transition-delay:200ms;}
 
   /* ---------- Footer ---------- */
-  .footer{
-    background:var(--ink);
-    color:#B9BEC9;
-    padding:64px 0 32px;
-  }
+  .footer{background:var(--ink);border-top:1px solid var(--line);padding:64px 0 32px;}
   .footer-top{
     display:flex;
     flex-direction:column;
     gap:40px;
     padding-bottom:44px;
-    border-bottom:1px solid rgba(255,255,255,0.1);
+    border-bottom:1px solid var(--line);
   }
   @media (min-width:760px){
     .footer-top{flex-direction:row;justify-content:space-between;align-items:flex-start;}
   }
-  .footer-brand img{height:22px;width:auto;filter:brightness(0) invert(1);}
-  .footer-brand p{margin-top:16px;font-size:14px;line-height:1.6;color:#8B909C;max-width:32ch;}
-  .footer-cols{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:32px;
-  }
+  .footer-brand img{height:18px;width:auto;}
+  /* Same reasoning as .brand-row in the header: herologo.png is
+     icon-only, so the name that used to be baked into the old image
+     is added back as text here. */
+  .footer-brand-row{display:flex;align-items:center;gap:10px;}
+  .footer-brand-name{font-size:17px;font-weight:700;letter-spacing:-0.02em;color:#fff;}
+  .footer-brand p{margin-top:16px;font-size:14px;max-width:32ch;}
+  .footer-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;}
   @media (min-width:480px){ .footer-cols{grid-template-columns:repeat(2, minmax(140px,auto));gap:56px;} }
   .footer-col h4{
-    font-size:12px;
-    font-weight:600;
-    letter-spacing:0.1em;
+    font-size:11px;
+    font-weight:500;
+    letter-spacing:0.16em;
     text-transform:uppercase;
-    color:#8B909C;
-    margin-bottom:16px;
+    color:var(--muted);
+    margin-bottom:18px;
   }
   .footer-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
   .footer-col a{
     font-size:14.5px;
-    color:#D7DAE1;
+    color:rgba(255,255,255,0.8);
     min-height:44px;
     display:flex;
     align-items:center;
@@ -1188,143 +1159,102 @@
     display:flex;
     flex-direction:column;
     gap:10px;
-    font-size:13px;
-    color:#767B87;
+    font-size:12px;
+    color:rgba(255,255,255,0.35);
   }
   @media (min-width:640px){
     .footer-bottom{flex-direction:row;justify-content:space-between;}
   }
 
-  /* ---------- Call-now toast ----------
-     Non-modal: no backdrop, no focus trap. Card and pill share one
-     CSS Grid cell (grid-area:1/1) so they cross-fade in place without
-     ever animating width/height — only opacity/transform move.
-     visibility is toggled with a transition-delay so the element
-     that's fading out stops being focusable/AT-exposed only once its
-     fade finishes, and the one fading in is focusable immediately. */
-  .toast{
+  /* ---------- Instagram popup (Cloth Barn .fb-toast pattern) ----------
+     Complementary landmark, not a dialog: no backdrop, no focus trap, no
+     scroll lock. Appears once at 3.5s, fades+rises, stays until
+     dismissed (dismissal persists via localStorage). href is a
+     placeholder pending the real Instagram URL.
+
+     Bug this replaces: .ig-toast-link svg had no width/height, on either
+     the element or its CSS — an inline SVG with no explicit size falls
+     back to the browser default intrinsic box (~300x150px), which blew
+     the whole pill out to icon-sized-as-a-poster with the label pushed
+     out/clipped. Every icon below is now sized in both the markup and
+     the CSS. */
+  /* Narrowed from 240px to fit "Follow us" (was "Follow us on
+     Instagram", which is why it used to truncate) — 160px rather than
+     a literal 150px so the text has real breathing room instead of
+     landing right back at the ellipsis edge. */
+  .ig-toast{
     position:fixed;
     right:24px;bottom:24px;
     z-index:850;
-    display:grid;
-    justify-items:end;
-    align-items:end;
-  }
-  .toast[hidden]{display:none;}
-
-  .toast-card{
-    grid-area:1/1;
-    position:relative;
-    width:340px;
-    max-width:calc(100vw - 48px);
-    background:#fff;
-    border-radius:20px;
-    padding:28px 28px 24px;
-    text-align:left;
-    box-shadow:0 24px 60px -20px rgba(11,13,20,0.4);
-    opacity:0;
-    visibility:hidden;
-    transform:translateX(48px);
-    transition:opacity 550ms var(--ease), transform 550ms var(--ease), visibility 0s linear 550ms;
-    pointer-events:none;
-  }
-  .toast.is-visible .toast-card{
-    opacity:1;
-    visibility:visible;
-    transform:translateX(0);
-    transition:opacity 550ms var(--ease), transform 550ms var(--ease), visibility 0s linear 0s;
-    pointer-events:auto;
-  }
-  .toast.is-collapsed .toast-card{
-    opacity:0;
-    visibility:hidden;
-    transform:scale(0.92);
-    transition:opacity 320ms var(--ease), transform 320ms var(--ease), visibility 0s linear 320ms;
-    pointer-events:none;
-  }
-  .toast-card .modal-logo{height:26px;width:auto;margin:0 0 18px;}
-  .toast-card h3{font-size:21px;margin-bottom:10px;}
-  .toast-card p{color:var(--ink-soft);font-size:14.5px;line-height:1.6;margin-bottom:22px;}
-  .toast-actions{display:flex;flex-direction:column;gap:12px;}
-  .toast-close{
-    position:absolute;top:14px;right:14px;
-    width:32px;height:32px;border-radius:999px;border:none;
-    background:var(--mist);display:flex;align-items:center;justify-content:center;
-    cursor:pointer;color:var(--ink-soft);
-    transition:background 200ms var(--ease), color 200ms var(--ease);
-  }
-  .toast-close:hover{background:var(--line);color:var(--ink);}
-  .toast-close svg{width:15px;height:15px;}
-
-  .toast-pill{
-    grid-area:1/1;
     display:flex;
     align-items:center;
-    background:var(--blue);
-    border-radius:999px;
-    min-height:52px;
-    padding-right:8px;
-    box-shadow:0 14px 30px -10px rgba(2,51,234,0.55);
+    gap:8px;
+    width:160px;
+    height:48px;
+    padding:0 8px 0 14px;
+    background:var(--white);
+    border-radius:var(--radius-pill);
+    box-shadow:0 12px 32px -8px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.1);
     opacity:0;
-    visibility:hidden;
-    transform:scale(0.85);
-    transition:opacity 320ms var(--ease), transform 320ms var(--ease), background 200ms var(--ease), visibility 0s linear 320ms;
-    pointer-events:none;
+    transform:translateY(12px);
+    transition:opacity 600ms var(--ease), transform 600ms var(--ease);
   }
-  .toast-pill:hover{background:var(--blue-deep);}
-  .toast.is-collapsed .toast-pill{
-    opacity:1;
-    visibility:visible;
-    transform:scale(1);
-    transition:opacity 320ms var(--ease), transform 320ms var(--ease), background 200ms var(--ease), visibility 0s linear 0s;
-    pointer-events:auto;
-  }
-  .toast-pill-main{
-    background:none;border:none;
-    color:#fff;
-    font-family:inherit;
-    font-weight:600;
-    font-size:15px;
-    letter-spacing:-0.01em;
-    height:52px;
-    padding:0 8px 0 22px;
-    cursor:pointer;
-    white-space:nowrap;
-  }
-  .toast-pill-close{
-    display:inline-flex;align-items:center;justify-content:center;
-    width:26px;height:26px;
-    margin-right:2px;
-    border-radius:999px;border:none;
-    background:rgba(255,255,255,0.22);
-    color:#fff;
-    cursor:pointer;
-    flex-shrink:0;
-    transition:background 200ms var(--ease);
-  }
-  .toast-pill-close:hover{background:rgba(255,255,255,0.35);}
-  .toast-pill-close svg{width:11px;height:11px;display:block;}
+  .ig-toast[hidden]{display:none;}
+  .ig-toast.is-visible{opacity:1;transform:translateY(0);}
 
+  .ig-toast-link{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:1 1 auto;
+    min-width:0;
+    color:var(--ink);
+  }
+  .ig-toast-link:hover{color:var(--accent);}
+  .ig-toast-link svg{width:20px;height:20px;flex-shrink:0;color:var(--accent);}
+  .ig-toast-link span{
+    font-size:14px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .ig-toast-close{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:28px;height:28px;
+    border-radius:50%;
+    flex-shrink:0;
+    color:var(--muted-on-light);
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    transition:background 300ms var(--ease), color 300ms var(--ease);
+  }
+  .ig-toast-close:hover{background:rgba(10,10,10,0.06);color:var(--ink);}
+  .ig-toast-close svg{width:12px;height:12px;display:block;}
+
+  /* Hidden entirely below 640px, not just repositioned — !important
+     because it has to win over both the base display:flex and the
+     is-visible/hidden states regardless of which one JS has toggled. */
   @media (max-width:640px){
-    .toast{left:16px;right:16px;bottom:16px;}
-    .toast-card{width:100%;max-width:none;justify-self:stretch;}
+    .ig-toast{display:none !important;}
   }
   @media (prefers-reduced-motion:reduce){
-    .toast-card,.toast-pill{transition:none !important;}
+    .ig-toast{transition:opacity 250ms linear;transform:none;}
   }
 
-  /* ---------- Scroll progress ----------
-     transform:scaleX only (never width) so it's compositor-only.
-     z-index:1000 — above the toast (850) and nav (500) — so the pinned
-     top edge is never partially covered by anything else on the page. */
+  /* ---------- Scroll progress ---------- */
   .scroll-progress{
     position:fixed;
     top:0;left:0;right:0;
-    height:3px;
-    background:var(--gold);
+    height:2px;
+    background:var(--accent-bright);
     transform:scaleX(0);
     transform-origin:0 0;
-    z-index:1000;
+    z-index:1100;
     pointer-events:none;
   }
 
@@ -1338,28 +1268,123 @@
     white-space:nowrap;
     border:0;
   }
+
+  /* ---------- Booking modal ----------
+     Timings/keyframes unchanged — only the panel surface was restyled
+     to the new dark card language (surface bg, 16px radius, hairline
+     border, dark blurred backdrop). */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    z-index:900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:rgba(2,2,4,0.7);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    opacity:0;
+    transition:opacity 300ms var(--ease);
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal-overlay.is-open{opacity:1;}
+  .modal-overlay.is-closing{
+    opacity:0;
+    transition:opacity 250ms var(--ease) 80ms;
+  }
+  .modal-panel{
+    position:relative;
+    width:100%;
+    max-width:700px;
+    max-height:min(88vh, 820px);
+    overflow-y:auto;
+    background:var(--surface);
+    border-radius:var(--radius-card);
+    border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
+    padding:22px;
+    opacity:0;
+    transform:translateY(24px) scale(0.94);
+    transition:opacity 500ms cubic-bezier(0.16,1,0.3,1) 80ms, transform 500ms cubic-bezier(0.16,1,0.3,1) 80ms;
+  }
+  .modal-overlay.is-open .modal-panel{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+  .modal-overlay.is-closing .modal-panel{
+    opacity:0;
+    transform:translateY(12px) scale(0.97);
+    transition:opacity 250ms var(--ease), transform 250ms var(--ease);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .modal-overlay,
+    .modal-overlay.is-closing{
+      transition:opacity 150ms linear !important;
+      transition-delay:0ms !important;
+    }
+    .modal-panel,
+    .modal-overlay.is-closing .modal-panel{
+      transition:opacity 150ms linear !important;
+      transition-delay:0ms !important;
+      transform:none !important;
+    }
+  }
+  .modal-close{
+    position:absolute;
+    top:14px;right:14px;
+    z-index:1;
+    width:36px;height:36px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:transparent;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:#fff;
+    transition:background 300ms var(--ease), border-color 300ms var(--ease);
+  }
+  .modal-close:hover{background:rgba(255,255,255,0.08);border-color:var(--line-hover);}
+  .modal-close svg{width:16px;height:16px;}
+  .modal-title{
+    font-size:19px;
+    padding-right:36px;
+    margin-bottom:14px;
+    color:#fff;
+  }
+  .calendly-embed-wrap{
+    border-radius:12px;
+    overflow:hidden;
+  }
+  body.modal-open{overflow:hidden;}
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
-<header class="nav" id="nav">
-  <div class="nav-inner">
+<div class="nav-wrap" id="navWrap">
+  <header class="nav" id="nav">
     <a class="brand" href="#top" aria-label="SiteSync home">
-      <img src="sitesync-logo.png" alt="SiteSync" width="140" height="34">
+      <span class="brand-row">
+        <img src="herologo.png" alt="SiteSync" width="36" height="36">
+        <span class="brand-name">SiteSync</span>
+      </span>
+      <span class="brand-tagline">Automation &amp; Web Design</span>
     </a>
     <nav aria-label="Primary">
       <ul class="nav-links">
         <li><a href="#selected-work">Selected Work</a></li>
-        <li><a href="#pricing">Pricing</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
-        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
       </ul>
     </nav>
     <div class="nav-actions">
-      <span class="nav-phone" aria-hidden="true">(910) 990-1576</span>
-      <a class="btn btn-primary nav-cta" href="tel:+19109901576" aria-label="Call SiteSync at (910) 990-1576">Call Now</a>
+      <a class="header-phone" href="tel:+19109901576">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8c1.4 2.7 3.6 5 6.4 6.4l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1l-2.2 2.3z"/></svg>
+        <span>(910) 990-1576</span>
+      </a>
       <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile">
         <span class="nav-toggle-bars" aria-hidden="true">
           <span class="bar bar-1"></span>
@@ -1368,294 +1393,301 @@
         </span>
       </button>
     </div>
-  </div>
-</header>
-<div class="social-strip">
-  <div class="social-strip-inner">
-    <a href="https://www.facebook.com/[PLACEHOLDER]" target="_blank" rel="noopener noreferrer" aria-label="SiteSync on Facebook (opens in new tab)">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M14.5 21v-7.2h2.4l.36-2.8h-2.76V9.1c0-.81.22-1.36 1.39-1.36h1.49V5.2c-.26-.03-1.15-.11-2.19-.11-2.17 0-3.65 1.32-3.65 3.76v2.1H9.1v2.8h2.44V21h2.96z"/></svg>
-    </a>
-    <a href="https://www.instagram.com/[PLACEHOLDER]" target="_blank" rel="noopener noreferrer" aria-label="SiteSync on Instagram (opens in new tab)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg>
-    </a>
-  </div>
+  </header>
 </div>
 <div class="nav-mobile" id="navMobile">
   <a href="#selected-work">Selected Work</a>
-  <a href="#pricing">Pricing</a>
   <a href="#how-it-works">How It Works</a>
-  <a href="#about">About</a>
-  <a class="btn btn-primary btn-block" href="tel:+19109901576" aria-label="Call SiteSync at (910) 990-1576">Call (910) 990-1576</a>
+  <a href="#contact">Contact</a>
 </div>
 
 <main id="main">
 
   <div id="top"></div>
-  <section class="hero-wrap" id="heroWrap" aria-label="SiteSync introduction">
-    <div class="hero-grain" aria-hidden="true"></div>
-    <div class="hero-mesh" aria-hidden="true">
-      <span></span><span></span><span></span>
-    </div>
-    <div class="hero-content">
-      <div class="hero-copy">
-        <div class="hero-logo hero-anim" style="--d:0ms">
-          <img src="sitesync-logo-white.png" alt="" loading="eager">
-        </div>
-        <span class="hero-eyebrow hero-anim" style="--d:130ms">Web design &amp; automation studio</span>
-        <h1 class="hero-headline">
-          <span class="hero-line-mask"><span class="hero-line" style="--d:260ms">You run the</span></span>
-          <span class="hero-line-mask"><span class="hero-line" style="--d:390ms">business.</span></span>
-        </h1>
-        <p class="hero-sub"><span class="word" style="--d:520ms">Your</span> <span class="word" style="--d:550ms">website,</span> <span class="word" style="--d:580ms">bookings,</span> <span class="word" style="--d:610ms">and</span> <span class="word" style="--d:640ms">follow-ups</span> <span class="word" style="--d:670ms">run</span> <span class="word" style="--d:700ms">themselves.</span> <span class="word" style="--d:730ms">Built</span> <span class="word" style="--d:760ms">for</span> <span class="word" style="--d:790ms">contractors,</span> <span class="word" style="--d:820ms">barbershops,</span> <span class="word" style="--d:850ms">gyms,</span> <span class="word" style="--d:880ms">and</span> <span class="word" style="--d:910ms">trades</span> <span class="word" style="--d:940ms">across</span> <span class="word" style="--d:970ms">North</span> <span class="word" style="--d:1000ms">Carolina.</span></p>
-        <div class="hero-ctas">
-          <a class="btn btn-gold hero-anim" style="--d:650ms" href="#selected-work">
-            <span class="btn-label">See Our Work</span>
-            <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-          <a class="btn btn-ghost-on-blue hero-anim" style="--d:780ms" href="mailto:ncsitesync@gmail.com?subject=Quote%20Request">Get a Quote</a>
-          <a class="btn btn-ghost-on-blue hero-anim" style="--d:910ms" href="#pricing">See Pricing</a>
-        </div>
-      </div>
 
-      <div class="hero-media">
-        <div class="hero-icon-entrance" style="--d:1040ms">
-          <div class="hero-icon-float">
-            <div class="hero-icon-stage" id="heroIconStage">
-              <span class="hero-icon-glow" aria-hidden="true"></span>
-              <picture>
-                <source type="image/webp" srcset="media/herologo.webp">
-                <img class="hero-icon" src="media/herologo.png" width="880" height="880" alt="SiteSync logo mark" loading="eager">
-              </picture>
-            </div>
-          </div>
-        </div>
+  <!-- ================= HERO ================= -->
+  <section class="hero" id="heroWrap" aria-label="SiteSync introduction">
+    <div class="hero-media" aria-hidden="true">
+      <video autoplay muted loop playsinline poster="herobackground.jfif">
+        <source src="media/herovideo.mp4" type="video/mp4">
+        <source src="media/herovideo.webm" type="video/webm">
+      </video>
+    </div>
+    <div class="hero-scrim" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <div class="hero-crest">
+        <img src="herologo.png" alt="SiteSync" loading="eager">
+      </div>
+      <p class="hero-badge">North Carolina Automation &amp; Web Design</p>
+      <h1 class="hero-headline">Automation that brings in more revenue</h1>
+      <p class="hero-sub">Built for contractors, landscapers, and blue-collar businesses across North Carolina.</p>
+      <div class="hero-actions">
+        <button type="button" class="btn btn-accent js-book-meeting">Book a Meeting</button>
+        <a class="btn btn-outline" href="#selected-work">See the work</a>
+      </div>
+      <div class="hero-reassurance">
+        <span class="hero-reassurance-item">When you pay to generate a lead, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</span>
+        <span class="hero-reassurance-divider" aria-hidden="true"></span>
+        <span class="hero-reassurance-item">Cancel anytime.</span>
       </div>
     </div>
   </section>
 
-  <!-- ================= WHAT WE DO ================= -->
-  <section class="section" id="what-we-do">
+  <!-- ================= CAPABILITY CAROUSEL ================= -->
+  <section class="section section--light-band on-light" id="what-we-do">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">What we do</span>
-        <h2 class="line-mask"><span class="line-mask-inner">Three things, done properly.</span></h2>
-        <p>No packages full of things you don't need. Just the parts that make a local business look sharp and run smoother.</p>
+        <span class="micro-label">What this actually does</span>
+        <h2 class="display line-mask"><span class="line-mask-inner">Four automations that pay for themselves.</span></h2>
+        <p>Not features. Systems that recover the jobs you're already losing.</p>
       </div>
 
-      <div class="cards">
-        <article class="card reveal">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/><path d="M8 21h8"/></svg>
-          </div>
-          <h3>Premium Websites</h3>
-          <p>A site that looks like you hired an agency — because you did. Fast, mobile-perfect, and built to make people pick up the phone.</p>
-        </article>
+      <div class="carousel-wrap reveal">
+        <div class="carousel" id="capabilityCarousel" tabindex="0" role="group" aria-roledescription="carousel" aria-label="What this actually does">
+          <button type="button" class="carousel-arrow carousel-arrow--prev" id="capabilityPrev" aria-label="Previous automation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
 
-        <article class="card reveal">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
-          </div>
-          <h3>Booking &amp; Follow-Up Automation</h3>
-          <p>Customers book themselves. Missed calls get a text back. No-shows get a reminder. You find out after it's already handled.</p>
-        </article>
+          <div class="carousel-track" id="capabilityTrack">
+              <article class="capability-card light-card carousel-slide is-active">
+                <span class="chip">Recovers Lost Calls</span>
+                <div class="capability-card-media">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="1"/><path d="M3 9h18"/><path d="M8 21h8"/></svg>
+                </div>
+                <div class="capability-card-title">
+                  <span class="dot" aria-hidden="true"></span>
+                  <h3>Missed Calls Get Answered</h3>
+                </div>
+                <p>Missed calls get a text back, automatically — so a missed call still turns into a booked job instead of a lost one.</p>
+              </article>
 
-        <article class="card reveal">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/></svg>
+              <article class="capability-card light-card carousel-slide">
+                <span class="chip">Wins Back Quotes</span>
+                <div class="capability-card-media">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 12h5v10l8-12h-5z"/></svg>
+                </div>
+                <div class="capability-card-title">
+                  <span class="dot" aria-hidden="true"></span>
+                  <h3>Follow-Up That Never Forgets</h3>
+                </div>
+                <p>Every unsold quote and cold lead gets a scheduled follow-up sequence — so opportunities that would've gone cold turn into booked work instead.</p>
+              </article>
+
+              <article class="capability-card light-card carousel-slide">
+                <span class="chip">Fills The Calendar</span>
+                <div class="capability-card-media">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01"/></svg>
+                </div>
+                <div class="capability-card-title">
+                  <span class="dot" aria-hidden="true"></span>
+                  <h3>Customers Book Themselves</h3>
+                </div>
+                <p>Customers book themselves. No-shows get a reminder — automatically.</p>
+              </article>
+
+              <article class="capability-card light-card carousel-slide">
+                <span class="chip">Keeps You Found</span>
+                <div class="capability-card-media">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/></svg>
+                </div>
+                <div class="capability-card-title">
+                  <span class="dot" aria-hidden="true"></span>
+                  <h3>A Site Built to Convert</h3>
+                </div>
+                <p>A site that looks like you hired an agency — because you did. Fast, mobile-perfect, and built for local search, so more calls come in.</p>
+              </article>
           </div>
-          <h3>Ongoing Care</h3>
-          <p>Updates, fixes, and small changes handled before you notice they're needed. Your site stays fast, secure, and current.</p>
-        </article>
+
+          <button type="button" class="carousel-arrow carousel-arrow--next" id="capabilityNext" aria-label="Next automation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+
+        <div class="carousel-dots" role="tablist" aria-label="Choose an automation">
+          <button type="button" class="carousel-dot is-active" data-index="0" role="tab" aria-selected="true" aria-label="Automation 1 of 4"></button>
+          <button type="button" class="carousel-dot" data-index="1" role="tab" aria-selected="false" aria-label="Automation 2 of 4"></button>
+          <button type="button" class="carousel-dot" data-index="2" role="tab" aria-selected="false" aria-label="Automation 3 of 4"></button>
+          <button type="button" class="carousel-dot" data-index="3" role="tab" aria-selected="false" aria-label="Automation 4 of 4"></button>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ================= SELECTED WORK ================= -->
-  <section class="section section-alt" id="selected-work">
+  <section class="section" id="selected-work">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">Selected work</span>
-        <h2 class="line-mask"><span class="line-mask-inner">Real businesses, sharper online.</span></h2>
+        <span class="micro-label">Selected work</span>
+        <h2 class="display line-mask"><span class="line-mask-inner">Real businesses, sharper online.</span></h2>
         <p>A look at the kind of sites we build for the trades, fitness, and service businesses that keep towns running.</p>
       </div>
 
       <div class="gallery">
-        <a class="gallery-item gallery-item--live reveal" href="https://fouroaksfitness.vercel.app/" target="_blank" rel="noopener" aria-label="Four Oaks Fitness — view live site (opens in new tab)" style="--tile-a:#1E44F5;--tile-b:#020F63;">
-          <div class="gallery-bg"></div>
-          <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
-          <div class="gallery-iframe-wrap">
-            <iframe src="https://fouroaksfitness.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+        <a class="gallery-item dark-card reveal" href="https://biglarrys.vercel.app/" target="_blank" rel="noopener" aria-label="Big Larry's Cookers — custom BBQ cooker builder in La Grange, NC — view live site (opens in new tab)">
+          <div class="dark-card-glow" aria-hidden="true"></div>
+          <div class="gallery-frame">
+            <div class="gallery-iframe-wrap">
+              <iframe src="https://biglarrys.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+            </div>
           </div>
-          <div class="gallery-label">
-            <span class="gallery-tag">Fitness</span>
-            <h3>Four Oaks Fitness</h3>
-          </div>
-        </a>
-        <a class="gallery-item gallery-item--live reveal" href="https://biglarrys.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#2A52F0;--tile-b:#0A1C7A;" aria-label="Big Larry's Cookers — custom BBQ cooker builder in La Grange, NC — view live site (opens in new tab)">
-          <div class="gallery-bg"></div>
-          <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
-          <div class="gallery-iframe-wrap">
-            <iframe src="https://biglarrys.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
-          </div>
-          <div class="gallery-label">
-            <span class="gallery-tag">Fabrication</span>
-            <h3>Big Larry's Cookers</h3>
+          <div class="gallery-meta">
+            <span class="chip">Big Larry's Cookers</span>
+            <h3 class="display gallery-descriptor">Built to feed a crowd.</h3>
           </div>
         </a>
-        <a class="gallery-item gallery-item--live reveal" href="https://oasis-clearing.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#123AF0;--tile-b:#050B4A;" aria-label="Oasis J&amp;R Land Clearing — bilingual residential land clearing and site work — view live site (opens in new tab)">
-          <div class="gallery-bg"></div>
-          <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
-          <div class="gallery-iframe-wrap">
-            <iframe src="https://oasis-clearing.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+        <a class="gallery-item dark-card reveal" href="https://oasis-clearing.vercel.app/" target="_blank" rel="noopener" aria-label="Oasis J&amp;R Land Clearing — bilingual residential land clearing and site work — view live site (opens in new tab)">
+          <div class="dark-card-glow" aria-hidden="true"></div>
+          <div class="gallery-frame">
+            <div class="gallery-iframe-wrap">
+              <iframe src="https://oasis-clearing.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+            </div>
           </div>
-          <div class="gallery-label">
-            <span class="gallery-tag">Land Clearing</span>
-            <h3>Oasis J&amp;R Land Clearing</h3>
-          </div>
-        </a>
-        <a class="gallery-item gallery-item--live reveal" href="https://coastalgrove.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#2E6F5E;--tile-b:#0B2E24;" aria-label="Coastal Grove Builders — custom building and renovation, est. 2025 — view live site (opens in new tab)">
-          <div class="gallery-bg"></div>
-          <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
-          <div class="gallery-iframe-wrap">
-            <iframe src="https://coastalgrove.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
-          </div>
-          <div class="gallery-label">
-            <span class="gallery-tag">Custom Building &amp; Renovation</span>
-            <h3>Coastal Grove Builders</h3>
+          <div class="gallery-meta">
+            <span class="chip">Oasis J&amp;R Land Clearing</span>
+            <h3 class="display gallery-descriptor">Cleared for what's next.</h3>
           </div>
         </a>
-        <a class="gallery-item gallery-item--live reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" style="--tile-a:#1E44F5;--tile-b:#071440;" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
-          <div class="gallery-bg"></div>
-          <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
-          <div class="gallery-iframe-wrap">
-            <iframe src="https://wizardworks.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+        <a class="gallery-item dark-card reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
+          <div class="dark-card-glow" aria-hidden="true"></div>
+          <div class="gallery-frame">
+            <div class="gallery-iframe-wrap">
+              <iframe src="https://wizardworks.vercel.app/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+            </div>
           </div>
-          <div class="gallery-label">
-            <span class="gallery-tag">Hardscaping &amp; Driveways</span>
-            <h3>WizardWorks</h3>
+          <div class="gallery-meta">
+            <span class="chip">WizardWorks</span>
+            <h3 class="display gallery-descriptor">Hardscape, elevated.</h3>
           </div>
         </a>
-        <a class="gallery-item gallery-item--live reveal" href="https://jlovesrestore.com/" target="_blank" rel="noopener" style="--tile-a:#3B5BFF;--tile-b:#152D9E;" aria-label="JLove Restorations — sneaker restoration and cleaning, RDU &amp; Charlotte — view live site (opens in new tab)">
-          <div class="gallery-bg"></div>
-          <img class="gallery-watermark" src="sitesync-icon.png" alt="" loading="lazy">
-          <div class="gallery-iframe-wrap">
-            <iframe src="https://jlovesrestore.com/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+        <a class="gallery-item dark-card reveal" href="https://jlovesrestore.com/" target="_blank" rel="noopener" aria-label="JLove Restorations — sneaker restoration and cleaning, RDU &amp; Charlotte — view live site (opens in new tab)">
+          <div class="dark-card-glow" aria-hidden="true"></div>
+          <div class="gallery-frame">
+            <div class="gallery-iframe-wrap">
+              <iframe src="https://jlovesrestore.com/" title="" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+            </div>
           </div>
-          <div class="gallery-label">
-            <span class="gallery-tag">Sneaker Restoration</span>
-            <h3>JLove Restorations</h3>
+          <div class="gallery-meta">
+            <span class="chip">JLove Restorations</span>
+            <h3 class="display gallery-descriptor">Sneakers, restored right.</h3>
           </div>
         </a>
       </div>
-    </div>
-  </section>
-
-  <!-- ================= PRICING ================= -->
-  <section class="section" id="pricing">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">Pricing</span>
-        <h2 class="line-mask"><span class="line-mask-inner">Straightforward pricing, no surprises.</span></h2>
-        <p>Pick where you want to start. Every tier is built to look and perform like the one above the last website you had.</p>
-      </div>
-
-      <div class="pricing">
-        <div class="plan reveal">
-          <span class="plan-name">Basic</span>
-          <div class="plan-price"><span class="amount" data-count-to="500">$500</span></div>
-          <p class="plan-desc">A modern, professional site that gets you found and looking legitimate — fast.</p>
-          <ul class="plan-features">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Modern, professional design</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Mobile optimized</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Local SEO basics</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Launched fast</li>
-          </ul>
-          <a class="btn btn-ghost btn-block" href="mailto:ncsitesync@gmail.com?subject=Basic%20Site%20Quote">Get a Quote</a>
-        </div>
-
-        <div class="plan plan-featured reveal">
-          <span class="plan-badge">Most Popular</span>
-          <span class="plan-name">Signature</span>
-          <div class="plan-price"><span class="amount" data-count-to="700">$700</span></div>
-          <p class="plan-desc">Everything in Basic, plus the motion and polish that makes a business look like the biggest one in town.</p>
-          <ul class="plan-features">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in Basic</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Custom video hero with scroll effects</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Motion design throughout</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Premium, editorial look</li>
-          </ul>
-          <p class="plan-note">The site you're on now is built at this tier.</p>
-          <a class="btn btn-primary btn-block" href="mailto:ncsitesync@gmail.com?subject=Signature%20Site%20Quote" style="margin-top:16px;">Get a Quote</a>
-        </div>
-
-        <div class="plan reveal">
-          <span class="plan-name">Automated</span>
-          <div class="plan-price"><span class="amount" data-count-to="1200" data-count-prefix="From ">From $1,200</span></div>
-          <p class="plan-desc">Everything in Signature, plus a booking system and automated follow-ups built around how you work.</p>
-          <ul class="plan-features">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in Signature</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Booking system</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Automated follow-ups</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Scoped to your business</li>
-          </ul>
-          <a class="btn btn-ghost btn-block" href="mailto:ncsitesync@gmail.com?subject=Automated%20Site%20Quote">Get a Quote</a>
-        </div>
-      </div>
-
-      <p class="pricing-foot reveal">Every site includes month-one support. <strong>Hosting &amp; care plans from $50/mo.</strong></p>
     </div>
   </section>
 
   <!-- ================= HOW IT WORKS ================= -->
-  <section class="section section-alt" id="how-it-works">
+  <section class="section" id="how-it-works">
     <div class="container">
       <div class="section-head reveal">
-        <span class="eyebrow">How it works</span>
-        <h2 class="line-mask"><span class="line-mask-inner">Three steps. No runaround.</span></h2>
+        <span class="micro-label">How it works</span>
+        <h2 class="display line-mask"><span class="line-mask-inner">Three steps. No runaround.</span></h2>
       </div>
 
       <div class="steps">
         <div class="step reveal">
-          <span class="step-num">01</span>
-          <h3>Talk</h3>
-          <p>A quick call about your business, your customers, and what isn't working online right now.</p>
-          <span class="step-line"></span>
+          <span class="step-num-big" aria-hidden="true">01</span>
+          <div class="step-body">
+            <h3>Talk</h3>
+            <p>A quick call about your business, your customers, and what isn't working online right now.</p>
+          </div>
         </div>
         <div class="step reveal">
-          <span class="step-num">02</span>
-          <h3>Build</h3>
-          <p>Your site gets designed and built around outcomes, not templates — usually live within two weeks.</p>
-          <span class="step-line"></span>
+          <span class="step-num-big" aria-hidden="true">02</span>
+          <div class="step-body">
+            <h3>Build</h3>
+            <p>Your site gets designed and built around outcomes, not templates — usually live within two weeks.</p>
+          </div>
         </div>
         <div class="step reveal">
-          <span class="step-num">03</span>
-          <h3>Launch &amp; Grow</h3>
-          <p>Your site goes live, automation kicks in, and ongoing care keeps everything running after that.</p>
+          <span class="step-num-big" aria-hidden="true">03</span>
+          <div class="step-body">
+            <h3>Launch &amp; Grow</h3>
+            <p>Your site goes live, automation kicks in, and ongoing care keeps everything running after that.</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ================= ABOUT ================= -->
-  <section class="section" id="about">
+  <!-- ================= REVENUE CALCULATOR ================= -->
+  <section class="section section--light-band on-light" id="revenue-calculator">
     <div class="container">
-      <span class="eyebrow reveal">About</span>
-      <div class="about" style="margin-top:20px;">
-        <p class="about-lead">I'm based in North Carolina, and I build for the businesses I drive past every day — the contractor's truck outside a job site, the barbershop with a line out the door on Saturday morning. You don't have time to manage a website, and you shouldn't have to. I build it, launch it, and keep it running, so you can stay focused on the work in front of you.</p>
-        <p class="about-sign">— SiteSync</p>
+      <div class="section-head reveal">
+        <span class="micro-label">Revenue calculator</span>
+        <h2 class="display line-mask"><span class="line-mask-inner">What's it costing you?</span></h2>
       </div>
+
+      <div class="calc-card light-card reveal">
+        <div class="calc-scenarios-wrap">
+          <div class="calc-scenarios" id="calcScenarios" role="group" aria-label="Choose a scenario">
+            <button type="button" class="calc-scenario is-active" data-scenario="missedCalls" aria-pressed="true">Missed Calls</button>
+            <button type="button" class="calc-scenario" data-scenario="webLeads" aria-pressed="false">Web Leads</button>
+          </div>
+        </div>
+
+        <div class="calc-grid">
+          <div class="calc-inputs">
+            <div class="calc-period-toggle" id="calcPeriodToggle" role="group" aria-label="Choose a time period" hidden>
+              <button type="button" class="calc-period-btn is-active" data-period="monthly" aria-pressed="true">Monthly</button>
+              <button type="button" class="calc-period-btn" data-period="weekly" aria-pressed="false">Weekly</button>
+            </div>
+
+            <div class="calc-slider-group">
+              <label class="calc-question" for="calcVolume" id="calcVolumeQuestion">How many calls do you miss each month?</label>
+              <div class="calc-value" id="calcVolumeValue" aria-hidden="true">20 calls</div>
+              <input type="range" id="calcVolume" class="calc-slider" min="0" max="100" step="1" value="20" aria-label="How many calls do you miss each month?">
+            </div>
+
+            <div class="calc-slider-group">
+              <label class="calc-question" for="calcJobValue">What's your average job worth?</label>
+              <div class="calc-value" id="calcJobValueValue" aria-hidden="true">$450</div>
+              <input type="range" id="calcJobValue" class="calc-slider" min="100" max="40000" step="50" value="450" aria-label="What's your average job worth?">
+              <div class="calc-presets" role="group" aria-label="Average job value presets">
+                <button type="button" class="calc-preset" data-value="450">$450</button>
+                <button type="button" class="calc-preset" data-value="2500">$2,500</button>
+                <button type="button" class="calc-preset" data-value="10000">$10,000</button>
+                <button type="button" class="calc-preset" data-value="25000">$25,000</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="calc-results" aria-live="polite">
+            <span class="micro-label calc-results-label" id="calcResultLabel">Total value of the calls you're already missing.</span>
+            <div class="calc-big-number"><span id="calcPrimaryAmount">$9,000</span><span class="calc-unit" id="calcPrimaryUnit">/ month</span></div>
+            <div class="calc-sub-number" id="calcPrimarySecondary"><span id="calcPrimaryYearly">$108,000</span> / year</div>
+            <div class="calc-sub-number" id="calcPrimaryOneTime" hidden>from a single campaign</div>
+
+            <div class="calc-divider" aria-hidden="true"></div>
+
+            <p class="calc-recovery-question" id="calcRecoveryQuestion">What if you recovered just 20%?</p>
+            <div class="calc-big-number calc-big-number--accent">+<span id="calcRecoveredAmount">$1,800</span><span class="calc-unit" id="calcRecoveredUnit">/ month</span></div>
+            <div class="calc-sub-number" id="calcRecoveredSecondary">+<span id="calcRecoveredYearly">$21,600</span> / year</div>
+
+            <div class="calc-slider-group calc-recovery-slider">
+              <label class="calc-question" for="calcRecoveryRate">Test your recovery rate</label>
+              <input type="range" id="calcRecoveryRate" class="calc-slider" min="20" max="100" step="5" value="20" aria-label="Test your recovery rate">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="calc-disclaimer calc-disclaimer--standalone reveal">Estimates are for demonstration purposes only. Actual results vary.</p>
     </div>
   </section>
 
-  <!-- ================= CONTACT CTA ================= -->
+  <!-- ================= FOOTER CTA ================= -->
   <section class="cta-band" id="contact">
-    <div class="cta-glow" aria-hidden="true"><span></span></div>
+    <div class="cta-glow" aria-hidden="true"></div>
     <div class="container">
-      <h2 class="reveal line-mask"><span class="line-mask-inner">Ready to look like the best option in town?</span></h2>
-      <p class="reveal">Tell me a bit about your business and I'll put together a plan — no pressure, no commitment.</p>
+      <h2 class="display reveal line-mask"><span class="line-mask-inner">Ready to look like</span></h2>
+      <h2 class="display reveal line-mask"><span class="line-mask-inner">the best option in town?</span></h2>
+      <p class="cta-band-sub reveal">40-minute call. I'll show you exactly what's leaking and what it's worth to fix it.</p>
       <div class="cta-band-actions reveal">
-        <a class="btn btn-on-blue" href="mailto:ncsitesync@gmail.com?subject=Quote%20Request">Get a Quote</a>
-        <a class="btn btn-ghost-on-blue" href="tel:+19109901576">Call (910) 990-1576</a>
+        <button type="button" class="btn btn-primary js-book-meeting">Book a Meeting Today</button>
+        <p class="cta-band-note">No contracts. Cancel anytime.</p>
+        <a class="micro-label" href="tel:+19109901576" style="color:#fff;">(910) 990-1576</a>
       </div>
     </div>
   </section>
@@ -1667,7 +1699,10 @@
   <div class="container">
     <div class="footer-top">
       <div class="footer-brand">
-        <img src="sitesync-logo.png" alt="SiteSync" width="130" height="32" loading="lazy">
+        <span class="footer-brand-row">
+          <img src="herologo.png" alt="SiteSync" width="18" height="18" loading="lazy">
+          <span class="footer-brand-name">SiteSync</span>
+        </span>
         <p>Web design and automation for local service businesses across North Carolina.</p>
       </div>
       <div class="footer-cols">
@@ -1675,9 +1710,7 @@
           <h4>Site</h4>
           <ul>
             <li><a href="#selected-work">Selected Work</a></li>
-            <li><a href="#pricing">Pricing</a></li>
             <li><a href="#how-it-works">How It Works</a></li>
-            <li><a href="#about">About</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -1696,24 +1729,28 @@
   </div>
 </footer>
 
-<!-- ================= CALL-NOW TOAST ================= -->
-<div class="toast" id="demoToast" hidden>
-  <div class="toast-card" id="toastCard" role="complementary" aria-live="polite" aria-label="Call SiteSync">
-    <button class="toast-close" id="toastClose" aria-label="Close">
+<!-- ================= INSTAGRAM POPUP ================= -->
+<!-- TODO: href="#" is a placeholder — swap in the real Instagram URL. -->
+<aside class="ig-toast" id="igToast" aria-label="Instagram" hidden>
+  <a class="ig-toast-link" id="igToastLink" href="#" target="_blank" rel="noopener" aria-label="Follow us on Instagram">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg>
+    <span aria-hidden="true">Follow us</span>
+  </a>
+  <button class="ig-toast-close" id="igToastClose" type="button" aria-label="Dismiss Instagram notice">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+  </button>
+</aside>
+
+<!-- ================= BOOKING MODAL ================= -->
+<div class="modal-overlay" id="bookingModal" hidden>
+  <div class="modal-panel" id="bookingPanel" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle">
+    <button type="button" class="modal-close" id="bookingClose" aria-label="Close booking dialog">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
     </button>
-    <img class="modal-logo" src="sitesync-logo.png" alt="SiteSync" loading="lazy">
-    <h3 id="toastTitle">Ready to get started?</h3>
-    <p>Call now</p>
-    <div class="toast-actions">
-      <a class="btn btn-primary btn-block" href="tel:+19109901576">Call (910) 990-1576</a>
+    <h2 class="modal-title" id="bookingModalTitle">Book a meeting</h2>
+    <div class="calendly-embed-wrap" id="calendlyEmbedWrap">
+      <div class="calendly-inline-widget" data-url="https://calendly.com/ncsitesync/40-min" style="min-width:320px;height:700px;"></div>
     </div>
-  </div>
-  <div class="toast-pill" id="toastPill">
-    <button class="toast-pill-main" id="toastPillMain" aria-label="Reopen: call SiteSync message">Call Now</button>
-    <button class="toast-pill-close" id="toastPillClose" aria-label="Close">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
-    </button>
   </div>
 </div>
 
@@ -1729,19 +1766,41 @@
 
   /* ---------- Shared scroll handler ----------
      One scroll listener, coalesced into a single requestAnimationFrame
-     tick, driving everything that's tied to scroll position: the
-     nav's scrolled-shadow state and the top progress bar. Additional
-     scroll-linked behavior should be added inside updateOnScroll()
-     rather than as its own listener. */
-  var nav = document.getElementById('nav');
+     tick (never runs layout work directly in the scroll event), driving
+     everything tied to scroll position: the top progress bar and the
+     sticky header's "scrolled" state.
+
+     Two-threshold hysteresis (enter above 80px, exit below 40px) so
+     hovering right at a boundary can't rapidly re-toggle the class — a
+     single threshold is what used to flicker there. lastY + the 4px
+     delta guard skip the whole tick on sub-pixel/momentum-scroll noise
+     that wouldn't visibly move anything anyway. */
+  var navWrap = document.getElementById('navWrap');
   var scrollProgress = document.getElementById('scrollProgress');
   var scrollTicking = false;
+  var NAV_ENTER_THRESHOLD = 80;
+  var NAV_EXIT_THRESHOLD = 40;
+  var navIsScrolled = false;
+  var lastScrollY = -Infinity; // guarantees the first tick always runs, even on a page load that starts mid-scroll
 
   function updateOnScroll(){
     var y = window.scrollY;
 
-    if (y > 8) nav.classList.add('is-scrolled');
-    else nav.classList.remove('is-scrolled');
+    if (Math.abs(y - lastScrollY) < 4){
+      scrollTicking = false;
+      return;
+    }
+    lastScrollY = y;
+
+    if (navWrap){
+      if (!navIsScrolled && y > NAV_ENTER_THRESHOLD){
+        navIsScrolled = true;
+        navWrap.classList.add('is-scrolled');
+      } else if (navIsScrolled && y < NAV_EXIT_THRESHOLD){
+        navIsScrolled = false;
+        navWrap.classList.remove('is-scrolled');
+      }
+    }
 
     if (scrollProgress){
       var doc = document.documentElement;
@@ -1759,7 +1818,7 @@
   window.addEventListener('resize', requestScrollTick, {passive:true});
   requestScrollTick();
 
-  /* ---------- Mobile nav (hamburger) ---------- */
+  /* ---------- Mobile nav ---------- */
   var navToggle = document.getElementById('navToggle');
   var navMobile = document.getElementById('navMobile');
   if (navToggle && navMobile){
@@ -1794,7 +1853,7 @@
     navToggle.addEventListener('click', function(){
       if (navMobile.classList.contains('is-open')) closeMenu(); else openMenu();
     });
-    navMobile.querySelectorAll('a').forEach(function(a){
+    navMobile.querySelectorAll('a, button').forEach(function(a){
       a.addEventListener('click', closeMenu);
     });
   }
@@ -1815,76 +1874,7 @@
     revealEls.forEach(function(el){ io.observe(el); });
   }
 
-  /* ---------- About: typewriter reveal ----------
-     The paragraph's real text already exists in the DOM (see the
-     .about-lead markup) — for SEO and no-JS that's the whole story,
-     nothing below ever runs. When JS is available, that same captured
-     text is (a) copied verbatim into a .visually-hidden span so
-     screen readers get it normally, in one read, independent of the
-     animation, and (b) typed character-by-character into an
-     aria-hidden mirror span next to it. Fires once, on first
-     intersection only — unobserve happens immediately, so scrolling
-     away and back never replays it. */
-  (function aboutTyping(){
-    var lead = document.querySelector('.about-lead');
-    var sign = document.querySelector('.about-sign');
-    if (!lead) return;
-
-    if (reduceMotion || !('IntersectionObserver' in window)){
-      if (sign) sign.classList.add('is-visible');
-      return;
-    }
-
-    var fullText = lead.textContent;
-    lead.textContent = '';
-
-    var sr = document.createElement('span');
-    sr.className = 'visually-hidden';
-    sr.textContent = fullText;
-
-    var visible = document.createElement('span');
-    visible.className = 'about-lead-visible';
-    visible.setAttribute('aria-hidden', 'true');
-
-    var typedNode = document.createTextNode('');
-    var cursor = document.createElement('span');
-    cursor.className = 'about-cursor';
-    visible.appendChild(typedNode);
-    visible.appendChild(cursor);
-
-    lead.appendChild(sr);
-    lead.appendChild(visible);
-
-    // ~30-40ms/char reading pace, with a small extra pause after
-    // punctuation so it reads more like typing than a metronome.
-    function typeNext(i){
-      if (i >= fullText.length){
-        cursor.classList.add('is-done');
-        if (sign) sign.classList.add('is-visible');
-        return;
-      }
-      var ch = fullText.charAt(i);
-      typedNode.data += ch;
-      var delay = 30 + Math.random() * 10;
-      if (/[.,—]/.test(ch)) delay += 70;
-      setTimeout(function(){ typeNext(i + 1); }, delay);
-    }
-
-    var typingIO = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if (entry.isIntersecting){
-          typingIO.unobserve(entry.target);
-          typeNext(0);
-        }
-      });
-    }, {threshold:0.3});
-    typingIO.observe(lead);
-  })();
-
-  /* ---------- Nav "you are here" indicator ----------
-     Reuses the existing hover-underline mechanism (.nav-links a::after,
-     transform:scaleX) via an .is-active class, so no new visual
-     language is introduced — just a second way to trigger it. */
+  /* ---------- Nav "you are here" indicator ---------- */
   (function navScrollspy(){
     if (!('IntersectionObserver' in window)) return;
     var links = document.querySelectorAll('.nav-links a[href^="#"]');
@@ -1909,44 +1899,6 @@
       });
     }, {rootMargin:'-45% 0px -45% 0px', threshold:0});
     ids.forEach(function(id){ spyIO.observe(document.getElementById(id)); });
-  })();
-
-  /* ---------- Pricing: count up on scroll into view ----------
-     Each .amount already renders its correct final text in the static
-     HTML, so if JS never runs or reduced motion is on, the number is
-     simply always correct — the animation only ever plays on top of
-     an already-valid value, never toward one. */
-  (function pricingCountUp(){
-    var amounts = document.querySelectorAll('.amount[data-count-to]');
-    if (!amounts.length || reduceMotion || !('IntersectionObserver' in window)) return;
-    var countIO = new IntersectionObserver(function(entries){
-      entries.forEach(function(entry){
-        if (!entry.isIntersecting) return;
-        countIO.unobserve(entry.target);
-        var el = entry.target;
-        var finalText = el.textContent;
-        var target = parseInt(el.getAttribute('data-count-to'), 10);
-        var prefix = el.getAttribute('data-count-prefix') || '';
-        var start = Math.round(target * 0.55);
-        var duration = 900;
-        var startTime = null;
-        function frame(ts){
-          if (startTime === null) startTime = ts;
-          var elapsed = ts - startTime;
-          var t = Math.min(elapsed / duration, 1);
-          var eased = 1 - Math.pow(1 - t, 3);
-          var value = Math.round(start + (target - start) * eased);
-          el.textContent = prefix + '$' + value.toLocaleString('en-US');
-          if (t < 1){
-            requestAnimationFrame(frame);
-          } else {
-            el.textContent = finalText;
-          }
-        }
-        requestAnimationFrame(frame);
-      });
-    }, {threshold:0.4});
-    amounts.forEach(function(el){ countIO.observe(el); });
   })();
 
   /* ---------- Selected Work: live iframe previews ---------- */
@@ -1990,199 +1942,716 @@
   })();
 
 
-  /* ---------- Call-now toast ----------
-     Non-modal: no backdrop, no focus trap, no body scroll-lock.
-     Appears bottom-right (bottom-centered/full-width on narrow
-     viewports) ~2.5s after load — not tied to scroll position, so it
-     doesn't compete with the hero's own load-in sequence but also
-     doesn't wait on how far someone scrolls. Auto-collapses to a
-     persistent pill after a read-time delay, and remembers a manual
-     dismissal in localStorage so it doesn't nag on every page view.
+  /* ---------- Instagram popup (Cloth Barn .fb-toast pattern) ----------
+     Complementary landmark — no backdrop, no focus trap, no scroll lock.
+     Appears once, 3.5s after load, and stays until dismissed; dismissal
+     persists via localStorage so it doesn't nag on repeat visits. */
+  (function initInstagramToast(){
+    var toast = document.getElementById('igToast');
+    var closeBtn = document.getElementById('igToastClose');
+    if (!toast || !closeBtn) return;
 
-     TOAST_COLLAPSE_DELAY_MS is the single source of truth for the
-     read-time delay — 2000ms as specified. To compare against 6000ms
-     without editing this constant, append ?toastDelay=6000 to the URL
-     (any positive integer works) and reload. */
-  (function initDemoToast(){
-    var TOAST_COLLAPSE_DELAY_MS = 2000;
-    var DISMISS_KEY = 'sitesync-cta-toast-dismissed';
-
-    var toast = document.getElementById('demoToast');
-    var card = document.getElementById('toastCard');
-    var closeBtn = document.getElementById('toastClose');
-    var pillMain = document.getElementById('toastPillMain');
-    var pillClose = document.getElementById('toastPillClose');
-    if (!toast || !card || !closeBtn || !pillMain || !pillClose) return;
-
+    var STORAGE_KEY = 'sitesync-ig-toast-dismissed';
     try {
-      if (localStorage.getItem(DISMISS_KEY)) return;
+      if (localStorage.getItem(STORAGE_KEY) === '1') return;
     } catch (e){ /* localStorage unavailable (private mode etc.) — proceed without persistence */ }
 
-    var collapseDelay = TOAST_COLLAPSE_DELAY_MS;
-    try {
-      var override = parseInt(new URLSearchParams(window.location.search).get('toastDelay'), 10);
-      if (override > 0) collapseDelay = override;
-    } catch (e){}
-
-    var collapseTimer = null;
-    var remaining = collapseDelay;
-    var timerStartedAt = null;
-    var cancelled = false;
-
-    function clearCollapseTimer(){
-      if (collapseTimer){ clearTimeout(collapseTimer); collapseTimer = null; }
+    function dismiss(){
+      toast.classList.remove('is-visible');
+      window.setTimeout(function(){ toast.hidden = true; }, 600); // matches .ig-toast's 600ms transition
+      try { localStorage.setItem(STORAGE_KEY, '1'); } catch (e){}
+      document.removeEventListener('keydown', onKeydown);
     }
 
-    function collapse(){
-      if (cancelled) return;
-      toast.classList.add('is-collapsed');
+    function onKeydown(e){
+      if (e.key === 'Escape' || e.key === 'Esc') dismiss();
     }
 
-    function scheduleCollapse(ms){
-      clearCollapseTimer();
-      remaining = ms;
-      timerStartedAt = Date.now();
-      collapseTimer = setTimeout(collapse, ms);
-    }
-
-    // Hovering only pauses — the countdown resumes with whatever time
-    // was left. Genuinely interacting (focusing or clicking something
-    // inside the card) cancels the auto-collapse for good, since
-    // shrinking the message out from under someone actively using it
-    // would be worse than leaving it expanded.
-    function pauseCollapse(){
-      if (cancelled || !collapseTimer) return;
-      remaining = Math.max(0, remaining - (Date.now() - timerStartedAt));
-      clearCollapseTimer();
-    }
-
-    function resumeCollapse(){
-      if (cancelled || toast.classList.contains('is-collapsed')) return;
-      scheduleCollapse(remaining);
-    }
-
-    function cancelCollapseForGood(){
-      cancelled = true;
-      clearCollapseTimer();
-    }
-
-    function expand(){
-      toast.classList.remove('is-collapsed');
-      cancelCollapseForGood();
-    }
-
-    function dismissForever(){
-      cancelCollapseForGood();
-      toast.hidden = true;
-      try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e){}
-    }
-
-    function show(){
+    window.setTimeout(function(){
       toast.hidden = false;
       void toast.offsetWidth;
-      toast.classList.add('is-visible');
-      if (reduceMotion){
-        scheduleCollapse(collapseDelay);
-      } else {
-        // Let the entrance transition finish before the read-time
-        // countdown starts, so the countdown reflects time actually
-        // spent reading rather than time spent watching it slide in.
-        setTimeout(function(){ scheduleCollapse(collapseDelay); }, 600);
-      }
-    }
+      requestAnimationFrame(function(){ toast.classList.add('is-visible'); });
+      document.addEventListener('keydown', onKeydown);
+    }, 3500);
 
-    card.addEventListener('mouseenter', pauseCollapse);
-    card.addEventListener('mouseleave', resumeCollapse);
-    card.addEventListener('focusin', cancelCollapseForGood);
-    card.addEventListener('click', function(e){
-      if (e.target.closest('a')) cancelCollapseForGood();
-    });
-
-    closeBtn.addEventListener('click', dismissForever);
-    pillClose.addEventListener('click', dismissForever);
-    pillMain.addEventListener('click', expand);
-
-    toast.addEventListener('keydown', function(e){
-      if (e.key === 'Escape' || e.key === 'Esc') dismissForever();
-    });
-
-    function attemptShow(retries){
-      setTimeout(function(){
-        if (document.body.classList.contains('menu-open')){
-          if (retries < 6) attemptShow(retries + 1);
-          return;
-        }
-        show();
-      }, retries === 0 ? 2500 : 300);
-    }
-
-    attemptShow(0);
+    closeBtn.addEventListener('click', dismiss);
   })();
 
-  /* ---------- Hero icon: cursor tilt ----------
-     Damped via a continuous requestAnimationFrame lerp loop rather
-     than a CSS transition — a transition chases each new mousemove
-     target from scratch, which reads as stepped; lerping the current
-     angle a fraction of the way toward the target every frame is what
-     actually reads as weight, and the same loop naturally eases back
-     to rest when the target resets to (0,0) on mouseleave, no
-     separate "return" animation needed.
+  /* ---------- Capability carousel ----------
+     Peek layout. The track holds the 4 real slides plus a clone of the
+     last slide prepended and a clone of the first slide appended, so
+     there's always a real-looking neighbor to peek at both ends instead
+     of an empty gutter. trackPos (a plain integer, 0..count+1) tracks
+     position — 0 and count+1 are the clone slots, 1..count are the real
+     slides (index = pos-1) — and translateXForPos() turns that into a
+     literal pixel offset via getBoundingClientRect()/computed gap, so
+     the track only ever gets one flat translate3d(Xpx,0,0), never a
+     recalculated calc() expression.
 
-     Applied to #heroIconStage specifically — a nested element inside
-     the load-in-animated .hero-icon-entrance and the ambient-bob
-     .hero-icon-float — so this can never fight either of those for
-     ownership of `transform`; all three sit on different elements and
-     compose visually. Doesn't attach its listeners until 2000ms after
-     load (the icon's own entrance finishes at 1040ms delay + 950ms
-     duration = 1990ms), so the tilt only ever becomes active once the
-     entrance sequence is actually done, per the brief. Disabled
-     entirely on touch/coarse-pointer devices and under reduced
-     motion. */
-  (function heroIconTilt(){
-    var stage = document.getElementById('heroIconStage');
-    var heroWrap = document.getElementById('heroWrap');
-    if (!stage || !heroWrap || reduceMotion) return;
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+     Stepping (arrows/peek-clicks/keyboard/swipe) always moves trackPos
+     by exactly 1 — busy guards against overlapping steps, so a rapid
+     second click is ignored until the current one finishes. When a step
+     lands on a clone, the transition plays normally (it looks identical
+     to the real slide underneath), and once it finishes we snap
+     trackPos to the equivalent real slide with transitions disabled for
+     one frame — invisible, since the clone and the real slide are
+     pixel-for-pixel the same. Dot clicks jump straight to a real
+     slide's trackPos and never touch the clones.
 
-    var MAX_DEG = 9;
-    var DAMP = 0.08;
-    var ACTIVATE_DELAY_MS = 2000;
+     will-change is added to the track and every slide right before a
+     transition starts and stripped again once it ends, rather than left
+     on permanently. Reduced motion skips the clone dance entirely
+     (nothing needs to visually slide past a clone) and cross-fades the
+     whole track's opacity around an instant, already-wrapped position
+     jump instead. */
+  (function initCapabilityCarousel(){
+    var root = document.getElementById('capabilityCarousel');
+    var track = document.getElementById('capabilityTrack');
+    var realSlides = track ? Array.prototype.slice.call(track.querySelectorAll('.carousel-slide')) : [];
+    var prevBtn = document.getElementById('capabilityPrev');
+    var nextBtn = document.getElementById('capabilityNext');
+    var dots = document.querySelectorAll('.carousel-dot');
+    if (!root || !track || !realSlides.length || !prevBtn || !nextBtn || !dots.length) return;
 
-    var targetX = 0, targetY = 0, curX = 0, curY = 0;
-    var ticking = false;
+    var count = realSlides.length;
 
-    function tick(){
-      curX += (targetX - curX) * DAMP;
-      curY += (targetY - curY) * DAMP;
-      stage.style.transform = 'rotateX(' + curX.toFixed(2) + 'deg) rotateY(' + curY.toFixed(2) + 'deg)';
-      var settled = Math.abs(targetX - curX) < 0.01 && Math.abs(targetY - curY) < 0.01 &&
-                    Math.abs(curX) < 0.01 && Math.abs(curY) < 0.01;
-      if (!settled){
-        requestAnimationFrame(tick);
-      } else {
-        ticking = false;
+    var firstClone = realSlides[0].cloneNode(true);
+    var lastClone = realSlides[count - 1].cloneNode(true);
+    firstClone.setAttribute('aria-hidden', 'true');
+    lastClone.setAttribute('aria-hidden', 'true');
+    firstClone.classList.remove('is-active');
+    lastClone.classList.remove('is-active');
+    track.appendChild(firstClone);
+    track.insertBefore(lastClone, track.firstChild);
+    var allSlides = Array.prototype.slice.call(track.children);
+
+    var index = 0;
+    var trackPos = 1;
+    var busy = false;
+    var fadeTimer = null;
+    var ease = getComputedStyle(document.documentElement).getPropertyValue('--ease');
+
+    function render(){
+      realSlides.forEach(function(slide, i){
+        var active = i === index;
+        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+        slide.classList.toggle('is-active', active);
+      });
+      dots.forEach(function(dot, i){
+        var active = i === index;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+    }
+
+    // Real rendered pixels, not the --card-w/--card-gap custom
+    // properties' raw px/vw source values — this stays correct across
+    // breakpoints without needing to know which unit is currently active.
+    function translateXForPos(pos){
+      var carouselWidth = root.getBoundingClientRect().width;
+      var cardWidth = realSlides[0].getBoundingClientRect().width;
+      var gapStyle = getComputedStyle(track).columnGap || getComputedStyle(track).gap;
+      var gap = parseFloat(gapStyle) || 0;
+      return (carouselWidth - cardWidth) / 2 - pos * (cardWidth + gap);
+    }
+
+    function setTransform(pos){
+      track.style.transform = 'translate3d(' + translateXForPos(pos).toFixed(2) + 'px, 0, 0)';
+    }
+
+    function addWillChange(){
+      track.style.willChange = 'transform';
+      allSlides.forEach(function(slide){ slide.style.willChange = 'transform'; });
+    }
+    function removeWillChange(){
+      track.style.willChange = '';
+      allSlides.forEach(function(slide){ slide.style.willChange = ''; });
+    }
+
+    function setPosInstant(pos){
+      track.style.transition = 'none';
+      setTransform(pos);
+      void track.offsetWidth; // force reflow so the disabled transition is committed before it's restored
+      track.style.transition = '';
+    }
+
+    function crossfadeToPos(pos, onDone){
+      if (fadeTimer) clearTimeout(fadeTimer);
+      track.style.transition = 'opacity 200ms ' + ease;
+      track.style.opacity = '0';
+      fadeTimer = window.setTimeout(function(){
+        trackPos = pos;
+        track.style.transition = 'none';
+        setTransform(trackPos);
+        void track.offsetWidth;
+        track.style.transition = 'opacity 200ms ' + ease;
+        track.style.opacity = '1';
+        fadeTimer = window.setTimeout(function(){
+          track.style.transition = '';
+          fadeTimer = null;
+          if (onDone) onDone();
+        }, 200);
+      }, 200);
+    }
+
+    // Arrows, peek-card clicks, keyboard, and swipe all move exactly
+    // one card (delta is +1/-1) and use the wrap-clone mechanism.
+    function step(delta){
+      if (busy) return;
+      busy = true;
+      index = ((index + delta) % count + count) % count;
+      render();
+
+      if (reduceMotion){
+        crossfadeToPos(index + 1, function(){ busy = false; });
+        return;
+      }
+
+      trackPos += delta;
+      addWillChange();
+      track.style.transition = '';
+      setTransform(trackPos);
+      track.addEventListener('transitionend', function onEnd(e){
+        if (e.target !== track || e.propertyName !== 'transform') return;
+        track.removeEventListener('transitionend', onEnd);
+        removeWillChange();
+        if (trackPos === 0){
+          trackPos = count;
+          setPosInstant(trackPos);
+        } else if (trackPos === count + 1){
+          trackPos = 1;
+          setPosInstant(trackPos);
+        }
+        busy = false;
+      });
+    }
+
+    // Dots jump straight to a real slide's position — always within
+    // [1,count], so the wrap-clone slots never come into play here.
+    function jumpTo(newIndex){
+      if (busy || newIndex === index) return;
+      busy = true;
+      index = newIndex;
+      render();
+
+      if (reduceMotion){
+        crossfadeToPos(index + 1, function(){ busy = false; });
+        return;
+      }
+
+      trackPos = index + 1;
+      addWillChange();
+      track.style.transition = '';
+      setTransform(trackPos);
+      track.addEventListener('transitionend', function onEnd(e){
+        if (e.target !== track || e.propertyName !== 'transform') return;
+        track.removeEventListener('transitionend', onEnd);
+        removeWillChange();
+        busy = false;
+      });
+    }
+
+    prevBtn.addEventListener('click', function(){ step(-1); });
+    nextBtn.addEventListener('click', function(){ step(1); });
+    dots.forEach(function(dot, i){
+      dot.addEventListener('click', function(){ jumpTo(i); });
+    });
+
+    // Clicking a peeking card (real or clone — visually identical)
+    // advances to it; clicking the active card or the gap is a no-op.
+    track.addEventListener('click', function(e){
+      var slide = e.target.closest ? e.target.closest('.carousel-slide') : null;
+      if (!slide) return;
+      var pos = allSlides.indexOf(slide);
+      if (pos === trackPos - 1) step(-1);
+      else if (pos === trackPos + 1) step(1);
+    });
+
+    root.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowLeft'){ e.preventDefault(); step(-1); }
+      else if (e.key === 'ArrowRight'){ e.preventDefault(); step(1); }
+    });
+
+    // Swipe support: a single-touch horizontal drag past the threshold
+    // (and more horizontal than vertical, so page scrolling still wins
+    // on mostly-vertical touches) advances/retreats one card.
+    var touchStartX = null;
+    var touchStartY = null;
+    var SWIPE_THRESHOLD = 40;
+    root.addEventListener('touchstart', function(e){
+      if (!e.touches || e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, {passive:true});
+    root.addEventListener('touchend', function(e){
+      if (touchStartX === null) return;
+      var touch = e.changedTouches && e.changedTouches[0];
+      var dx = touch ? touch.clientX - touchStartX : 0;
+      var dy = touch ? touch.clientY - touchStartY : 0;
+      touchStartX = null;
+      touchStartY = null;
+      if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
+      step(dx < 0 ? 1 : -1);
+    }, {passive:true});
+
+    // Position is now measured in real px rather than a self-adjusting
+    // CSS calc(), so a breakpoint change (resize, rotation) needs an
+    // explicit, un-animated re-measure to stay correctly centered.
+    window.addEventListener('resize', function(){ setPosInstant(trackPos); }, {passive:true});
+
+    setPosInstant(trackPos);
+    render();
+  })();
+
+  /* ---------- Missed Revenue Calculator ----------
+     Vanilla JS, no dependencies. Two sliders (volume, average job
+     value) drive four dollar figures (lost monthly/yearly, recovered
+     monthly/yearly) plus a "test your recovery rate" slider that only
+     affects the recovered pair. Every input re-runs updateCalculator()
+     synchronously — no debouncing — so the display is always exactly in
+     sync with the sliders; the ~400ms requestAnimationFrame tween is
+     purely a visual count-up layered on top of that, not the source of
+     truth. Both scenarios use the same model — volume x job value, no
+     close rate — so nothing here is scenario-specific.
+     Verified math: 20 calls x $450 = $9,000/mo, x12 = $108,000/yr;
+     20% recovery = $1,800/mo, x12 = $21,600/yr — matches the defaults. */
+  (function initRevenueCalculator(){
+    // Single source of truth for every scenario. Add another scenario by
+    // appending one entry here — no other code in this IIFE names a
+    // scenario, so nothing else needs to change.
+    var SCENARIOS = {
+      missedCalls: {
+        label: 'Missed Calls',
+        type: 'recurring',
+        volumeQuestion: 'How many calls do you miss each month?',
+        volumeUnit: 'calls',
+        volumeMin: 0, volumeMax: 100, volumeDefault: 20, volumeStep: 1,
+        // No close-rate slider — same model as Web Leads: every missed
+        // call is assumed a ready buyer.
+        resultLabel: "Total value of the calls you're already missing.",
+        recoveryQuestion: 'What if you recovered just {r}%?',
+        recoveryMin: 20, recoveryMax: 100, recoveryStep: 5, recoveryDefault: 20
+      },
+      webLeads: {
+        label: 'Web Leads',
+        type: 'recurring',
+        // periodToggle:true switches the volume slider's question/unit/
+        // range/default between the entries below instead of using a
+        // single fixed set — enable it on another scenario later by
+        // adding periodToggle:true and a periods:{monthly,weekly} object
+        // to that scenario's entry; nothing else in this file names
+        // "webLeads" or checks for it specifically.
+        periodToggle: true,
+        periods: {
+          monthly: {
+            label: 'Monthly',
+            volumeQuestion: "How many form leads don't get a fast reply each month?",
+            volumeUnit: 'leads / month',
+            volumeMin: 0, volumeMax: 100, volumeDefault: 20, volumeStep: 1,
+            monthlyMultiplier: 1
+          },
+          weekly: {
+            label: 'Weekly',
+            volumeQuestion: "How many form leads don't get a fast reply each week?",
+            volumeUnit: 'leads / week',
+            volumeMin: 0, volumeMax: 50, volumeDefault: 5, volumeStep: 1,
+            monthlyMultiplier: 4.33
+          }
+        },
+        // No close-rate slider — every lead is assumed a ready buyer.
+        resultLabel: "Total value of the leads you're already paying for.",
+        recoveryQuestion: 'What if you recovered just {r}%?',
+        recoveryMin: 20, recoveryMax: 100, recoveryStep: 5, recoveryDefault: 20
+      }
+    };
+    var DEFAULT_PERIOD = 'monthly';
+    var DEFAULT_SCENARIO = 'missedCalls';
+
+    var scenarioButtons = document.querySelectorAll('.calc-scenario');
+    var volumeInput = document.getElementById('calcVolume');
+    var jobValueInput = document.getElementById('calcJobValue');
+    var recoveryRateInput = document.getElementById('calcRecoveryRate');
+    if (!volumeInput || !jobValueInput || !recoveryRateInput || !scenarioButtons.length) return;
+
+    var periodToggleEl = document.getElementById('calcPeriodToggle');
+    var periodButtons = document.querySelectorAll('.calc-period-btn');
+
+    var volumeQuestionEl = document.getElementById('calcVolumeQuestion');
+    var volumeValueEl = document.getElementById('calcVolumeValue');
+    var jobValueValueEl = document.getElementById('calcJobValueValue');
+    var recoveryQuestionEl = document.getElementById('calcRecoveryQuestion');
+    var resultLabelEl = document.getElementById('calcResultLabel');
+
+    var primaryAmountEl = document.getElementById('calcPrimaryAmount');
+    var primaryUnitEl = document.getElementById('calcPrimaryUnit');
+    var primarySecondaryEl = document.getElementById('calcPrimarySecondary');
+    var primaryOneTimeEl = document.getElementById('calcPrimaryOneTime');
+    var primaryYearlyEl = document.getElementById('calcPrimaryYearly');
+    var recoveredAmountEl = document.getElementById('calcRecoveredAmount');
+    var recoveredUnitEl = document.getElementById('calcRecoveredUnit');
+    var recoveredSecondaryEl = document.getElementById('calcRecoveredSecondary');
+    var recoveredYearlyEl = document.getElementById('calcRecoveredYearly');
+
+    var presetButtons = document.querySelectorAll('.calc-preset');
+    var scenarioSliders = [volumeInput];
+    var allSliders = [volumeInput, jobValueInput, recoveryRateInput];
+
+    var currentScenarioKey = DEFAULT_SCENARIO;
+    // Only meaningful when the active scenario has periodToggle:true;
+    // ignored otherwise. Always reset to DEFAULT_PERIOD on a scenario
+    // switch, per spec.
+    var currentPeriod = DEFAULT_PERIOD;
+    // The dollar figure actually used in the math/display. The slider's
+    // own raw .value is just a linear thumb-position proxy over its
+    // [min,max] — never read back to regenerate this, so the default
+    // (450) and preset clicks land on exact numbers instead of drifting
+    // through a forward-curve-then-snap round trip.
+    var currentJobValue = 450;
+
+    function formatMoney(n){
+      return '$' + Math.round(Math.max(0, n)).toLocaleString('en-US');
+    }
+
+    function pluralize(value, unit){
+      return value + ' ' + (value === 1 ? unit.replace(/s$/, '') : unit);
+    }
+
+    // Square-curve mapping so the wide $100-$40,000 job-value range
+    // stays usable at the low end: value = min + (max-min)*position^2,
+    // snapped to the nearest $50. Low thumb positions barely move the
+    // dollar figure (fine-grained low end); positions near the top of
+    // the track compress large jumps into a short stretch of travel.
+    function jobPositionToValue(raw){
+      var min = parseFloat(jobValueInput.min), max = parseFloat(jobValueInput.max);
+      var range = max - min;
+      var p = (raw - min) / range;
+      var val = min + range * p * p;
+      var snapped = Math.round(val / 50) * 50;
+      // Rounding to the nearest $50 can undershoot the $100 floor near
+      // the very start of the (deliberately compressed) low end — clamp
+      // both ends so the displayed figure never leaves [min, max].
+      return Math.min(max, Math.max(min, snapped));
+    }
+
+    // Inverse of the above — used only to place the thumb for a known
+    // dollar figure (default load, preset clicks), never to re-derive
+    // the displayed number, so those stay exact even on the rare value
+    // that isn't itself on the $50 snap grid.
+    function jobValueToPosition(value){
+      var min = parseFloat(jobValueInput.min), max = parseFloat(jobValueInput.max);
+      var range = max - min;
+      var p = Math.sqrt(Math.max(0, (value - min) / range));
+      return min + range * p;
+    }
+
+    function setSliderFill(input){
+      var min = parseFloat(input.min), max = parseFloat(input.max), val = parseFloat(input.value);
+      var pct = ((val - min) / (max - min)) * 100;
+      input.style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, #E5E5E5 ' + pct + '%)';
+    }
+
+    // rAF-driven count-up, ~400ms, eased — falls back to an instant
+    // snap under reduced motion (or when from === to, which is always
+    // true on first render, so init never visibly "animates from 0").
+    var rafHandles = {};
+    function animateNumber(el, from, to){
+      if (rafHandles[el.id]) cancelAnimationFrame(rafHandles[el.id]);
+      if (reduceMotion || from === to){
+        el.textContent = formatMoney(to);
+        return;
+      }
+      var start = null;
+      var duration = 400;
+      function step(ts){
+        if (start === null) start = ts;
+        var t = Math.min(1, (ts - start) / duration);
+        var eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = formatMoney(from + (to - from) * eased);
+        if (t < 1){
+          rafHandles[el.id] = requestAnimationFrame(step);
+        } else {
+          el.textContent = formatMoney(to);
+          delete rafHandles[el.id];
+        }
+      }
+      rafHandles[el.id] = requestAnimationFrame(step);
+    }
+
+    var prevValues = {};
+    function setNumber(el, to, resetAnimation){
+      var from = (resetAnimation || !(el.id in prevValues)) ? to : prevValues[el.id];
+      prevValues[el.id] = to;
+      animateNumber(el, from, to);
+    }
+
+    function syncPresetActiveState(jobValue){
+      presetButtons.forEach(function(btn){
+        var isActive = parseInt(btn.getAttribute('data-value'), 10) === jobValue;
+        btn.classList.toggle('is-active', isActive);
+      });
+    }
+
+    // Scenarios without periodToggle just use their own top-level
+    // volume* fields directly (unchanged behavior); a periodToggle
+    // scenario swaps in its periods[currentPeriod] entry instead. This
+    // is the one place that knows about the distinction — everything
+    // downstream (applyScenario, applyPeriod, updateCalculator) just
+    // calls this and stays scenario-agnostic.
+    function getVolumeConfig(scenario){
+      return scenario.periodToggle ? scenario.periods[currentPeriod] : scenario;
+    }
+
+    function syncPeriodButtons(){
+      periodButtons.forEach(function(btn){
+        var isActive = btn.getAttribute('data-period') === currentPeriod;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+
+    function applyVolumeConfig(scenario){
+      var volumeConfig = getVolumeConfig(scenario);
+      volumeQuestionEl.textContent = volumeConfig.volumeQuestion;
+      volumeInput.setAttribute('aria-label', volumeConfig.volumeQuestion);
+      volumeInput.min = volumeConfig.volumeMin;
+      volumeInput.max = volumeConfig.volumeMax;
+      volumeInput.step = volumeConfig.volumeStep;
+      volumeInput.value = volumeConfig.volumeDefault;
+    }
+
+    function applyPeriod(period, resetAnimation){
+      var scenario = SCENARIOS[currentScenarioKey];
+      if (!scenario.periodToggle || period === currentPeriod || !scenario.periods[period]) return;
+      currentPeriod = period;
+      syncPeriodButtons();
+      applyVolumeConfig(scenario);
+      updateCalculator(resetAnimation);
+    }
+
+    function applyScenario(key, resetAnimation){
+      var scenario = SCENARIOS[key];
+      currentScenarioKey = key;
+      currentPeriod = DEFAULT_PERIOD;
+
+      scenarioButtons.forEach(function(btn){
+        var isActive = btn.getAttribute('data-scenario') === key;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+
+      periodToggleEl.hidden = !scenario.periodToggle;
+      syncPeriodButtons();
+      applyVolumeConfig(scenario);
+
+      // Recovery range differs per scenario, so it resets on scenario
+      // switch the same way volume does.
+      recoveryRateInput.min = scenario.recoveryMin;
+      recoveryRateInput.max = scenario.recoveryMax;
+      recoveryRateInput.step = scenario.recoveryStep;
+      recoveryRateInput.value = scenario.recoveryDefault;
+
+      resultLabelEl.textContent = scenario.resultLabel;
+
+      var isRecurring = scenario.type === 'recurring';
+      primaryUnitEl.textContent = isRecurring ? '/ month' : 'one-time campaign';
+      primarySecondaryEl.hidden = !isRecurring;
+      primaryOneTimeEl.hidden = isRecurring;
+      recoveredUnitEl.textContent = isRecurring ? '/ month' : 'from this campaign';
+      recoveredSecondaryEl.hidden = !isRecurring;
+
+      updateCalculator(resetAnimation);
+    }
+
+    function updateCalculator(resetAnimation){
+      var scenario = SCENARIOS[currentScenarioKey];
+      var volumeConfig = getVolumeConfig(scenario);
+      var volume = parseInt(volumeInput.value, 10);
+      var jobValue = currentJobValue;
+      var recoveryRate = parseInt(recoveryRateInput.value, 10);
+      var isRecurring = scenario.type === 'recurring';
+
+      volumeValueEl.textContent = pluralize(volume, volumeConfig.volumeUnit);
+      jobValueValueEl.textContent = '$' + jobValue.toLocaleString('en-US');
+      recoveryQuestionEl.textContent = scenario.recoveryQuestion.replace('{r}', recoveryRate);
+
+      // Results always stay monthly/yearly regardless of the input
+      // period — a weekly input volume is converted to its monthly
+      // equivalent (x4.33) before the dollar math runs, so the "/ month"
+      // and "/ year" labels never need to change. Every scenario now
+      // uses the same model — volume x job value, no close rate — every
+      // call/lead counts at full value.
+      var monthlyVolume = volume * (volumeConfig.monthlyMultiplier || 1);
+      var primary = monthlyVolume * jobValue;
+      var recovered = primary * (recoveryRate / 100);
+
+      setNumber(primaryAmountEl, primary, resetAnimation);
+      setNumber(recoveredAmountEl, recovered, resetAnimation);
+
+      if (isRecurring){
+        setNumber(primaryYearlyEl, primary * 12, resetAnimation);
+        setNumber(recoveredYearlyEl, recovered * 12, resetAnimation);
+      }
+
+      allSliders.forEach(setSliderFill);
+      syncPresetActiveState(jobValue);
+    }
+
+    scenarioButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var key = btn.getAttribute('data-scenario');
+        if (key === currentScenarioKey || !SCENARIOS[key]) return;
+        applyScenario(key, true);
+      });
+    });
+
+    periodButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        applyPeriod(btn.getAttribute('data-period'), true);
+      });
+    });
+
+    scenarioSliders.forEach(function(input){
+      input.addEventListener('input', function(){ updateCalculator(false); });
+    });
+    jobValueInput.addEventListener('input', function(){
+      currentJobValue = jobPositionToValue(parseFloat(jobValueInput.value));
+      updateCalculator(false);
+    });
+    recoveryRateInput.addEventListener('input', function(){ updateCalculator(false); });
+
+    presetButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        currentJobValue = parseInt(btn.getAttribute('data-value'), 10);
+        jobValueInput.value = jobValueToPosition(currentJobValue);
+        updateCalculator(false);
+        jobValueInput.focus();
+      });
+    });
+
+    jobValueInput.value = jobValueToPosition(currentJobValue);
+    applyScenario(DEFAULT_SCENARIO, true);
+  })();
+
+  /* ---------- Booking modal (Calendly) ----------
+     Every "Contact Us" / "Book a Meeting Today" trigger (.js-book-meeting)
+     opens the same overlay. widget.js is only injected the first time
+     the modal opens, so it never costs anything on initial page load. */
+  (function initBookingModal(){
+    var overlay = document.getElementById('bookingModal');
+    var panel = document.getElementById('bookingPanel');
+    var closeBtn = document.getElementById('bookingClose');
+    var triggers = document.querySelectorAll('.js-book-meeting');
+    if (!overlay || !panel || !closeBtn || !triggers.length) return;
+
+    var CALENDLY_SCRIPT_SRC = 'https://assets.calendly.com/assets/external/widget.js';
+    var calendlyScriptLoaded = false;
+    var lastFocused = null;
+    var closeTimer = null;
+    var scrollLockValue = '';
+
+    function loadCalendlyScript(){
+      if (calendlyScriptLoaded) return;
+      calendlyScriptLoaded = true;
+      var script = document.createElement('script');
+      script.src = CALENDLY_SCRIPT_SRC;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
+    function getFocusable(){
+      var nodes = panel.querySelectorAll(
+        'a[href], button:not([disabled]), textarea, input, select, iframe, [tabindex]:not([tabindex="-1"])'
+      );
+      return Array.prototype.filter.call(nodes, function(el){
+        return el.offsetWidth > 0 || el.offsetHeight > 0 || el === document.activeElement;
+      });
+    }
+
+    function onKeydown(e){
+      if (e.key === 'Escape' || e.key === 'Esc'){
+        e.preventDefault();
+        closeModal();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var focusable = getFocusable();
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first){
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last){
+        e.preventDefault();
+        first.focus();
       }
     }
-    function requestTick(){
-      if (!ticking){ ticking = true; requestAnimationFrame(tick); }
+
+    function lockScroll(){
+      scrollLockValue = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
     }
-    function onMove(e){
-      var rect = heroWrap.getBoundingClientRect();
-      var relX = (e.clientX - rect.left) / rect.width;
-      var relY = (e.clientY - rect.top) / rect.height;
-      targetY = (relX - 0.5) * 2 * MAX_DEG;
-      targetX = -(relY - 0.5) * 2 * MAX_DEG;
-      requestTick();
-    }
-    function onLeave(){
-      targetX = 0; targetY = 0;
-      requestTick();
+    function unlockScroll(){
+      document.body.style.overflow = scrollLockValue;
+      document.body.classList.remove('modal-open');
     }
 
-    setTimeout(function(){
-      heroWrap.addEventListener('mousemove', onMove, {passive:true});
-      heroWrap.addEventListener('mouseleave', onLeave, {passive:true});
-    }, ACTIVATE_DELAY_MS);
+    function openModal(trigger){
+      if (closeTimer){ clearTimeout(closeTimer); closeTimer = null; }
+      lastFocused = trigger || document.activeElement;
+      loadCalendlyScript();
+      overlay.classList.remove('is-closing');
+      overlay.hidden = false;
+      void overlay.offsetWidth; // force reflow so the entrance transition plays
+      overlay.classList.add('is-open');
+      lockScroll();
+      document.addEventListener('keydown', onKeydown, true);
+      setTimeout(function(){ closeBtn.focus(); }, reduceMotion ? 0 : 120);
+    }
+
+    function finishClose(){
+      overlay.hidden = true;
+      overlay.classList.remove('is-closing');
+      unlockScroll();
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      lastFocused = null;
+    }
+
+    function closeModal(){
+      if (overlay.hidden || overlay.classList.contains('is-closing')) return;
+      document.removeEventListener('keydown', onKeydown, true);
+      overlay.classList.remove('is-open');
+      overlay.classList.add('is-closing');
+
+      if (reduceMotion){
+        finishClose();
+        return;
+      }
+
+      var settled = false;
+      function onTransitionEnd(e){
+        if (e.target !== panel) return;
+        settled = true;
+        panel.removeEventListener('transitionend', onTransitionEnd);
+        if (closeTimer){ clearTimeout(closeTimer); closeTimer = null; }
+        finishClose();
+      }
+      panel.addEventListener('transitionend', onTransitionEnd);
+      closeTimer = setTimeout(function(){
+        if (settled) return;
+        panel.removeEventListener('transitionend', onTransitionEnd);
+        finishClose();
+      }, 400);
+    }
+
+    triggers.forEach(function(trigger){
+      trigger.addEventListener('click', function(){ openModal(trigger); });
+    });
+    closeBtn.addEventListener('click', function(){ closeModal(); });
+    overlay.addEventListener('click', function(e){
+      if (e.target === overlay) closeModal();
+    });
   })();
 
 })();
