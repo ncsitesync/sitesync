@@ -13,6 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Calendly popup widget — used by the Step 3 "Book a Quote" button -->
+<link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css">
+<script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 <style>
   :root{
     --ink:#050507;
@@ -44,6 +47,7 @@
     --dur:400ms;
     --container:1280px;
     --nav-clear:108px;
+    --nav-h:93px;              /* .nav 92px + .nav-wrap 1px border — the sticky bar's real footprint */
   }
 
   *,*::before,*::after{box-sizing:border-box;}
@@ -182,6 +186,8 @@
   .btn-outline:hover{background:rgba(255,255,255,0.06);border-color:var(--line-hover);}
   .btn-sm{padding:12px 22px;font-size:11px;}
   .btn-block{width:100%;}
+  /* primary conversion CTA — bolder text, compact padding */
+  .js-book-meeting{padding:16px 32px;font-size:15px;letter-spacing:0.09em;}
   @media (prefers-reduced-motion:reduce){
     .btn{transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);}
     .btn:hover{transform:none;}
@@ -211,11 +217,14 @@
     backdrop-filter:blur(8px);
     -webkit-backdrop-filter:blur(8px);
     border-bottom:1px solid var(--line-on-light);
-    transition:box-shadow var(--dur) var(--ease);
+    transition:box-shadow 300ms var(--ease);
     will-change:transform;
     backface-visibility:hidden;
   }
-  .nav-wrap.is-scrolled{ box-shadow:0 4px 24px rgba(10,10,10,0.08); }
+  /* scrolled past ~50px: deeper shadow + the nav row scales down ~10%
+     (transform only — the layout box stays 92px so the sticky offset and
+     the hero's exact 100svh fit are untouched). */
+  .nav-wrap.is-scrolled{ box-shadow:0 6px 28px rgba(10,10,10,0.14); }
 
   .nav{
     max-width:var(--container);
@@ -226,7 +235,10 @@
     justify-content:space-between;
     gap:24px;
     height:92px;
+    transform-origin:center center;
+    transition:transform 300ms var(--ease);
   }
+  .nav-wrap.is-scrolled .nav{ transform:scale(0.9); }
   @media (min-width:640px){ .nav{padding:0 40px;} }
   @media (min-width:1100px){ .nav{padding:0 56px;} }
 
@@ -240,8 +252,13 @@
     transform-origin:left center;
     transition:transform var(--dur) var(--ease);
   }
-  .nav-wrap.is-scrolled .brand{ transform:scale(0.85); }
-  @media (prefers-reduced-motion:reduce){ .brand{transition:none;} }
+  /* prefers-reduced-motion: keep the compact/full state change, drop the
+     tween — the class still toggles, it just snaps instantly. */
+  @media (prefers-reduced-motion:reduce){
+    .brand{transition:none;}
+    .nav{transition:none;}
+    .nav-wrap{transition:none;}
+  }
   .brand img{
     height:36px;
     width:auto;
@@ -294,17 +311,36 @@
   .nav-links a.is-active::after{ right:0; }
 
   .nav-actions{display:flex;align-items:center;gap:18px;flex-shrink:0;}
+  /* Header call CTA: solid accent pill, 44px tall to match .nav-toggle.
+     Icon + label on desktop; icon-only below 480px, still a real button. */
   .header-phone{
-    display:flex;
+    display:inline-flex;
     align-items:center;
-    gap:0.5em;
+    justify-content:center;
+    gap:0.55em;
+    height:44px;
+    padding:0 20px;
     font-weight:700;
-    font-size:13px;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
     white-space:nowrap;
-    color:var(--accent-hover);
+    text-decoration:none;
+    color:#fff;
+    background:var(--accent);
+    border-radius:var(--radius-pill);
+    transition:background var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
+  .header-phone:hover{ background:var(--accent-hover); transform:translateY(-2px); }
   .header-phone svg{flex-shrink:0;}
-  @media (max-width:899px){ .header-phone span{display:none;} }
+  @media (prefers-reduced-motion:reduce){
+    .header-phone{transition:background var(--dur) var(--ease);}
+    .header-phone:hover{transform:none;}
+  }
+  @media (max-width:479px){
+    .header-phone span{display:none;}
+    .header-phone{width:44px;padding:0;}
+  }
 
   .nav-toggle{
     display:flex;
@@ -441,69 +477,258 @@
      just a <video> in place of Cloth Barn's plain background-image div.
      Load-in stagger (heroFadeUp) is Cloth Barn's own animation, ported
      as-is rather than reusing the old line-mask reveal. */
-  /* height:100svh (not min-height) with the content column centered both
-     axes via flex on .hero. overflow-x stays clipped (needed to contain
-     the video edges); overflow-y is left visible so that if content ever
-     still exceeds the box on an extreme viewport, it pushes the page
-     rather than getting clipped invisible. */
+  /* Locked to exactly one viewport minus the sticky nav, so the hero + nav
+     together fill the screen with nothing below the fold and no scroll.
+     overflow:hidden is the backstop — the compact content is tuned to sit
+     well inside this height at 1366x768. On mobile (<=860px) the columns
+     stack and the block is allowed to grow instead (see the media query). */
   .hero{
     position:relative;
-    height:100svh;
-    min-height:100svh;
+    height:calc(100svh - var(--nav-h));
     display:flex;
     align-items:center;
     justify-content:center;
     isolation:isolate;
-    overflow-x:hidden;
-    overflow-y:visible;
+    overflow:hidden;
   }
-  @supports not (height:100svh){
-    .hero{height:100vh;min-height:100vh;}
+  @supports not (height:calc(100svh - 1px)){
+    .hero{ height:calc(100vh - var(--nav-h)); }
   }
-
-  .hero-media{position:absolute;inset:0;z-index:-2;}
-  .hero-media video{
-    position:absolute;inset:0;
-    width:100%;height:100%;
-    object-fit:cover;
-    object-position:center 35%;
-  }
-  /* Flat, even wash across the whole hero — content is centered now, not
-     left-weighted, so contrast needs to hold everywhere behind it rather
-     than just on one side. */
-  .hero-scrim{
-    position:absolute;inset:0;z-index:-1;
-    background:rgba(0,0,0,0.55);
+  @media (max-width:860px){
+    /* stacked hero: fill the screen but grow to contain the form card below */
+    .hero{ height:auto; min-height:calc(100svh - var(--nav-h)); overflow:visible; }
   }
 
+  /* ============================================================
+     Hero background — animated gradient mesh + connection lines.
+       LAYER 1  .hero-media : dark base + 4 drifting blurred blobs
+       LAYER 2  .hero-lines : ambient SVG paths that draw / hold / fade
+       LAYER 3  .hero-veil  : soft radial darkening for text contrast
+     Transform + opacity only. will-change:transform on the blobs only.
+     ============================================================ */
+  .hero-media{
+    position:absolute;inset:0;z-index:-2;
+    background:#050A18;
+    overflow:hidden;
+  }
+  /* vignette so the mesh edges don't glow */
+  .hero-media::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 120% 120% at 50% 50%, rgba(5,10,24,0) 42%, rgba(5,10,24,0.9) 100%);
+  }
+  .mesh-blob{
+    position:absolute;border-radius:50%;
+    filter:blur(90px);
+    will-change:transform;
+    pointer-events:none;
+  }
+  .mesh-blob-1{
+    width:1000px;height:1000px;top:-16%;left:-10%;
+    background:rgba(30,64,175,0.50);            /* #1E40AF */
+    animation:meshDrift1 26s ease-in-out infinite;
+  }
+  .mesh-blob-2{
+    width:820px;height:820px;top:6%;right:-14%;
+    background:rgba(37,99,235,0.40);            /* #2563EB */
+    animation:meshDrift2 34s ease-in-out infinite -9s;
+  }
+  .mesh-blob-3{
+    width:1100px;height:1100px;bottom:-22%;left:12%;
+    background:rgba(30,58,138,0.45);            /* #1E3A8A */
+    animation:meshDrift3 41s ease-in-out infinite -17s;
+  }
+  .mesh-blob-4{
+    width:720px;height:720px;top:26%;left:34%;
+    background:rgba(14,165,233,0.30);           /* #0EA5E9 — cooler accent */
+    animation:meshDrift4 29s ease-in-out infinite -6s;
+  }
+
+  /* slow breathing accent bloom behind the headline — adds depth/glow */
+  .hero-glow{
+    position:absolute;z-index:-1;pointer-events:none;
+    left:50%;top:44%;width:min(760px,86vw);height:min(760px,86vw);
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(72,112,229,0.30) 0%, rgba(37,99,235,0.14) 38%, rgba(5,10,24,0) 70%);
+    animation:heroGlow 15s ease-in-out infinite;
+  }
+  @keyframes heroGlow{
+    0%,100% { opacity:0.55; transform:translate(-50%,-50%) scale(0.92); }
+    50%     { opacity:1;    transform:translate(-50%,-50%) scale(1.08); }
+  }
+
+  /* drifting data-point particles — "leads flowing in" */
+  .hero-particles{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+  .hero-particle{
+    position:absolute;width:4px;height:4px;border-radius:50%;
+    background:#93C5FD;box-shadow:0 0 8px 2px rgba(96,165,250,0.45);
+    opacity:0;
+    animation:heroFloat var(--d,17s) ease-in-out var(--delay,0s) infinite,
+              heroTwinkle calc(var(--d,17s) / 2) ease-in-out var(--delay,0s) infinite;
+  }
+  @keyframes heroFloat{
+    0%   {transform:translate3d(0,0,0) scale(var(--s,1));}
+    50%  {transform:translate3d(var(--drift,24px),-36px,0) scale(var(--s,1));}
+    100% {transform:translate3d(0,0,0) scale(var(--s,1));}
+  }
+  @keyframes heroTwinkle{
+    0%,100% {opacity:0.1;}
+    50%     {opacity:0.55;}
+  }
+  @keyframes meshDrift1{
+    0%   {transform:translate3d(0,0,0) scale(1);}
+    30%  {transform:translate3d(20%,12%,0) scale(1.18);}
+    62%  {transform:translate3d(-10%,24%,0) scale(0.9);}
+    100% {transform:translate3d(0,0,0) scale(1);}
+  }
+  @keyframes meshDrift2{
+    0%   {transform:translate3d(0,0,0) scale(1);}
+    38%  {transform:translate3d(-26%,10%,0) scale(1.12);}
+    70%  {transform:translate3d(-6%,-18%,0) scale(0.93);}
+    100% {transform:translate3d(0,0,0) scale(1);}
+  }
+  @keyframes meshDrift3{
+    0%   {transform:translate3d(0,0,0) scale(1);}
+    28%  {transform:translate3d(14%,-20%,0) scale(0.88);}
+    58%  {transform:translate3d(26%,8%,0) scale(1.2);}
+    100% {transform:translate3d(0,0,0) scale(1);}
+  }
+  @keyframes meshDrift4{
+    0%   {transform:translate3d(0,0,0) scale(1);}
+    34%  {transform:translate3d(-18%,-24%,0) scale(1.22);}
+    68%  {transform:translate3d(22%,-6%,0) scale(0.85);}
+    100% {transform:translate3d(0,0,0) scale(1);}
+  }
+
+  .hero-lines{
+    position:absolute;inset:0;z-index:-1;width:100%;height:100%;
+    pointer-events:none;
+  }
+  .hero-lines .ln path{
+    fill:none;stroke:#60A5FA;stroke-width:1;
+    stroke-dasharray:1;stroke-dashoffset:1;opacity:0;
+    animation:lnDraw 14s linear infinite;
+  }
+  .hero-lines .ln circle{fill:#60A5FA;opacity:0.2;animation:dotPulse 4.4s ease-in-out infinite;}
+  .hero-lines .ln-1 path{animation-duration:13s;animation-delay:0s;}
+  .hero-lines .ln-2 path{animation-duration:15s;animation-delay:-4s;}
+  .hero-lines .ln-3 path{animation-duration:12s;animation-delay:-8s;}
+  .hero-lines .ln-4 path{animation-duration:16s;animation-delay:-2s;}
+  .hero-lines .ln-5 path{animation-duration:14s;animation-delay:-11s;}
+  .hero-lines .ln-6 path{animation-duration:15s;animation-delay:-6s;}
+  .hero-lines .ln-2 circle,.hero-lines .ln-5 circle{animation-duration:5.6s;animation-delay:-1.5s;}
+  .hero-lines .ln-3 circle,.hero-lines .ln-6 circle{animation-duration:3.7s;animation-delay:-3s;}
+  @keyframes lnDraw{
+    0%   {stroke-dashoffset:1;opacity:0;}
+    6%   {opacity:0.32;}
+    26%  {stroke-dashoffset:0;opacity:0.32;}
+    42%  {stroke-dashoffset:0;opacity:0.32;}
+    54%  {stroke-dashoffset:0;opacity:0;}
+    100% {stroke-dashoffset:1;opacity:0;}
+  }
+  @keyframes dotPulse{
+    0%,100% {opacity:0.14;}
+    50%     {opacity:0.6;}
+  }
+
+  .hero-veil{
+    position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse 62% 56% at 50% 50%, rgba(5,10,24,0.64) 0%, rgba(5,10,24,0.36) 46%, rgba(5,10,24,0) 76%);
+  }
+
+  /* Darkens the right half only, so the white form card reads as a distinct
+     panel floating off the mesh. Soft gradient edge keeps the left side's
+     animated colours fully visible and the split cohesive. */
+  .hero-right-scrim{
+    position:absolute;top:0;bottom:0;right:0;width:52%;
+    z-index:0;pointer-events:none;
+    background:linear-gradient(to right,
+      rgba(5,10,24,0) 0%,
+      rgba(5,10,24,0.38) 24%,
+      rgba(5,10,24,0.58) 55%,
+      rgba(5,10,24,0.58) 100%);
+  }
+  @media (max-width:860px){ .hero-right-scrim{ display:none; } }
+
+  /* Mobile: 3 blobs, 3 lines, fewer particles; lighter blur to spare battery. */
+  @media (max-width:640px){
+    .mesh-blob{filter:blur(70px);}
+    .mesh-blob-4{display:none;}
+    .hero-lines .ln-4,.hero-lines .ln-5,.hero-lines .ln-6{display:none;}
+    .hero-particle:nth-child(n+8){display:none;}
+  }
+
+  /* Reduced motion: freeze the mesh in a pleasing static spread; no lines,
+     no particles, static glow. */
+  @media (prefers-reduced-motion:reduce){
+    .mesh-blob{animation:none !important;will-change:auto;}
+    .mesh-blob-1{transform:translate3d(12%,8%,0) scale(1.1);}
+    .mesh-blob-2{transform:translate3d(-14%,4%,0) scale(1.06);}
+    .mesh-blob-3{transform:translate3d(10%,-12%,0) scale(1.12);}
+    .mesh-blob-4{transform:translate3d(-10%,-8%,0) scale(1.14);}
+    .hero-lines{display:none !important;}
+    .hero-particles{display:none !important;}
+    .hero-glow{animation:none !important;opacity:0.7;}
+  }
+
+  /* Split two-column hero: left = copy, right = form card. */
   .hero-content{
     position:relative;
     z-index:1;
-    max-width:900px;
+    max-width:1180px;
     width:100%;
     margin:0 auto;
-    padding:24px;
-    display:flex;
-    flex-direction:column;
+    padding:110px 24px 32px;                 /* top pad reserves room for the centred crest */
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:48px;
     align-items:center;
-    text-align:center;
+    text-align:left;
   }
   @media (min-width:640px){ .hero-content{padding-left:40px;padding-right:40px;} }
   @media (min-width:1100px){ .hero-content{padding-left:56px;padding-right:56px;} }
+  /* tablet: tighter column gutter */
+  @media (max-width:1024px){ .hero-content{ gap:24px; } }
+  /* mobile: stack — copy on top, form card below */
+  @media (max-width:860px){
+    .hero-content{ grid-template-columns:1fr; gap:28px; padding:24px 20px; }
+  }
+
+  /* left column */
+  .hero-copy{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    text-align:left;
+    min-width:0;
+  }
+  .hero-copy .hero-headline{ font-size:clamp(2.25rem, 3.2vw, 3.25rem); }
+  .hero-copy .hero-sub{ margin:0 0 20px; }
+  .hero-copy .hero-actions{ justify-content:flex-start; }
+  /* stack the trust statements in the narrower column */
+  .hero-copy .hero-reassurance{ flex-direction:column; align-items:flex-start; row-gap:8px; }
+  .hero-copy .hero-reassurance-item{ text-align:left; }
+  .hero-copy .hero-reassurance-divider{ display:none; }
+  .hero-copy .hero-crest{ justify-content:flex-start; }
 
   /* Max-height guard: on short viewports the 100svh box has less room
      than the content needs at its normal sizes, so step the crest/
      headline/sub down in two tiers rather than letting anything clip. */
+  /* Short viewports (≈1366x768 and below): drop the decorative badge, shrink
+     the crest, and tighten the copy so the headline → quiz card all clear the
+     fold without scrolling. Headline keeps its full size. */
   @media (max-height:820px){
-    .hero-headline{font-size:clamp(1.75rem, 4vw, 3rem);margin-bottom:14px;}
-    .hero-sub{font-size:16px;margin-bottom:20px;}
-    .hero-badge{margin-bottom:14px;}
-    .hero-crest{width:64px;margin-bottom:14px;}
+    .hero-content{ padding:72px 24px 16px; gap:32px; }
+    .hero-badge{ display:none; }
+    .hero-content .hero-crest{ top:12px; width:56px; margin-left:-28px; }
+    .hero-sub{ font-size:15px; margin-bottom:12px; }
+    .hero-reassurance{ margin-top:10px; }
+    .hero-reassurance-item{ font-size:12px; }
+    .hero-quiz{ padding:16px; }
+    .quiz-grid .quiz-opt{ min-height:70px; padding:12px; }
   }
   @media (max-height:640px){
-    .hero-headline{font-size:clamp(1.5rem, 3.5vw, 2.25rem);}
-    .hero-sub{font-size:14px;margin-bottom:16px;}
-    .hero-crest{width:48px;margin-bottom:10px;}
+    .hero-sub{ font-size:14px; margin-bottom:12px; }
+    .hero-crest{ display:none; }
   }
 
   @keyframes heroFadeUp{ from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
@@ -530,32 +755,35 @@
     background:var(--accent);
     padding:8px 16px;
     border-radius:4px;
-    margin-bottom:20px;
+    margin-bottom:12px;
   }
-  /* Single centered statement, allowed to wrap naturally over two lines
-     within .hero-content's 900px column — no forced <br>, no nowrap. */
+  /* Single centered statement, wraps to ~2 balanced lines within the 900px
+     column — no forced <br>, no nowrap. */
   .hero-headline{
-    font-size:clamp(2rem, 4.5vw, 4rem);
+    font-size:clamp(2.75rem, 4.5vw, 4.25rem);
     font-weight:700;
-    line-height:1.15;
-    padding-bottom:0.1em;
+    line-height:1.1;
+    padding-bottom:0.05em;
     letter-spacing:-0.03em;
     color:#fff;
-    margin-bottom:20px;
+    text-wrap:balance;
+    margin-bottom:12px;
   }
   .hero-sub{
     font-size:20px;
     line-height:1.5;
     color:rgba(255,255,255,0.92);
     max-width:620px;
-    margin:0 auto 32px;
+    margin:0 auto 20px;
   }
   .hero-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;}
   .hero-actions .btn{
-    padding:18px 40px;
+    padding:16px 32px;
     font-size:15px;
-    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow 300ms var(--ease);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), transform 300ms var(--ease), box-shadow 300ms var(--ease);
   }
+  /* Both left-column buttons: 2px lift + shadow step-up on hover, over 300ms. */
+  .hero-actions .btn:hover{ transform:translateY(-2px); }
   .hero-actions .btn-accent{
     box-shadow:0 0 32px rgba(30,64,175,0.55), 0 0 0 8px rgba(30,64,175,0.15);
   }
@@ -570,10 +798,11 @@
   }
   @media (prefers-reduced-motion:reduce){
     .hero-actions .btn{transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow 300ms var(--ease);}
+    .hero-actions .btn:hover{transform:none;}
   }
 
   .hero-reassurance{
-    margin-top:20px;
+    margin-top:16px;
     max-width:780px;
     display:flex;
     align-items:center;
@@ -596,12 +825,18 @@
     .hero-reassurance-divider{ display:none; }
   }
 
-  /* Moved above the badge in the centered column — sized down from the
-     old ~200px side-floated mark so it reads as a small brand crest,
-     not a competing focal point. */
+  /* Centred brand crest: pulled out of the left column and absolutely placed
+     in the hero's upper-centre, horizontally between the two columns. Centres
+     via left:50% + negative margin (not transform) so the heroFadeUp entrance
+     animation's translateY doesn't fight the horizontal centring. Reverts to
+     normal in-flow layout on mobile, where there are no columns. */
   .hero-crest{
-    width:90px;
-    margin-bottom:20px;
+    position:absolute;
+    top:22px;
+    left:50%;
+    margin-left:-37px;            /* -1 * half of width */
+    width:74px;
+    z-index:2;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -611,7 +846,11 @@
     height:auto;
     filter:drop-shadow(0 8px 24px rgba(0,0,0,0.45));
   }
-  @media (max-width:480px){ .hero-crest{width:64px;margin-bottom:14px;} }
+  @media (max-width:860px){
+    /* mobile has no columns — logo returns to normal flow at the top of the copy */
+    .hero-content .hero-crest{ position:static; left:auto; margin:0 0 14px; width:64px; }
+  }
+  @media (max-width:480px){ .hero-content .hero-crest{ width:64px; margin-bottom:14px; } }
 
   /* ---------- Capability cards ----------
      Light Cloth-Barn-palette card: white surface, hairline border, soft
@@ -698,7 +937,7 @@
   .carousel-track{
     display:flex;
     gap:var(--card-gap);
-    transition:transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition:transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   /* Every card shares this exact transition (same properties, same
      600ms/curve as the track above) so the active card and the peeking
@@ -717,7 +956,7 @@
     transform:translateZ(0) scale(0.94);
     box-shadow:none;
     backface-visibility:hidden;
-    transition:transform 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 600ms linear;
+    transition:transform 500ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms linear;
   }
   .carousel-slide.is-active{
     opacity:1;
@@ -1269,95 +1508,217 @@
     border:0;
   }
 
-  /* ---------- Booking modal ----------
-     Timings/keyframes unchanged — only the panel surface was restyled
-     to the new dark card language (surface bg, 16px radius, hairline
-     border, dark blurred backdrop). */
-  .modal-overlay{
-    position:fixed;
-    inset:0;
-    z-index:900;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-    background:rgba(2,2,4,0.7);
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
-    opacity:0;
-    transition:opacity 300ms var(--ease);
-  }
-  .modal-overlay[hidden]{display:none;}
-  .modal-overlay.is-open{opacity:1;}
-  .modal-overlay.is-closing{
-    opacity:0;
-    transition:opacity 250ms var(--ease) 80ms;
-  }
-  .modal-panel{
+  /* ---------- Hero form card (right column) ----------
+     Right cell of the .hero-content grid. Always fully visible — the 3-step
+     quiz shows step 1 by default, no collapse/expand.
+     Pure-white panel, hairline border, deep float shadow and a 3px warm-accent
+     top bar, so it reads as the hero's focal point against the animated mesh.
+     The quiz internals were built dark, so their colours are re-mapped for
+     light — scoped to .hero-quiz only. */
+  .hero-quiz{
     position:relative;
     width:100%;
-    max-width:700px;
-    max-height:min(88vh, 820px);
-    overflow-y:auto;
-    background:var(--surface);
-    border-radius:var(--radius-card);
-    border:1px solid var(--line);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);
-    padding:22px;
-    opacity:0;
-    transform:translateY(24px) scale(0.94);
-    transition:opacity 500ms cubic-bezier(0.16,1,0.3,1) 80ms, transform 500ms cubic-bezier(0.16,1,0.3,1) 80ms;
+    max-width:420px;
+    justify-self:center;
+    margin:0;
+    padding:24px;
+    background:#fff;
+    color:#0E0E12;
+    border:1px solid rgba(0,0,0,0.08);
+    border-radius:16px;
+    box-shadow:0 16px 32px -8px rgba(0,0,0,0.35), 0 40px 80px -12px rgba(0,0,0,0.45);
+    text-align:left;
+    overflow:hidden;                         /* clips the step cross-fade; rounds the top bar */
+    scroll-margin-top:110px;
+    /* Arrives ~600ms after page load — after the headline + buttons — so the
+       eye lands on it as the second focal point. */
+    animation:heroQuizIn 1200ms var(--ease) 600ms both;
   }
-  .modal-overlay.is-open .modal-panel{
-    opacity:1;
-    transform:translateY(0) scale(1);
-  }
-  .modal-overlay.is-closing .modal-panel{
-    opacity:0;
-    transform:translateY(12px) scale(0.97);
-    transition:opacity 250ms var(--ease), transform 250ms var(--ease);
+  @keyframes heroQuizIn{
+    from{ opacity:0; transform:translateY(20px) scale(0.95); }
+    to{   opacity:1; transform:translateY(0) scale(1); }
   }
   @media (prefers-reduced-motion:reduce){
-    .modal-overlay,
-    .modal-overlay.is-closing{
-      transition:opacity 150ms linear !important;
-      transition-delay:0ms !important;
-    }
-    .modal-panel,
-    .modal-overlay.is-closing .modal-panel{
-      transition:opacity 150ms linear !important;
-      transition-delay:0ms !important;
-      transform:none !important;
-    }
+    .hero-quiz{ animation:none; }
   }
-  .modal-close{
+  /* 3px warm-accent bar across the very top — stands out against the blue mesh */
+  .hero-quiz::before{
+    content:"";
     position:absolute;
-    top:14px;right:14px;
-    z-index:1;
-    width:36px;height:36px;
-    border-radius:50%;
-    border:1px solid var(--line);
-    background:transparent;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    color:#fff;
-    transition:background 300ms var(--ease), border-color 300ms var(--ease);
+    top:0; left:0; right:0;
+    height:3px;
+    background:#F97316;
+    z-index:2;
   }
-  .modal-close:hover{background:rgba(255,255,255,0.08);border-color:var(--line-hover);}
-  .modal-close svg{width:16px;height:16px;}
-  .modal-title{
-    font-size:19px;
-    padding-right:36px;
-    margin-bottom:14px;
-    color:#fff;
+  @media (max-width:860px){
+    .hero-quiz{ max-width:none; width:90vw; justify-self:center; }
   }
-  .calendly-embed-wrap{
-    border-radius:12px;
-    overflow:hidden;
+  @media (max-width:480px){ .hero-quiz{ padding:20px 16px; } }
+
+  /* Bold intro line above the progress bar. The card is white, so the
+     requested "70% white" reads here at full strength for prominence. */
+  .hero-quiz .quiz-lead{
+    margin:0 0 12px;
+    font-size:17px;
+    font-weight:700;
+    line-height:1.35;
+    color:#0E0E12;
+    text-align:left;
   }
-  body.modal-open{overflow:hidden;}
+  .hero-quiz .quiz-progress{ background:rgba(16,24,40,0.10); margin-right:0; }
+  .hero-quiz .quiz-progress-label{ color:#5B5B63; }
+  .hero-quiz .quiz-q{ color:#0E0E12; }
+  .hero-quiz .quiz-opt{
+    color:#0E0E12; background:#F4F4F6;
+    border-color:rgba(16,24,40,0.12);
+    box-shadow:0 1px 2px rgba(16,24,40,0.06);
+  }
+  .hero-quiz .quiz-opt:hover{ border-color:rgba(30,64,175,0.45); }
+  .hero-quiz .quiz-opt-icon{ color:#5B5B63; }
+  .hero-quiz .quiz-opt[aria-pressed="true"]{ border-color:var(--accent); background:rgba(30,64,175,0.08); }
+  .hero-quiz .quiz-opt[aria-pressed="true"] .quiz-opt-icon{ color:var(--accent); }
+  .hero-quiz .quiz-field label{ color:#0E0E12; }
+  .hero-quiz .quiz-field input{ color:#0E0E12; background:#fff; border-color:rgba(16,24,40,0.18); }
+  .hero-quiz .quiz-field input::placeholder{ color:#8A8A94; }
+  .hero-quiz .quiz-err{ color:#c0392b; }
+  .hero-quiz .quiz-consent{ color:#5B5B63; }
+  .hero-quiz .quiz-consent-note{ color:#8A8A94; }
+  .hero-quiz .quiz-back{ color:#5B5B63; }
+  .hero-quiz .quiz-back:hover{ color:#0E0E12; }
+  .hero-quiz .quiz-thanks-title{ color:#0E0E12; }
+  .hero-quiz .quiz-thanks-line{ color:#5B5B63; }
+  .hero-quiz .btn-outline{ color:var(--accent); border-color:rgba(16,24,40,0.22); }
+  .hero-quiz .btn-outline:hover{ background:rgba(16,24,40,0.05); border-color:rgba(16,24,40,0.35); }
+  /* ---------- Quiz (replaces the Calendly embed) ---------- */
+  .quiz-sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+  .quiz-progress{
+    height:6px;border-radius:999px;background:rgba(255,255,255,0.1);
+    overflow:hidden;margin:0 40px 6px 0;
+  }
+  .quiz-progress-fill{
+    display:block;height:100%;width:33.333%;border-radius:inherit;
+    background:var(--accent-bright);
+    transition:width 400ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .quiz-progress-label{
+    margin:0 0 12px;font-size:11px;font-weight:700;letter-spacing:0.08em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .quiz-progress,.quiz-progress-label{transition:opacity 300ms var(--ease);}
+  .quiz.is-done .quiz-progress,.quiz.is-done .quiz-progress-label{opacity:0.3;}
+
+  .quiz-body{position:relative;overflow:hidden;}
+  .quiz-steps{position:relative;overflow:hidden;transition:opacity 400ms var(--ease), transform 400ms var(--ease);}
+  .quiz-step{position:absolute;top:0;left:0;width:100%;opacity:0;pointer-events:none;}
+  .quiz-step[hidden]{display:none;}
+  .quiz-step.is-active{
+    position:relative;opacity:1;pointer-events:auto;
+    transition:opacity 350ms var(--ease), transform 350ms var(--ease);
+  }
+  .quiz-step.is-entering{opacity:0;transform:translateX(16px);}
+  .quiz-step.is-exiting{
+    opacity:0;transform:translateX(-16px);pointer-events:none;
+    transition:opacity 250ms var(--ease), transform 250ms var(--ease);
+  }
+  .quiz-steps.is-back .quiz-step.is-entering{transform:translateX(-16px);}
+  .quiz-steps.is-back .quiz-step.is-exiting{transform:translateX(16px);}
+
+  .quiz-q{font-size:16px;font-weight:700;color:#fff;margin:0 0 12px;}
+
+  .quiz-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .quiz-list{display:flex;flex-direction:column;gap:12px;}
+  .quiz-opt{
+    position:relative;display:flex;align-items:center;gap:12px;width:100%;
+    text-align:left;font:inherit;font-size:15px;font-weight:700;color:#fff;
+    background:rgba(255,255,255,0.03);
+    border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.3);cursor:pointer;
+    transition:transform var(--dur) var(--ease), border-color var(--dur) var(--ease), background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+    animation:quizOptIn 500ms var(--ease) both;
+    animation-delay:calc(var(--i, 0) * 80ms);   /* 0 / 80 / 160 / 240ms stagger */
+  }
+  .quiz-grid .quiz-opt{flex-direction:column;align-items:flex-start;gap:8px;padding:16px;min-height:84px;}
+  .quiz-list .quiz-opt{padding:14px 16px;}
+  @keyframes quizOptIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+  .quiz-opt:hover{transform:translateY(-3px);border-color:var(--line-hover);box-shadow:0 10px 24px -10px rgba(0,0,0,0.4);}
+  .hero-quiz .quiz-opt:hover{box-shadow:0 10px 24px -10px rgba(30,64,175,0.35);}
+  .quiz-opt:focus-visible{outline:2px solid var(--accent-bright);outline-offset:2px;}
+  .quiz-opt-icon{width:26px;height:26px;color:var(--muted);flex-shrink:0;}
+  .quiz-opt-label{flex:1;}
+  .quiz-opt[aria-pressed="true"]{border-color:var(--accent-bright);background:rgba(72,112,229,0.12);}
+  .quiz-opt[aria-pressed="true"] .quiz-opt-icon{color:var(--accent-bright);}
+  .quiz-opt-check{
+    position:absolute;top:8px;right:8px;width:16px;height:16px;color:var(--accent-bright);
+    opacity:0;transform:scale(0.6);
+    transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .quiz-opt[aria-pressed="true"] .quiz-opt-check{opacity:1;transform:none;}
+
+  .quiz-field{margin-bottom:14px;}
+  .quiz-field label{display:block;font-size:12px;font-weight:700;color:#fff;margin-bottom:6px;}
+  .quiz-field input{
+    width:100%;height:44px;padding:0 12px;font:inherit;font-size:14px;color:#fff;
+    background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:10px;
+    transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .quiz-field input:focus{outline:none;border-color:var(--accent-bright);box-shadow:0 0 0 3px rgba(72,112,229,0.22);}
+  .quiz-field input[aria-invalid="true"]{border-color:#e06a6a;}
+  .quiz-err{margin:4px 0 0;font-size:11.5px;font-weight:700;color:#e79a9a;}
+  .quiz-err:empty{display:none;}
+  .quiz-consent{display:flex;gap:12px;align-items:flex-start;margin:8px 0 10px;padding:4px 0;font-size:12px;line-height:1.45;color:var(--muted);cursor:pointer;}
+  .quiz-consent input{flex-shrink:0;width:26px;height:26px;margin-top:0;accent-color:var(--accent-bright);cursor:pointer;}
+  .quiz-consent-note{margin:0 0 14px;font-size:11px;line-height:1.4;color:var(--muted);}
+  #quizSubmit[disabled]{opacity:0.4;pointer-events:none;}
+  #quizSubmit.is-loading{color:transparent !important;position:relative;pointer-events:none;}
+  #quizSubmit.is-loading::after{
+    content:"";position:absolute;inset:0;margin:auto;width:16px;height:16px;
+    border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;
+    animation:quizSpin 700ms linear infinite;
+  }
+  @keyframes quizSpin{to{transform:rotate(360deg);}}
+  .quiz-back{
+    display:inline-flex;align-items:center;gap:4px;margin-top:12px;
+    background:none;border:0;padding:0;cursor:pointer;
+    font:inherit;font-size:12.5px;font-weight:700;color:var(--muted);
+    transition:color var(--dur) var(--ease);
+  }
+  .quiz-back:hover{color:#fff;}
+
+  .quiz-thanks{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;text-align:center;
+    opacity:0;transform:translateY(12px);pointer-events:none;
+    transition:opacity 400ms var(--ease), transform 400ms var(--ease);
+  }
+  .quiz-thanks[hidden]{display:none;}
+  .quiz.is-done .quiz-steps{opacity:0;transform:translateY(-12px);pointer-events:none;}
+  .quiz.is-done .quiz-thanks{opacity:1;transform:none;pointer-events:auto;}
+  .quiz-check{width:50px;height:50px;margin-bottom:8px;}
+  .quiz-check circle,.quiz-check path{fill:none;stroke:var(--accent-bright);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+  .quiz-check circle{stroke-dasharray:150;stroke-dashoffset:150;}
+  .quiz-check path{stroke-dasharray:60;stroke-dashoffset:60;}
+  .quiz.is-done .quiz-check circle{animation:quizDraw 480ms var(--ease) forwards;}
+  .quiz.is-done .quiz-check path{animation:quizDraw 380ms var(--ease) 340ms forwards;}
+  @keyframes quizDraw{to{stroke-dashoffset:0;}}
+  .quiz-thanks-logo{width:auto;height:80px;margin:4px 0 16px;}
+  .quiz-thanks-title{font-size:19px;font-weight:700;color:#fff;margin:0 0 8px;}
+  .quiz-thanks-line{font-size:13.5px;line-height:1.5;color:var(--muted);margin:0 0 14px;max-width:36ch;}
+  .quiz-thanks-phone{font-size:16px;font-weight:700;color:var(--accent-bright);text-decoration:none;margin-bottom:16px;}
+  .quiz-thanks-actions{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;margin:2px auto 0;}
+  .quiz-thanks-actions .btn{width:100%;}
+
+  @media (prefers-reduced-motion:reduce){
+    .quiz-progress-fill{transition:none;}
+    .quiz-opt{animation:none;}
+    .quiz-opt:hover{transform:none;}
+    .quiz-steps,.quiz-step,.quiz-step.is-active,.quiz-step.is-entering,.quiz-step.is-exiting{
+      transition:opacity 150ms linear !important;transform:none !important;
+    }
+    .quiz-thanks{transition:opacity 150ms linear !important;transform:none !important;}
+    .quiz-check circle,.quiz-check path{stroke-dashoffset:0;animation:none;}
+  }
 </style>
 </head>
 <body>
@@ -1381,9 +1742,9 @@
       </ul>
     </nav>
     <div class="nav-actions">
-      <a class="header-phone" href="tel:+19109901576">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8c1.4 2.7 3.6 5 6.4 6.4l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1l-2.2 2.3z"/></svg>
-        <span>(910) 990-1576</span>
+      <a class="header-phone" href="tel:+19109901576" aria-label="Call us now at (910) 990-1576">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8c1.4 2.7 3.6 5 6.4 6.4l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1l-2.2 2.3z"/></svg>
+        <span>Call Us Now</span>
       </a>
       <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile">
         <span class="nav-toggle-bars" aria-hidden="true">
@@ -1407,29 +1768,119 @@
 
   <!-- ================= HERO ================= -->
   <section class="hero" id="heroWrap" aria-label="SiteSync introduction">
-    <div class="hero-media" aria-hidden="true">
-      <video autoplay muted loop playsinline poster="herobackground.jfif">
-        <source src="media/herovideo.mp4" type="video/mp4">
-        <source src="media/herovideo.webm" type="video/webm">
-      </video>
+    <div class="hero-media" id="heroMesh" aria-hidden="true">
+      <div class="mesh-blob mesh-blob-1"></div>
+      <div class="mesh-blob mesh-blob-2"></div>
+      <div class="mesh-blob mesh-blob-3"></div>
+      <div class="mesh-blob mesh-blob-4"></div>
     </div>
-    <div class="hero-scrim" aria-hidden="true"></div>
+    <svg class="hero-lines" id="heroLines" aria-hidden="true" viewBox="0 0 1440 900" preserveAspectRatio="none">
+      <g class="ln ln-1"><path pathLength="1" d="M-40 170 C 320 40 700 330 1080 150 S 1520 380 1560 250"/><circle cx="360" cy="150" r="3"/><circle cx="900" cy="214" r="3"/></g>
+      <g class="ln ln-2"><path pathLength="1" d="M1480 110 C 1080 300 800 40 420 260 S -80 130 -60 350"/><circle cx="1120" cy="206" r="3"/><circle cx="560" cy="212" r="3"/><circle cx="120" cy="300" r="3"/></g>
+      <g class="ln ln-3"><path pathLength="1" d="M-60 620 C 260 800 640 500 1000 700 S 1460 520 1540 660"/><circle cx="420" cy="642" r="3"/><circle cx="1020" cy="690" r="3"/></g>
+      <g class="ln ln-4"><path pathLength="1" d="M700 -40 C 820 220 500 430 780 650 S 900 940 740 980"/><circle cx="688" cy="232" r="3"/><circle cx="762" cy="622" r="3"/></g>
+      <g class="ln ln-5"><path pathLength="1" d="M-40 430 C 420 370 520 730 980 560 S 1420 620 1540 450"/><circle cx="470" cy="470" r="3"/><circle cx="1000" cy="558" r="3"/><circle cx="1360" cy="520" r="3"/></g>
+      <g class="ln ln-6"><path pathLength="1" d="M1520 780 C 1160 640 900 900 560 720 S 120 850 -60 700"/><circle cx="1000" cy="742" r="3"/><circle cx="420" cy="772" r="3"/></g>
+    </svg>
+    <div class="hero-veil" aria-hidden="true"></div>
+    <div class="hero-right-scrim" aria-hidden="true"></div>
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="hero-particles" id="heroParticles" aria-hidden="true">
+      <span class="hero-particle" style="left:8%;top:22%;--d:17s;--delay:-1s;--drift:34px;--s:1.1"></span>
+      <span class="hero-particle" style="left:19%;top:64%;--d:21s;--delay:-6s;--drift:-26px;--s:0.8"></span>
+      <span class="hero-particle" style="left:31%;top:38%;--d:15s;--delay:-3s;--drift:20px;--s:1"></span>
+      <span class="hero-particle" style="left:44%;top:78%;--d:23s;--delay:-11s;--drift:-32px;--s:1.2"></span>
+      <span class="hero-particle" style="left:53%;top:18%;--d:18s;--delay:-8s;--drift:28px;--s:0.9"></span>
+      <span class="hero-particle" style="left:62%;top:52%;--d:20s;--delay:-2s;--drift:-22px;--s:1"></span>
+      <span class="hero-particle" style="left:71%;top:30%;--d:16s;--delay:-13s;--drift:30px;--s:1.1"></span>
+      <span class="hero-particle" style="left:83%;top:70%;--d:22s;--delay:-5s;--drift:-28px;--s:0.85"></span>
+      <span class="hero-particle" style="left:90%;top:40%;--d:19s;--delay:-9s;--drift:24px;--s:1"></span>
+      <span class="hero-particle" style="left:26%;top:12%;--d:24s;--delay:-15s;--drift:-18px;--s:0.9"></span>
+      <span class="hero-particle" style="left:47%;top:46%;--d:17s;--delay:-4s;--drift:22px;--s:0.8"></span>
+      <span class="hero-particle" style="left:78%;top:14%;--d:20s;--delay:-10s;--drift:-30px;--s:1.05"></span>
+    </div>
 
     <div class="hero-content">
-      <div class="hero-crest">
-        <img src="herologo.png" alt="SiteSync" loading="eager">
+      <div class="hero-copy">
+        <div class="hero-crest">
+          <img src="herologo.png" alt="SiteSync" loading="eager">
+        </div>
+        <p class="hero-badge">North Carolina Automation &amp; Web Design</p>
+        <h1 class="hero-headline">Automation that brings in more revenue</h1>
+        <p class="hero-sub">Built for contractors, landscapers, and blue-collar businesses across North Carolina.</p>
+        <div class="hero-actions">
+          <button type="button" class="btn btn-accent js-book-meeting">Book a Quote</button>
+          <a class="btn btn-outline" href="#selected-work">See Our Work</a>
+        </div>
+        <div class="hero-reassurance">
+          <span class="hero-reassurance-item">When you pay to generate a lead, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</span>
+          <span class="hero-reassurance-divider" aria-hidden="true"></span>
+          <span class="hero-reassurance-item">Cancel anytime.</span>
+        </div>
       </div>
-      <p class="hero-badge">North Carolina Automation &amp; Web Design</p>
-      <h1 class="hero-headline">Automation that brings in more revenue</h1>
-      <p class="hero-sub">Built for contractors, landscapers, and blue-collar businesses across North Carolina.</p>
-      <div class="hero-actions">
-        <button type="button" class="btn btn-accent js-book-meeting">Book a Meeting</button>
-        <a class="btn btn-outline" href="#selected-work">See the work</a>
-      </div>
-      <div class="hero-reassurance">
-        <span class="hero-reassurance-item">When you pay to generate a lead, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</span>
-        <span class="hero-reassurance-divider" aria-hidden="true"></span>
-        <span class="hero-reassurance-item">Cancel anytime.</span>
+
+      <!-- Right column: 3-step quiz, always fully visible (step 1 by default) -->
+      <div class="hero-quiz" id="quizCard" aria-label="Get started with SiteSync">
+        <div class="quiz" id="quiz">
+          <p class="quiz-lead">Start a consultation here</p>
+          <div class="quiz-progress"><span class="quiz-progress-fill" id="quizProgressFill"></span></div>
+          <p class="quiz-progress-label" id="quizProgressLabel">Step 1 of 3</p>
+
+          <div class="quiz-body">
+            <div class="quiz-steps" id="quizSteps">
+
+              <section class="quiz-step is-active" data-step="1" aria-labelledby="q1h">
+                <h3 class="quiz-q" id="q1h">What kind of business do you run?</h3>
+                <div class="quiz-grid" id="quizOpts1" role="group" aria-labelledby="q1h"></div>
+              </section>
+
+              <section class="quiz-step" data-step="2" hidden aria-labelledby="q2h">
+                <h3 class="quiz-q" id="q2h">What's the biggest thing costing you right now?</h3>
+                <div class="quiz-list" id="quizOpts2" role="group" aria-labelledby="q2h"></div>
+                <button type="button" class="quiz-back" data-back>&lsaquo;&nbsp;Back</button>
+              </section>
+
+              <section class="quiz-step" data-step="3" hidden aria-labelledby="q3h">
+                <h3 class="quiz-q" id="q3h">Where should I reach you?</h3>
+                <form id="quizForm" novalidate>
+                  <div class="quiz-field">
+                    <label for="quizName">Name</label>
+                    <input type="text" id="quizName" name="name" autocomplete="name" required aria-describedby="quizNameErr">
+                    <p class="quiz-err" id="quizNameErr" aria-live="polite"></p>
+                  </div>
+                  <div class="quiz-field">
+                    <label for="quizPhone">Phone</label>
+                    <input type="tel" id="quizPhone" name="phone" autocomplete="tel" inputmode="tel" required value="(910) " aria-describedby="quizPhoneErr">
+                    <p class="quiz-err" id="quizPhoneErr" aria-live="polite"></p>
+                  </div>
+                  <label class="quiz-consent">
+                    <input type="checkbox" id="quizConsent" name="consent">
+                    <span>Text me about my request. Message and data rates may apply. Message frequency varies. Reply STOP to opt out.</span>
+                  </label>
+                  <p class="quiz-consent-note">By submitting, you agree to be contacted by SiteSync about your request.</p>
+                  <button type="submit" class="btn btn-accent btn-block" id="quizSubmit" disabled>Book a Quote</button>
+                </form>
+                <button type="button" class="quiz-back" data-back>&lsaquo;&nbsp;Back</button>
+              </section>
+
+            </div>
+
+            <div class="quiz-thanks" id="quizThanks" aria-live="polite" hidden>
+              <svg class="quiz-check" viewBox="0 0 52 52" aria-hidden="true">
+                <circle cx="26" cy="26" r="23"/>
+                <path d="M15 27l7 7 16-17"/>
+              </svg>
+              <img src="herologo.png" alt="SiteSync" class="quiz-thanks-logo">
+              <p class="quiz-thanks-title">Thanks &mdash; I've got it.</p>
+              <p class="quiz-thanks-line">I'll reach out shortly to talk through what's costing you the most.</p>
+              <a class="quiz-thanks-phone" href="tel:+19109901576">(910) 990-1576</a>
+              <div class="quiz-thanks-actions">
+                <button type="button" class="btn btn-outline" id="quizThanksClose">Done</button>
+                <button type="button" class="btn btn-accent" id="quizThanksCall">Schedule My Call</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1685,7 +2136,7 @@
       <h2 class="display reveal line-mask"><span class="line-mask-inner">the best option in town?</span></h2>
       <p class="cta-band-sub reveal">40-minute call. I'll show you exactly what's leaking and what it's worth to fix it.</p>
       <div class="cta-band-actions reveal">
-        <button type="button" class="btn btn-primary js-book-meeting">Book a Meeting Today</button>
+        <button type="button" class="btn btn-primary js-book-meeting">Start Free Consultation</button>
         <p class="cta-band-note">No contracts. Cancel anytime.</p>
         <a class="micro-label" href="tel:+19109901576" style="color:#fff;">(910) 990-1576</a>
       </div>
@@ -1741,19 +2192,6 @@
   </button>
 </aside>
 
-<!-- ================= BOOKING MODAL ================= -->
-<div class="modal-overlay" id="bookingModal" hidden>
-  <div class="modal-panel" id="bookingPanel" role="dialog" aria-modal="true" aria-labelledby="bookingModalTitle">
-    <button type="button" class="modal-close" id="bookingClose" aria-label="Close booking dialog">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
-    </button>
-    <h2 class="modal-title" id="bookingModalTitle">Book a meeting</h2>
-    <div class="calendly-embed-wrap" id="calendlyEmbedWrap">
-      <div class="calendly-inline-widget" data-url="https://calendly.com/ncsitesync/40-min" style="min-width:320px;height:700px;"></div>
-    </div>
-  </div>
-</div>
-
 <script>
 (function(){
   "use strict";
@@ -1778,8 +2216,11 @@
   var navWrap = document.getElementById('navWrap');
   var scrollProgress = document.getElementById('scrollProgress');
   var scrollTicking = false;
-  var NAV_ENTER_THRESHOLD = 80;
-  var NAV_EXIT_THRESHOLD = 40;
+  // Compact the header past 50px scrolled; expand back when it comes back up.
+  // The 8px gap between the two is hysteresis so scrolling that hovers right
+  // on 50px can't rapid-toggle the state.
+  var NAV_ENTER_THRESHOLD = 50;
+  var NAV_EXIT_THRESHOLD = 42;
   var navIsScrolled = false;
   var lastScrollY = -Infinity; // guarantees the first tick always runs, even on a page load that starts mid-scroll
 
@@ -2047,12 +2488,31 @@
     // Real rendered pixels, not the --card-w/--card-gap custom
     // properties' raw px/vw source values — this stays correct across
     // breakpoints without needing to know which unit is currently active.
+    //
+    // The peek slides carry transform:scale(0.94), so
+    // getBoundingClientRect().width on a slide reports its *scaled* width
+    // (~432 instead of 460) whenever slide 0 isn't the active one — that
+    // skewed every step by tens of px. Fixes:
+    //   - step (card width + gap) is the gap between two adjacent slide
+    //     CENTRES. A centred scale() moves a box's edges but never its
+    //     centre, so this is immune to the peek scaling and stays exact
+    //     on sub-pixel vw sizing too.
+    //   - the centring term uses offsetWidth, the layout border-box width,
+    //     which ignores transforms entirely.
+    function slideCentre(el){
+      var r = el.getBoundingClientRect();
+      return r.left + r.width / 2;
+    }
     function translateXForPos(pos){
       var carouselWidth = root.getBoundingClientRect().width;
-      var cardWidth = realSlides[0].getBoundingClientRect().width;
-      var gapStyle = getComputedStyle(track).columnGap || getComputedStyle(track).gap;
-      var gap = parseFloat(gapStyle) || 0;
-      return (carouselWidth - cardWidth) / 2 - pos * (cardWidth + gap);
+      var cardWidth = realSlides[0].offsetWidth;
+      var step = slideCentre(allSlides[1]) - slideCentre(allSlides[0]);
+      if (!(step > 0)){
+        // single-slide / not-yet-laid-out fallback
+        var gapStyle = getComputedStyle(track).columnGap || getComputedStyle(track).gap;
+        step = cardWidth + (parseFloat(gapStyle) || 0);
+      }
+      return (carouselWidth - cardWidth) / 2 - pos * step;
     }
 
     function setTransform(pos){
@@ -2532,130 +2992,372 @@
     applyScenario(DEFAULT_SCENARIO, true);
   })();
 
-  /* ---------- Booking modal (Calendly) ----------
-     Every "Contact Us" / "Book a Meeting Today" trigger (.js-book-meeting)
-     opens the same overlay. widget.js is only injected the first time
-     the modal opens, so it never costs anything on initial page load. */
-  (function initBookingModal(){
-    var overlay = document.getElementById('bookingModal');
-    var panel = document.getElementById('bookingPanel');
-    var closeBtn = document.getElementById('bookingClose');
-    var triggers = document.querySelectorAll('.js-book-meeting');
-    if (!overlay || !panel || !closeBtn || !triggers.length) return;
+  /* ---------- Hero form card ----------
+     A guided 3-step flow that ends at Calendly. Step 1 + 2 chips auto-advance
+     (250ms). Step 3 collects nothing that leaves the page — name/phone/consent
+     only gate the button. Clicking "Book a Quote" on Step 3 opens the Calendly
+     POPUP; when that popup closes (closed or booked) the quiz shows its
+     thank-you screen. No mailto, no backend, no data collection. */
+  (function initHeroQuiz(){
+    var CALENDLY_URL = 'https://calendly.com/ncsitesync/40-min';
 
-    var CALENDLY_SCRIPT_SRC = 'https://assets.calendly.com/assets/external/widget.js';
-    var calendlyScriptLoaded = false;
-    var lastFocused = null;
-    var closeTimer = null;
-    var scrollLockValue = '';
-
-    function loadCalendlyScript(){
-      if (calendlyScriptLoaded) return;
-      calendlyScriptLoaded = true;
-      var script = document.createElement('script');
-      script.src = CALENDLY_SCRIPT_SRC;
-      script.async = true;
-      document.body.appendChild(script);
+    /* Open the Calendly popup and call onClose() once — when the visitor
+       closes it or completes a booking. Falls back to a new tab (advancing
+       optimistically) if the widget script hasn't loaded. */
+    function openCalendlyPopup(onClose){
+      var done = false, poll = null, seen = false;
+      function onMsg(ev){
+        if (ev && ev.data && ev.data.event === 'calendly.event_scheduled') finish();
+      }
+      function finish(){
+        if (done) return;
+        done = true;
+        if (poll) clearInterval(poll);
+        window.removeEventListener('message', onMsg);
+        onClose();
+      }
+      if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function'){
+        window.Calendly.initPopupWidget({ url: CALENDLY_URL });
+        window.addEventListener('message', onMsg);
+        /* Calendly appends div.calendly-overlay to <body> and removes it when
+           the popup is dismissed. Watch for that removal. */
+        poll = setInterval(function(){
+          if (document.querySelector('.calendly-overlay')) seen = true;
+          else if (seen) finish();
+        }, 250);
+        /* if the overlay never showed up, the popup failed — fall back */
+        setTimeout(function(){
+          if (!done && !seen){ window.open(CALENDLY_URL, '_blank', 'noopener'); finish(); }
+        }, 2500);
+        /* stop watching after 20 min no matter what */
+        setTimeout(function(){
+          if (!done && poll){ clearInterval(poll); window.removeEventListener('message', onMsg); poll = null; }
+        }, 1200000);
+      } else {
+        window.open(CALENDLY_URL, '_blank', 'noopener');
+        finish();
+      }
     }
 
-    function getFocusable(){
-      var nodes = panel.querySelectorAll(
-        'a[href], button:not([disabled]), textarea, input, select, iframe, [tabindex]:not([tabindex="-1"])'
-      );
-      return Array.prototype.filter.call(nodes, function(el){
-        return el.offsetWidth > 0 || el.offsetHeight > 0 || el === document.activeElement;
+    var card     = document.getElementById('quizCard');
+    var quizEl   = document.getElementById('quiz');
+    var triggers = document.querySelectorAll('.js-book-meeting');
+    if (!quizEl) return;
+
+    /* ============================================================
+       3-STEP QUIZ (replaces the Calendly embed)
+       ============================================================ */
+    var quiz      = document.getElementById('quiz');
+    var stepsWrap = document.getElementById('quizSteps');
+    var stepEls   = [null,
+      quiz.querySelector('[data-step="1"]'),
+      quiz.querySelector('[data-step="2"]'),
+      quiz.querySelector('[data-step="3"]')];
+    var progFill  = document.getElementById('quizProgressFill');
+    var progLabel = document.getElementById('quizProgressLabel');
+    var thanks    = document.getElementById('quizThanks');
+    var qForm     = document.getElementById('quizForm');
+    var nameEl    = document.getElementById('quizName');
+    var phoneEl   = document.getElementById('quizPhone');
+    var consentEl = document.getElementById('quizConsent');
+    var nameErr   = document.getElementById('quizNameErr');
+    var phoneErr  = document.getElementById('quizPhoneErr');
+    var submitBtn = document.getElementById('quizSubmit');
+    var thanksClose = document.getElementById('quizThanksClose');
+    var thanksCall  = document.getElementById('quizThanksCall');
+    var EASE = 'cubic-bezier(0.16,1,0.3,1)';
+
+    function focusFirstOption(){
+      var first = document.querySelector('#quizOpts1 .quiz-opt');
+      if (first) first.focus({ preventScroll: true });
+    }
+
+    var STEP1 = [
+      { key:'contractor',  label:'Contractor',         icon:'<path d="M3 21h18M6 21V11l6-4 6 4v10M10 21v-5h4v5"/>' },
+      { key:'landscaping', label:'Landscaping & Lawn', icon:'<path d="M12 20v-9M12 11c0-3 2.2-5.2 5.2-5.2C17.2 9 15 11 12 11Zm0 0c0-3-2.2-5.2-5.2-5.2C6.8 9 9 11 12 11Z"/>' },
+      { key:'auto',        label:'Auto & Mechanical',  icon:'<circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3v-4l2-6h9l4 6h1v4h-2M9 17h6"/>' },
+      { key:'other',       label:'Other Trade',        icon:'<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>' }
+    ];
+    var STEP2 = [
+      { key:'leads', label:'Missing leads and calls',        icon:'<path d="M4 6h16M4 12h11M4 18h7"/><path d="M16 15l3 3 3-4"/>' },
+      { key:'ads',   label:"Advertising that isn't working", icon:'<path d="M4 11l14-6v14L4 13z"/><path d="M18 8a4 4 0 0 1 0 8"/>' },
+      { key:'web',   label:'My website needs a revamp',      icon:'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M9 21h6"/>' },
+      { key:'else',  label:'Something else',                 icon:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.6 2.3c-.9.4-1.1 1-1.1 1.7M12 16h.01"/>' }
+    ];
+
+    var step = 1;
+    var busy = false;
+
+    function svgIcon(d){
+      return '<svg class="quiz-opt-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+        + 'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+    }
+    var CHECK_SVG = '<svg class="quiz-opt-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      + 'stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+    function buildOptions(container, items, stepNo){
+      container.innerHTML = '';
+      items.forEach(function(item, i){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'quiz-opt';
+        b.setAttribute('aria-pressed', 'false');
+        b.dataset.key = item.key;
+        b.style.setProperty('--i', i);
+        b.innerHTML = svgIcon(item.icon) + '<span class="quiz-opt-label">' + item.label + '</span>' + CHECK_SVG;
+        b.addEventListener('click', function(){ selectOption(stepNo, b); });
+        container.appendChild(b);
+      });
+    }
+    buildOptions(document.getElementById('quizOpts1'), STEP1, 1);
+    buildOptions(document.getElementById('quizOpts2'), STEP2, 2);
+
+    function groupFor(n){ return document.getElementById(n === 1 ? 'quizOpts1' : 'quizOpts2'); }
+
+    function selectOption(stepNo, btn){
+      Array.prototype.forEach.call(groupFor(stepNo).querySelectorAll('.quiz-opt'), function(o){
+        o.setAttribute('aria-pressed', o === btn ? 'true' : 'false');
+      });
+      /* nothing is recorded — the tap just marks the choice and advances */
+      setTimeout(function(){ goTo(stepNo + 1, 'fwd'); }, reduceMotion ? 0 : 250);
+    }
+
+    function setProgress(n){
+      progFill.style.width = (n / 3 * 100) + '%';
+      progLabel.textContent = 'Step ' + n + ' of 3';
+    }
+
+    function focusStep(el){
+      var n = Number(el.dataset.step);
+      var t = n === 3 ? nameEl
+        : (el.querySelector('.quiz-opt[aria-pressed="true"]') || el.querySelector('.quiz-opt'));
+      if (t) t.focus({ preventScroll: true });
+    }
+
+    function goTo(n, dir){
+      if (busy || n === step || n < 1 || n > 3) return;
+      var outEl = stepEls[step];
+      var inEl = stepEls[n];
+      setProgress(n);
+
+      if (reduceMotion){
+        outEl.classList.remove('is-active'); outEl.hidden = true;
+        inEl.hidden = false; inEl.classList.add('is-active');
+        step = n; focusStep(inEl);
+        return;
+      }
+
+      busy = true;
+      stepsWrap.classList.toggle('is-back', dir === 'back');
+
+      var fromH = stepsWrap.offsetHeight;              // outgoing step height
+      stepsWrap.style.transition = 'none';
+      stepsWrap.style.height = fromH + 'px';
+
+      outEl.classList.remove('is-active');
+      outEl.classList.add('is-exiting');
+      inEl.hidden = false;
+      inEl.classList.add('is-active', 'is-entering');  // opacity:0 -> measurable while invisible
+
+      var toH = inEl.offsetHeight;                     // incoming step height; the read also flushes the fromH lock
+      void stepsWrap.offsetWidth;
+      stepsWrap.style.transition = 'height 400ms ' + EASE;
+
+      requestAnimationFrame(function(){
+        stepsWrap.style.height = toH + 'px';           // height eases fromH -> toH over 400ms
+        inEl.classList.remove('is-entering');          // content cross-fades/slides in over the same window
+      });
+
+      var settled = false;
+      function done(e){
+        if (e && e.target !== stepsWrap) return;
+        if (settled) return;
+        settled = true;
+        stepsWrap.removeEventListener('transitionend', done);
+        stepsWrap.style.transition = '';
+        stepsWrap.style.height = '';                   // back to auto -> responsive to reflow
+        outEl.classList.remove('is-exiting');
+        outEl.hidden = true;
+        stepsWrap.classList.remove('is-back');
+        busy = false;
+        step = n;
+        focusStep(inEl);
+      }
+      stepsWrap.addEventListener('transitionend', done);
+      setTimeout(done, 520);
+    }
+
+    Array.prototype.forEach.call(quiz.querySelectorAll('[data-back]'), function(b){
+      b.addEventListener('click', function(){ if (!busy) goTo(step - 1, 'back'); });
+    });
+
+    [1, 2].forEach(function(n){
+      groupFor(n).addEventListener('keydown', function(e){
+        var opts = Array.prototype.slice.call(groupFor(n).querySelectorAll('.quiz-opt'));
+        var idx = opts.indexOf(document.activeElement);
+        if (idx < 0) return;
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight'){ e.preventDefault(); opts[(idx + 1) % opts.length].focus(); }
+        else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft'){ e.preventDefault(); opts[(idx - 1 + opts.length) % opts.length].focus(); }
+      });
+    });
+
+    /* step 3 validation + gated submit */
+    function nameMsg(v){ return v.trim().length >= 2 ? '' : 'Enter your name.'; }
+    function phoneMsg(v){
+      var d = v.replace(/\D/g, '');
+      if (!d) return 'Enter your phone number.';
+      return (d.length >= 10 && /^[\d\s().+-]+$/.test(v)) ? '' : 'Enter a valid phone number.';
+    }
+    function checkField(el, errEl, fn){
+      var msg = fn(el.value || '');
+      errEl.textContent = msg;
+      el.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      return !msg;
+    }
+    function formValid(){ return !nameMsg(nameEl.value) && !phoneMsg(phoneEl.value) && consentEl.checked; }
+    function refreshSubmit(){ submitBtn.disabled = !formValid(); }
+    nameEl.addEventListener('blur', function(){ checkField(nameEl, nameErr, nameMsg); });
+    phoneEl.addEventListener('blur', function(){ checkField(phoneEl, phoneErr, phoneMsg); });
+    [nameEl, phoneEl].forEach(function(el){ el.addEventListener('input', refreshSubmit); });
+    consentEl.addEventListener('change', refreshSubmit);
+
+    /* ============================================================
+       NO SUBMISSION. Nothing is emailed, POSTed, or stored. The quiz is a
+       guided lead-in that hands off to Calendly; showThanks() just swaps the
+       card to its confirmation state after the Calendly popup closes.
+       ============================================================ */
+    function showThanks(){
+      /* pull the card to the top of the viewport so the confirmation can't be missed */
+      if (card) card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+
+      thanks.hidden = false;
+      thanks.style.position = 'static';
+      var toH = thanks.offsetHeight;      // true thanks content height (synchronous, no paint)
+      thanks.style.position = '';
+      var fromH = quiz.offsetHeight;
+
+      if (reduceMotion){
+        quiz.classList.add('is-done');
+        stepsWrap.hidden = true;
+        thanks.style.position = 'static';
+        if (thanksClose) thanksClose.focus();
+        return;
+      }
+
+      quiz.style.transition = 'none';
+      quiz.style.height = fromH + 'px';
+      void quiz.offsetWidth;
+      quiz.style.transition = 'height 400ms ' + EASE;
+
+      requestAnimationFrame(function(){
+        quiz.classList.add('is-done');    // steps fade/slide out, thanks fades/slides in (CSS, 400ms)
+        quiz.style.height = toH + 'px';
+      });
+
+      setTimeout(function(){
+        stepsWrap.hidden = true;
+        thanks.style.position = 'static';
+        quiz.style.transition = '';
+        quiz.style.height = '';
+        if (thanksClose) thanksClose.focus();
+      }, 460);
+    }
+
+    /* Step 3's "Book a Quote" (a type=submit button, gated by formValid()):
+       open the Calendly popup — no data leaves the page — then show the
+       thank-you screen once that popup is closed or a booking is made. */
+    qForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      if (!checkField(nameEl, nameErr, nameMsg)){ nameEl.focus(); return; }
+      if (!checkField(phoneEl, phoneErr, phoneMsg)){ phoneEl.focus(); return; }
+      if (!consentEl.checked){ consentEl.focus(); return; }
+
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-busy', 'true');
+      openCalendlyPopup(function(){
+        submitBtn.removeAttribute('aria-busy');
+        showThanks();
+      });
+    });
+
+    function resetQuiz(){
+      step = 1;
+      busy = false;
+      quiz.classList.remove('is-done');
+      quiz.style.transition = '';
+      quiz.style.height = '';
+      stepsWrap.hidden = false;
+      stepsWrap.style.transition = '';
+      stepsWrap.style.height = '';
+      stepsWrap.classList.remove('is-back');
+      thanks.hidden = true;
+      thanks.style.position = '';
+      for (var i = 1; i <= 3; i++){
+        stepEls[i].classList.remove('is-active', 'is-entering', 'is-exiting');
+        stepEls[i].hidden = (i !== 1);
+      }
+      stepEls[1].classList.add('is-active');
+      Array.prototype.forEach.call(quiz.querySelectorAll('.quiz-opt'), function(o){
+        o.setAttribute('aria-pressed', 'false');
+      });
+      if (qForm.reset) qForm.reset();
+      nameErr.textContent = '';
+      phoneErr.textContent = '';
+      nameEl.removeAttribute('aria-invalid');
+      phoneEl.removeAttribute('aria-invalid');
+      submitBtn.disabled = true;
+      submitBtn.classList.remove('is-loading');
+      submitBtn.removeAttribute('aria-busy');
+      setProgress(1);
+    }
+
+    /* ---------- wiring ----------
+       The card is always on; the hero/footer "book" CTAs just bring the quiz
+       into view and focus step 1. Only Step 3's button opens Calendly. */
+    function scrollToQuiz(){
+      if (!card) return;
+      card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+      setTimeout(focusFirstOption, reduceMotion ? 0 : 320);
+    }
+    Array.prototype.forEach.call(triggers, function(t){
+      t.addEventListener('click', function(){ scrollToQuiz(); });
+    });
+    if (thanksClose){
+      thanksClose.addEventListener('click', function(){ resetQuiz(); });
+    }
+    if (thanksCall){
+      thanksCall.addEventListener('click', function(){
+        window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+        var hp = document.querySelector('.header-phone');
+        if (hp) setTimeout(function(){ hp.focus(); }, reduceMotion ? 0 : 520);
       });
     }
 
-    function onKeydown(e){
-      if (e.key === 'Escape' || e.key === 'Esc'){
-        e.preventDefault();
-        closeModal();
-        return;
-      }
-      if (e.key !== 'Tab') return;
-      var focusable = getFocusable();
-      if (!focusable.length) return;
-      var first = focusable[0];
-      var last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first){
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last){
-        e.preventDefault();
-        first.focus();
-      }
-    }
-
-    function lockScroll(){
-      scrollLockValue = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      document.body.classList.add('modal-open');
-    }
-    function unlockScroll(){
-      document.body.style.overflow = scrollLockValue;
-      document.body.classList.remove('modal-open');
-    }
-
-    function openModal(trigger){
-      if (closeTimer){ clearTimeout(closeTimer); closeTimer = null; }
-      lastFocused = trigger || document.activeElement;
-      loadCalendlyScript();
-      overlay.classList.remove('is-closing');
-      overlay.hidden = false;
-      void overlay.offsetWidth; // force reflow so the entrance transition plays
-      overlay.classList.add('is-open');
-      lockScroll();
-      document.addEventListener('keydown', onKeydown, true);
-      setTimeout(function(){ closeBtn.focus(); }, reduceMotion ? 0 : 120);
-    }
-
-    function finishClose(){
-      overlay.hidden = true;
-      overlay.classList.remove('is-closing');
-      unlockScroll();
-      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
-      lastFocused = null;
-    }
-
-    function closeModal(){
-      if (overlay.hidden || overlay.classList.contains('is-closing')) return;
-      document.removeEventListener('keydown', onKeydown, true);
-      overlay.classList.remove('is-open');
-      overlay.classList.add('is-closing');
-
-      if (reduceMotion){
-        finishClose();
-        return;
-      }
-
-      var settled = false;
-      function onTransitionEnd(e){
-        if (e.target !== panel) return;
-        settled = true;
-        panel.removeEventListener('transitionend', onTransitionEnd);
-        if (closeTimer){ clearTimeout(closeTimer); closeTimer = null; }
-        finishClose();
-      }
-      panel.addEventListener('transitionend', onTransitionEnd);
-      closeTimer = setTimeout(function(){
-        if (settled) return;
-        panel.removeEventListener('transitionend', onTransitionEnd);
-        finishClose();
-      }, 400);
-    }
-
-    triggers.forEach(function(trigger){
-      trigger.addEventListener('click', function(){ openModal(trigger); });
-    });
-    closeBtn.addEventListener('click', function(){ closeModal(); });
-    overlay.addEventListener('click', function(e){
-      if (e.target === overlay) closeModal();
-    });
+    resetQuiz();   // initialise step 1 + progress on load
   })();
 
 })();
 </script>
 
+<script>
+/* Pause the hero mesh + line animations whenever the hero leaves the viewport,
+   so the page isn't burning GPU below the fold. Transform/opacity animations
+   only, so play-state toggling triggers no layout. */
+(function(){
+  "use strict";
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; // already frozen by CSS
+  var hero = document.getElementById('heroWrap');
+  if (!hero || !('IntersectionObserver' in window)) return;
+  var animated = Array.prototype.slice.call(
+    document.querySelectorAll('#heroMesh .mesh-blob, #heroLines path, #heroLines circle, #heroParticles .hero-particle, .hero-glow')
+  );
+  if (!animated.length) return;
+  var io = new IntersectionObserver(function(entries){
+    var state = entries[0].isIntersecting ? 'running' : 'paused';
+    for (var i = 0; i < animated.length; i++){ animated[i].style.animationPlayState = state; }
+  }, { threshold: 0 });
+  io.observe(hero);
+})();
+</script>
 </body>
 </html>
