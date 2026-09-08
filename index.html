@@ -902,225 +902,176 @@
   .on-light .chip{background:rgba(30,64,175,0.06);border-color:rgba(30,64,175,0.18);color:var(--accent);}
   .on-light .dot{background:var(--accent);}
 
-  /* ---------- "What Are You Struggling With?" — solution carousel ----------
-     One card visible at a time. A flex track of 5 cards (+ a clone of the
-     first and last at the ends) translates by -pos*100% over 500-600ms
-     cubic-bezier(0.16,1,0.3,1); landing on a clone triggers an instant,
-     un-animated snap to the real card so the loop is always a short slide.
-     Auto-advances every 8s, pausing on any interaction and resuming 5s
-     later (JS). Each card carries its own --sa accent (button, icon tint,
-     glow); the active dot picks up the current card's accent via --cur-sa,
-     set by JS on the dots row. Arrows flank the card on desktop and drop
-     below it on mobile; dots + a "N of 5" counter sit below; touch-swipe +
-     arrow keys move by one. "BOOK A QUOTE" carries .js-book-meeting, so the
-     hero-quiz wiring scrolls it to the quiz card (block:'center'). */
+  /* ---------- "What Are You Struggling With?" — glowing solution carousel ----------
+     A glassmorphic, glowing nav bar (5 labels + circular arrows) drives a
+     single large "flyer" graphic and a description block below it. All 5
+     flyers are stacked (position:absolute) inside a fixed-aspect-ratio
+     box; JS drives each transition entirely via inline transform/opacity
+     (the CSS below only supplies the transition timing + the resting
+     off-screen default), which is what lets the same mechanism animate
+     correctly in EITHER direction — next slides the old flyer out left
+     and brings the new one in from the right, prev is the mirror image.
+     The description cross-fades out quickly, swaps text once the image
+     settles (400ms), then fades back in — "updates after the image
+     settles," not simultaneously with it. Auto-advances every 8s, paused
+     by any interaction (arrows, labels, swipe) and resumed 5s later, and
+     paused entirely off-screen/tab-hidden (IntersectionObserver). Nav
+     background is intentionally a good deal more opaque than the literal
+     rgba(30,64,175,0.1) spec value — the section sits on a light
+     background, and at 10% opacity blue-on-near-white leaves white nav
+     text/icons with nowhere near enough contrast to read; boosting the
+     fill is what makes the glassmorphic glow actually work here. */
+  #what-we-do{ background:#F8F9FB; padding:80px 40px; }
+  #what-we-do .container{ padding-left:0; padding-right:0; max-width:960px; }
   #what-we-do .section-head{ margin-left:auto; margin-right:auto; text-align:center; }
 
-  .solcar{
-    position:relative;
+  .solcar{ position:relative; }
+
+  /* ---- glowing nav bar ---- */
+  .solcar-nav{
     display:flex;
-    flex-wrap:wrap;
     align-items:center;
-    justify-content:center;
-    gap:20px;
-    max-width:660px;
-    margin:0 auto;
-  }
-
-  /* first-time hint — reserves no space; JS shows it once via localStorage */
-  .solcar-hint{
-    order:-1;
-    flex-basis:100%;
-    display:none;
-    margin:0 0 4px;
-    text-align:center;
-    font-size:13px;
-    color:#6B7280;
+    gap:10px;
+    width:clamp(300px, 90vw, 900px);
+    margin:0 auto 40px;
+    padding:12px 16px;
+    border-radius:40px;
+    background:rgba(30,64,175,0.88);
+    border:2px solid #60A5FA;
+    box-shadow:0 0 20px rgba(96,165,250,0.5);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
     opacity:0;
-    transition:opacity 500ms var(--ease);
+    animation:solcarFadeIn 500ms var(--ease) both;
   }
-  .solcar-hint.is-visible{ opacity:1; }
+  .solcar-nav-arrow{
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    width:44px; height:44px;
+    border-radius:50%;
+    background:rgba(96,165,250,0.2);
+    border:1px solid #60A5FA;
+    color:#fff;
+    cursor:pointer;
+    box-shadow:0 0 12px rgba(96,165,250,0.4);
+    transition:box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+  }
+  .solcar-nav-arrow svg{ width:22px; height:22px; }
+  .solcar-nav-arrow:hover{ background:rgba(96,165,250,0.35); box-shadow:0 0 20px rgba(96,165,250,0.75); }
+  .solcar-nav-arrow:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
 
-  .solcar-viewport{
-    flex:0 1 500px;
+  .solcar-nav-labels{
+    flex:1;
     min-width:0;
-    overflow:hidden;
-    border-radius:12px;
-  }
-  .solcar-track{
     display:flex;
-    transition:transform 600ms cubic-bezier(0.16,1,0.3,1);   /* will-change is toggled by JS per-move */
+    align-items:center;
+    justify-content:space-between;
+    gap:4px;
   }
-
-  .solcar-card{
-    flex:0 0 100%;
-    box-sizing:border-box;
+  .solcar-nav-label{
+    flex:1;
+    min-width:0;
     display:flex;
     flex-direction:column;
     align-items:center;
-    text-align:center;
-    padding:40px 32px;
-    background:#fff;
-    border-radius:12px;
-    box-shadow:0 1px 2px rgba(16,24,40,0.04), 0 12px 34px -10px rgba(16,24,40,0.16);
-    opacity:1;
-    transition:opacity 300ms var(--ease);
+    gap:5px;
+    padding:6px 4px;
+    background:none;
+    border:0;
+    color:#fff;
+    opacity:0.6;
+    cursor:pointer;
+    transition:opacity var(--dur) var(--ease);
   }
-  /* card-level cross-fade layered on top of the track's slide (JS-toggled
-     on exactly the outgoing/incoming card for each step) */
-  .solcar-card.is-leaving{ opacity:0; }
-  .solcar-card.is-entering{ opacity:0; }
-  .solcar-card.is-entering .solcar-icon{ opacity:0; }
+  .solcar-nav-icon{ width:20px; height:20px; flex-shrink:0; transition:filter var(--dur) var(--ease); }
+  .solcar-nav-text{
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+  }
+  .solcar-nav-label.is-active{ opacity:1; }
+  .solcar-nav-label.is-active .solcar-nav-icon{ filter:drop-shadow(0 0 6px rgba(96,165,250,0.9)); }
+  .solcar-nav-label:hover{ opacity:0.85; }
+  .solcar-nav-label:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
 
-  .solcar-icon{
+  /* ---- flyer image ---- */
+  .solcar-image-wrap{
+    max-width:500px;
+    margin:0 auto;
+    opacity:0;
+    transform:translateX(-24px);
+    animation:solcarFadeSlideIn 400ms var(--ease) 100ms both;
+  }
+  .solcar-image-track{
     position:relative;
-    display:flex; align-items:center; justify-content:center;
-    height:140px;
-    margin-bottom:16px;
-    color:#64748B;                                                    /* fallback: no color-mix support */
-    color:color-mix(in srgb, #64748B 60%, var(--sa, #1E40AF) 40%);    /* tints toward the card's accent */
-    opacity:1;
-    transition:opacity 300ms var(--ease) 100ms;                       /* 100ms behind the card's own fade */
-    animation:solcarFloat 4s ease-in-out infinite;
+    width:100%;
+    aspect-ratio:460/300;
+    border-radius:16px;
   }
-  /* soft accent glow parked behind the icon — stays put while the icon floats */
-  .solcar-icon::before{
-    content:"";
+  .solcar-flyer{
     position:absolute;
-    top:50%; left:50%;
-    width:112px; height:112px;
-    transform:translate(-50%,-50%);
-    border-radius:50%;
-    background:radial-gradient(circle, var(--sa, #1E40AF) 0%, transparent 72%);
-    opacity:0.10;
-    z-index:-1;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    overflow:hidden;
+    border-radius:16px;
+    border:1px solid rgba(96,165,250,0.3);
+    box-shadow:0 0 30px rgba(30,64,175,0.4);
+    opacity:0;
+    transform:translateX(40px);
+    transition:opacity 400ms cubic-bezier(0.16,1,0.3,1), transform 400ms cubic-bezier(0.16,1,0.3,1);
+    pointer-events:none;
   }
-  .solcar-icon svg{ width:140px; height:140px; display:block; animation:solcarPulse 3s ease-in-out infinite; }
-  .solcar-icon svg *{ vector-effect:non-scaling-stroke; }   /* keeps the 1.5px stroke true at 140px */
-  @keyframes solcarFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
-  @keyframes solcarPulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.08); } }
-  /* paused during a card transition (JS) and whenever the carousel is
-     scrolled out of view (IntersectionObserver) */
-  .solcar.is-anim-paused .solcar-icon,
-  .solcar.is-anim-paused .solcar-icon svg{ animation-play-state:paused; }
+  .solcar-flyer.is-active{ opacity:1; transform:translateX(0); pointer-events:auto; }
 
-  .solcar-title{ font-size:18px; font-weight:700; letter-spacing:-0.01em; color:#1F2937; margin:0 0 12px; }
-  .solcar-desc{ font-size:15px; font-weight:400; line-height:1.55; color:#4B5563; margin:0 0 24px; max-width:38ch; }
-
-  .solcar-cta{
+  /* ---- description ---- */
+  .solcar-desc-wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:24px 0;
+    text-align:center;
+    opacity:0;
+    animation:solcarFadeIn 300ms var(--ease) 200ms both;
+  }
+  .solcar-desc-title{ font-size:22px; font-weight:700; letter-spacing:-0.01em; color:var(--ink); margin:0 0 10px; }
+  .solcar-desc-text{ font-size:16px; font-weight:400; line-height:1.6; color:var(--ink); opacity:0.8; margin:0; }
+  .solcar-desc-cta{
     display:inline-flex; align-items:center; justify-content:center;
+    margin-top:24px;
     padding:12px 32px;
     border:0; border-radius:8px;
-    background:#1E40AF;
-    background:var(--sa, #1E40AF);       /* each card's own accent */
+    background:var(--accent);
     color:#fff;
-    font:inherit; font-size:13px; font-weight:700;
-    letter-spacing:0.08em; text-transform:uppercase;
+    font:inherit; font-size:14px; font-weight:700;
+    letter-spacing:0.04em;
     cursor:pointer;
-    transition:transform 200ms var(--ease), box-shadow 200ms var(--ease), filter 200ms var(--ease);
+    transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
   }
-  .solcar-cta:hover{ transform:translateY(-2px) scale(1.02); box-shadow:0 12px 26px -8px rgba(30,64,175,0.45); filter:brightness(1.08); }
-  .solcar-cta:active{ transform:translateY(0) scale(0.99); box-shadow:0 4px 10px -4px rgba(30,64,175,0.4); filter:brightness(0.97); }
-  .solcar-cta:focus-visible{ outline:2px solid var(--sa, #1E40AF); outline-offset:2px; }
+  .solcar-desc-cta:hover{ transform:translateY(-2px); box-shadow:0 10px 24px -6px rgba(30,64,175,0.5); background:var(--accent-hover); }
+  .solcar-desc-cta:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 
-  .solcar-arrow{
-    position:relative;
-    flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    width:46px; height:46px;
-    border-radius:50%;
-    border:1px solid #E0E7FF;
-    background:#fff;
-    color:#1E40AF;
-    cursor:pointer;
-    box-shadow:0 1px 2px rgba(16,24,40,0.04), 0 6px 16px -6px rgba(16,24,40,0.12);
-    transition:transform 200ms var(--ease), box-shadow 200ms var(--ease), border-color 200ms var(--ease);
-  }
-  .solcar-arrow > svg{ width:24px; height:24px; transition:opacity 200ms var(--ease); }
-  .solcar-arrow:hover{
-    transform:translateY(-2px);
-    box-shadow:0 2px 6px rgba(16,24,40,0.06), 0 14px 30px -8px rgba(16,24,40,0.20);
-    border-color:#C7D2FE;
-  }
-  .solcar-arrow:focus-visible{ outline:2px solid #1E40AF; outline-offset:2px; }
+  @keyframes solcarFadeIn{ from{opacity:0;} to{opacity:1;} }
+  @keyframes solcarFadeSlideIn{ from{opacity:0;transform:translateX(-24px);} to{opacity:1;transform:translateX(0);} }
 
-  /* arrow preview hint: hovering (or, on touch, holding) an arrow morphs it
-     from its chevron into a small ghosted preview of the icon it would
-     bring in — a self-contained hint that needs no knowledge of layout. */
-  .solcar-arrow-peek{
-    position:absolute;
-    top:50%; left:50%;
-    width:44px; height:44px;
-    transform:translate(-50%,-50%) scale(0.7);
-    display:flex; align-items:center; justify-content:center;
-    color:#fff;
-    background:var(--peek-sa, #1E40AF);
-    border-radius:50%;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity 250ms var(--ease), transform 250ms var(--ease);
-  }
-  .solcar-arrow-peek svg{ width:20px; height:20px; opacity:0.85; }
-  .solcar-arrow:hover > svg{ opacity:0; }
-  .solcar-arrow:hover .solcar-arrow-peek,
-  .solcar-arrow.is-peeking .solcar-arrow-peek{ opacity:1; transform:translate(-50%,-50%) scale(1); }
-  .solcar-arrow.is-peeking > svg{ opacity:0; }
-
-  .solcar-dots{
-    flex-basis:100%;
-    order:9;
-    display:flex; justify-content:center; align-items:center; gap:9px;
-    margin-top:4px;
-  }
-  .solcar-dot{
-    width:8px; height:8px; padding:0;
-    border-radius:50%;
-    border:1.5px solid #94A3B8;
-    background:transparent;
-    cursor:pointer;
-    transition:background 200ms var(--ease), border-color 200ms var(--ease), transform 200ms var(--ease);
-  }
-  .solcar-dot:hover{ border-color:#1E40AF; }
-  .solcar-dot.is-active{
-    background:#1E40AF;
-    background:var(--cur-sa, #1E40AF);      /* reflects the current card's accent (JS) */
-    border-color:#1E40AF;
-    border-color:var(--cur-sa, #1E40AF);
-    transform:scale(1.25);                  /* 8px -> 10px, transform-only */
-  }
-  .solcar-dot:focus-visible{ outline:2px solid #1E40AF; outline-offset:2px; }
-
-  /* "N of 5" — fades out/in on change rather than jumping */
-  .solcar-count{
-    flex-basis:100%;
-    order:10;
-    margin:6px 0 0;
-    text-align:center;
-    font-size:14px;
-    color:#6B7280;
-    opacity:1;
-    transition:opacity 150ms var(--ease);
-  }
-  .solcar-count.is-changing{ opacity:0; }
-
-  /* mobile: card full width, arrows drop below it (dots + count stay last) */
-  @media (max-width:640px){
-    .solcar{ gap:16px; }
-    .solcar-viewport{ flex-basis:100%; order:1; }
-    .solcar-arrow--prev{ order:2; }
-    .solcar-arrow--next{ order:3; }
-    .solcar-card{ padding:32px 24px; }
-    .solcar-icon{ height:120px; margin-bottom:14px; }
-    .solcar-icon svg{ width:120px; height:120px; }
-    .solcar-arrow-peek{ width:38px; height:38px; }
-    .solcar-arrow-peek svg{ width:17px; height:17px; }
+  /* mobile: nav shows a sliding 3-label window (JS toggles [hidden] on the
+     rest); arrows already meet the 44px+ tap-target floor at all sizes. */
+  @media (max-width:768px){
+    #what-we-do{ padding:64px 24px; }
+    .solcar-nav{ padding:10px 12px; gap:8px; }
+    .solcar-nav-text{ font-size:12px; }
+    .solcar-image-wrap{ max-width:90vw; }
   }
 
   @media (prefers-reduced-motion:reduce){
-    .solcar-track,.solcar-cta,.solcar-arrow,.solcar-dot,
-    .solcar-card,.solcar-icon,.solcar-arrow-peek,.solcar-hint,.solcar-count{ transition:none !important; }
-    .solcar-cta:hover,.solcar-cta:active,.solcar-arrow:hover{ transform:none; }
-    .solcar-icon,.solcar-icon svg{ animation:none !important; }
+    .solcar-nav,.solcar-image-wrap,.solcar-desc-wrap{ animation:none; opacity:1; transform:none; }
+    .solcar-flyer{ transition:opacity 200ms linear; }
+    .solcar-nav-arrow,.solcar-nav-label,.solcar-desc-cta{ transition:none; }
+    .solcar-desc-cta:hover{ transform:none; }
   }
 
   /* ---------- Selected work ----------
@@ -1783,7 +1734,7 @@
         <p class="hero-services">Lead Capture &bull; Instant Follow-Up &bull; Appointment Booking &bull; Review Generation &bull; Customer Reactivation</p>
         <div class="hero-actions">
           <button type="button" class="btn btn-accent js-book-meeting">Book a Quote</button>
-          <a class="btn btn-outline" href="#selected-work">See Our Work</a>
+          <a class="btn btn-outline js-scroll-carousel" href="#what-we-do">Learn More</a>
         </div>
         <div class="hero-reassurance">
           <span class="hero-reassurance-item">When you pay to generate a lead, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</span>
@@ -1867,7 +1818,7 @@
   </section>
 
   <!-- ================= CAPABILITY CAROUSEL ================= -->
-  <section class="section section--light-band on-light" id="what-we-do">
+  <section class="section on-light" id="what-we-do">
     <div class="container">
       <div class="section-head reveal">
         <span class="micro-label">What this actually does</span>
@@ -1876,83 +1827,92 @@
       </div>
 
       <div class="solcar reveal" id="solutionCarousel">
-        <p class="solcar-hint" id="solcarHint">Swipe or tap arrows to explore</p>
 
-        <button type="button" class="solcar-arrow solcar-arrow--prev" aria-label="Previous solution">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-          <span class="solcar-arrow-peek" id="solcarPeekPrev" aria-hidden="true"></span>
-        </button>
+        <nav class="solcar-nav" id="solcarNav" aria-label="Choose a solution">
+          <button type="button" class="solcar-nav-arrow solcar-nav-arrow--prev" aria-label="Previous solution">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
 
-        <div class="solcar-viewport">
-          <div class="solcar-track" id="solcarTrack">
+          <div class="solcar-nav-labels" id="solcarNavLabels">
+            <button type="button" class="solcar-nav-label" data-index="0" aria-current="true">
+              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span class="solcar-nav-text">Missed Calls</span>
+            </button>
+            <button type="button" class="solcar-nav-label" data-index="1" aria-current="false">
+              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+              <span class="solcar-nav-text">Missing Bookings</span>
+            </button>
+            <button type="button" class="solcar-nav-label" data-index="2" aria-current="false">
+              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+              <span class="solcar-nav-text">Website Revamp</span>
+            </button>
+            <button type="button" class="solcar-nav-label" data-index="3" aria-current="false">
+              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 17.8 6.1 20.5l1.3-6.3L2.7 9.6l6.3-.7z"/></svg>
+              <span class="solcar-nav-text">More Google Reviews</span>
+            </button>
+            <button type="button" class="solcar-nav-label" data-index="4" aria-current="false">
+              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+              <span class="solcar-nav-text">Losing Leads</span>
+            </button>
+          </div>
 
-            <article class="solcar-card" style="--sa:#1E40AF" aria-roledescription="slide" aria-label="Solution 1 of 5">
-              <span class="solcar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
-              <h3 class="solcar-title">Missing Phone Calls</h3>
-              <p class="solcar-desc">Missed calls automatically get a text back with your details. Potential customers book jobs instead of moving on.</p>
-              <button type="button" class="solcar-cta js-book-meeting">Book a Quote</button>
-            </article>
+          <button type="button" class="solcar-nav-arrow solcar-nav-arrow--next" aria-label="Next solution">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </nav>
 
-            <article class="solcar-card" style="--sa:#2563EB" aria-roledescription="slide" aria-label="Solution 2 of 5">
-              <span class="solcar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>
-              <h3 class="solcar-title">Missing Booking Requests</h3>
-              <p class="solcar-desc">Customers book appointments 24/7 directly on your website. No more "I'll call you back" delays.</p>
-              <button type="button" class="solcar-cta js-book-meeting">Book a Quote</button>
-            </article>
+        <div class="solcar-image-wrap">
+          <div class="solcar-image-track" id="solcarImageTrack">
 
-            <article class="solcar-card" style="--sa:#0EA5E9" aria-roledescription="slide" aria-label="Solution 3 of 5">
-              <span class="solcar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></span>
-              <h3 class="solcar-title">Website Revamp</h3>
-              <p class="solcar-desc">A fast, mobile-perfect site that actually converts. Customers find you, trust you, and book with you.</p>
-              <button type="button" class="solcar-cta js-book-meeting">Book a Quote</button>
-            </article>
+            <svg class="solcar-flyer is-active" data-index="0" viewBox="0 0 460 300" role="img" aria-label="Missed Calls Get Answered">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#60A5FA" opacity="0.16"/>
+              <g transform="translate(60,90)" stroke="#60A5FA" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M40 30.8v5.5a3.7 3.7 0 0 1-4 3.7 36.3 36.3 0 0 1-15.8-5.6 35.8 35.8 0 0 1-11-11 36.3 36.3 0 0 1-5.6-15.9A3.7 3.7 0 0 1 7.2 3h5.5a3.7 3.7 0 0 1 3.7 3.2c.2 1.8.7 3.5 1.3 5.2a3.7 3.7 0 0 1-.8 3.9l-2.3 2.3a29.4 29.4 0 0 0 11 11l2.3-2.3a3.7 3.7 0 0 1 3.9-.8c1.7.6 3.4 1.1 5.2 1.3a3.7 3.7 0 0 1 3.2 3.7z"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">MISSED CALLS</text>
+              <text x="60" y="236" fill="#60A5FA" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">GET ANSWERED</text>
+            </svg>
 
-            <article class="solcar-card" style="--sa:#1E293B" aria-roledescription="slide" aria-label="Solution 4 of 5">
-              <span class="solcar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 17.8 6.1 20.5l1.3-6.3L2.7 9.6l6.3-.7z"/></svg></span>
-              <h3 class="solcar-title">More Google Reviews</h3>
-              <p class="solcar-desc">Automatic review requests go to happy customers. More 5-star reviews = higher rankings, more calls.</p>
-              <button type="button" class="solcar-cta js-book-meeting">Book a Quote</button>
-            </article>
+            <svg class="solcar-flyer" data-index="1" viewBox="0 0 460 300" role="img" aria-label="Customers Book Themselves">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#2563EB" opacity="0.18"/>
+              <g transform="translate(58,75)" stroke="#2563EB" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="0" y="8" width="44" height="38" rx="4"/><path d="M0 20h44M11 0v8M33 0v8"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">CUSTOMERS BOOK</text>
+              <text x="60" y="236" fill="#2563EB" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">THEMSELVES</text>
+            </svg>
 
-            <article class="solcar-card" style="--sa:#64748B" aria-roledescription="slide" aria-label="Solution 5 of 5">
-              <span class="solcar-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg></span>
-              <h3 class="solcar-title">Losing Leads</h3>
-              <p class="solcar-desc">Every lead gets followed up automatically via text and email. Cold leads become booked jobs.</p>
-              <button type="button" class="solcar-cta js-book-meeting">Book a Quote</button>
-            </article>
+            <svg class="solcar-flyer" data-index="2" viewBox="0 0 460 300" role="img" aria-label="A Site Built to Convert">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#0EA5E9" opacity="0.18"/>
+              <g transform="translate(58,68)" stroke="#0EA5E9" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="22" cy="22" r="22"/><path d="M0 22h44M22 0a37 37 0 0 1 0 44M22 0a37 37 0 0 0 0 44"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">A SITE BUILT</text>
+              <text x="60" y="236" fill="#0EA5E9" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">TO CONVERT</text>
+            </svg>
+
+            <svg class="solcar-flyer" data-index="3" viewBox="0 0 460 300" role="img" aria-label="5-Star Reviews on Autopilot">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#FBBF24" opacity="0.16"/>
+              <g transform="translate(58,68)" stroke="#FBBF24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 0l5.4 11.8 12.6 1.4-9.4 8.6 2.6 12.6L22 28.2l-11.2 6.2 2.6-12.6-9.4-8.6 12.6-1.4z"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="26" letter-spacing="0.5">5-STAR REVIEWS</text>
+              <text x="60" y="236" fill="#FBBF24" font-family="Arial, sans-serif" font-weight="700" font-size="26" letter-spacing="0.5">ON AUTOPILOT</text>
+            </svg>
+
+            <svg class="solcar-flyer" data-index="4" viewBox="0 0 460 300" role="img" aria-label="Leads Never Go Cold">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#93A5C4" opacity="0.16"/>
+              <g transform="translate(58,80)" stroke="#93A5C4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M0 25l12-12 8 8 16-16"/><path d="M28 5h8v8"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">LEADS NEVER</text>
+              <text x="60" y="236" fill="#93A5C4" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">GO COLD</text>
+            </svg>
 
           </div>
         </div>
 
-        <button type="button" class="solcar-arrow solcar-arrow--next" aria-label="Next solution">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-          <span class="solcar-arrow-peek" id="solcarPeekNext" aria-hidden="true"></span>
-        </button>
+        <div class="solcar-desc-wrap" id="solcarDescWrap">
+          <h3 class="solcar-desc-title" id="solcarDescTitle">Missed Calls Get Answered</h3>
+          <p class="solcar-desc-text" id="solcarDescText">Customers who can't reach you get a text back with your details and can book a time slot. Potential customers become booked jobs.</p>
+          <button type="button" class="solcar-desc-cta js-book-meeting">Book a Consultation</button>
+        </div>
 
-        <div class="solcar-dots" id="solcarDots" role="tablist" aria-label="Choose a solution">
-          <button type="button" class="solcar-dot" role="tab" aria-selected="true" aria-label="Solution 1 of 5"></button>
-          <button type="button" class="solcar-dot" role="tab" aria-selected="false" aria-label="Solution 2 of 5"></button>
-          <button type="button" class="solcar-dot" role="tab" aria-selected="false" aria-label="Solution 3 of 5"></button>
-          <button type="button" class="solcar-dot" role="tab" aria-selected="false" aria-label="Solution 4 of 5"></button>
-          <button type="button" class="solcar-dot" role="tab" aria-selected="false" aria-label="Solution 5 of 5"></button>
-        </div>
-        <p class="solcar-count" id="solcarCount" aria-hidden="true"><span id="solcarCountNum">1</span> of 5</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= REVENUE CALCULATOR TEASER ================= -->
-  <section class="section on-light" id="revenue-teaser">
-    <div class="container">
-      <div class="teaser-inner">
-        <div class="teaser-copy reveal">
-          <span class="micro-label">Real business shaping online</span>
-          <h2 class="display line-mask"><span class="line-mask-inner">What's Costing You the Most?</span></h2>
-          <p>Most contractors are losing thousands each month without knowing it. See exactly what your missed leads, missed calls, and missed bookings are costing you.</p>
-        </div>
-        <div class="teaser-cta reveal">
-          <a class="btn btn-accent" href="calculator.html">Calculate Your Loss</a>
-        </div>
       </div>
     </div>
   </section>
@@ -2219,6 +2179,21 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
     });
   }
 
+  /* ---------- Hero "Learn More" -> scroll to the carousel ----------
+     href="#what-we-do" is a solid no-JS fallback (correct target either
+     way); the click handler pre-empts the native jump so scrollIntoView
+     can control the exact alignment (block:'start') instead of whatever
+     the browser's own anchor-scroll would land on. */
+  (function(){
+    var trigger = document.querySelector('.js-scroll-carousel');
+    var target = document.getElementById('what-we-do');
+    if (!trigger || !target) return;
+    trigger.addEventListener('click', function(e){
+      e.preventDefault();
+      target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    });
+  })();
+
   /* ---------- Scroll reveal ---------- */
   var revealEls = document.querySelectorAll('.reveal');
   if (reduceMotion || !('IntersectionObserver' in window)){
@@ -2301,171 +2276,133 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
   })();
 
   /* ---------- "What Are You Struggling With?" solution carousel ----------
-     5 cards, one visible. A flex track slides -pos*100% over 600ms
-     cubic-bezier(0.16,1,0.3,1); a clone of card 1 and card 5 at the ends
-     makes every loop a short one-card slide, snapped instantly to the real
-     card on transitionend. Layered on the slide: the outgoing/incoming
-     card itself cross-fades over 300ms, its icon 100ms behind. Auto-
-     advances every 8s (paused by any interaction, resumed 5s after the
-     last one; paused entirely off-screen/tab-hidden). Icon float/pulse
-     pause during a transition and off-screen. Dots + a fading "N of 5"
-     counter track position; the active dot and CTA pick up each card's
-     own --sa accent. Arrows morph into a ghost preview of the neighboring
-     card's icon on hover (desktop) / touch-hold (mobile). A one-time
-     "swipe or tap arrows" hint fades in/out on first visit (localStorage).
-     CTAs carry .js-book-meeting (wired later by initHeroQuiz, which sees
-     the clones too since this runs first) for the scroll-to-quiz. */
+     A glowing nav bar (5 labels + arrows) drives one large flyer image and
+     a description block. Both the outgoing and incoming flyer are moved
+     with plain inline transform/opacity (snap the incoming one off-screen
+     on the entry side with transition:none, force a reflow, then animate
+     both to their resting state over 400ms) so the same code animates
+     correctly in either direction — nextBtn passes dir=+1 (exit left,
+     enter from right), prevBtn passes dir=-1 (mirrored); nav-label clicks
+     infer dir from index order. The active label swaps instantly; the
+     description cross-fades out fast and back in only once the image has
+     settled (400ms), never simultaneously with the slide. Reuses the same
+     auto-advance/pause/resume/visibility pattern as the rest of this file
+     (8s interval, 5s resume delay, paused off-screen or tab-hidden). CTA
+     carries .js-book-meeting (wired later by initHeroQuiz) for the
+     scroll-to-quiz. */
   (function initSolutionCarousel(){
-    var root = document.getElementById('solutionCarousel');
-    var track = document.getElementById('solcarTrack');
-    if (!root || !track) return;
-    var cards = Array.prototype.slice.call(track.children);   // 5 real cards, pre-clone
-    var count = cards.length;
-    if (count < 2) return;
+    var root       = document.getElementById('solutionCarousel');
+    var nav        = document.getElementById('solcarNav');
+    var labelsWrap = document.getElementById('solcarNavLabels');
+    var imageTrack = document.getElementById('solcarImageTrack');
+    var descWrap   = document.getElementById('solcarDescWrap');
+    var descTitle  = document.getElementById('solcarDescTitle');
+    var descText   = document.getElementById('solcarDescText');
+    if (!root || !nav || !labelsWrap || !imageTrack || !descWrap) return;
 
-    var prevBtn  = root.querySelector('.solcar-arrow--prev');
-    var nextBtn  = root.querySelector('.solcar-arrow--next');
-    var viewport = root.querySelector('.solcar-viewport');
-    var dotsWrap = document.getElementById('solcarDots');
-    var dots     = Array.prototype.slice.call(root.querySelectorAll('.solcar-dot'));
-    var countEl  = document.getElementById('solcarCount');
-    var countNum = document.getElementById('solcarCountNum');
-    var hint     = document.getElementById('solcarHint');
-    var peekPrev = prevBtn ? prevBtn.querySelector('.solcar-arrow-peek') : null;
-    var peekNext = nextBtn ? nextBtn.querySelector('.solcar-arrow-peek') : null;
+    var prevBtn = nav.querySelector('.solcar-nav-arrow--prev');
+    var nextBtn = nav.querySelector('.solcar-nav-arrow--next');
+    var labels  = Array.prototype.slice.call(labelsWrap.querySelectorAll('.solcar-nav-label'));
+    var flyers  = Array.prototype.slice.call(imageTrack.querySelectorAll('.solcar-flyer'));
+    var count   = labels.length;
+    if (count < 2 || flyers.length !== count) return;
     var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* per-card accent + icon markup, captured before the clones exist */
-    var accents  = cards.map(function(c){ return (getComputedStyle(c).getPropertyValue('--sa') || '#1E40AF').trim(); });
-    var iconSVGs = cards.map(function(c){ var svg = c.querySelector('.solcar-icon svg'); return svg ? svg.innerHTML : ''; });
+    var solutions = [
+      { title: 'Missed Calls Get Answered', desc: "Customers who can't reach you get a text back with your details and can book a time slot. Potential customers become booked jobs." },
+      { title: 'Customers Book Themselves', desc: "Online appointment scheduling means customers don't wait for your callback. 24/7 availability = more bookings." },
+      { title: 'A Site Built to Convert', desc: 'Fast, mobile-perfect, trust-building. Your site becomes your best salesperson, not just a digital business card.' },
+      { title: '5-Star Reviews on Autopilot', desc: 'Happy customers get automatic review requests. More stars = higher rankings = more calls.' },
+      { title: 'Leads Never Go Cold', desc: 'Every inquiry gets followed up automatically via text and email. Cold leads become booked jobs.' }
+    ];
 
-    /* clone the ends so a loop is a short slide */
-    var headClone = cards[0].cloneNode(true);
-    var tailClone = cards[count - 1].cloneNode(true);
-    headClone.setAttribute('aria-hidden', 'true');
-    tailClone.setAttribute('aria-hidden', 'true');
-    track.appendChild(headClone);
-    track.insertBefore(tailClone, track.firstChild);
-    var slots = Array.prototype.slice.call(track.children);   // count+2 elements, indexable by pos
-
-    var index = 0;      // real card, 0..count-1
-    var pos   = 1;      // track slot, 0..count+1  (0 = tailClone, count+1 = headClone)
+    var index = 0;
     var busy  = false;
+    var descTimer = null;
 
-    /* ---- icon-animation pause: two independent reasons, combined ---- */
-    var pausedBy = { transition: false, visibility: false };
-    function setAnimPaused(on, reason){
-      pausedBy[reason] = on;
-      root.classList.toggle('is-anim-paused', pausedBy.transition || pausedBy.visibility);
-    }
-
-    function peekIconMarkup(i){
-      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" '
-        + 'stroke-linecap="round" stroke-linejoin="round">' + iconSVGs[i] + '</svg>';
-    }
-
-    /* dots, active-card accent, arrow-peek content, and the counter all
-       follow `index` the moment a move starts (not when it settles). */
-    function render(){
-      var nextI = (index + 1) % count;
-      var prevI = (index - 1 + count) % count;
-      dots.forEach(function(d, i){
-        var on = i === index;
-        d.classList.toggle('is-active', on);
-        d.setAttribute('aria-selected', on ? 'true' : 'false');
+    function setActiveLabel(i){
+      labels.forEach(function(label, li){
+        var on = li === i;
+        label.classList.toggle('is-active', on);
+        label.setAttribute('aria-current', on ? 'true' : 'false');
       });
-      if (dotsWrap) dotsWrap.style.setProperty('--cur-sa', accents[index]);
-      if (peekPrev){ peekPrev.innerHTML = peekIconMarkup(prevI); peekPrev.style.setProperty('--peek-sa', accents[prevI]); }
-      if (peekNext){ peekNext.innerHTML = peekIconMarkup(nextI); peekNext.style.setProperty('--peek-sa', accents[nextI]); }
-      if (countNum){
-        if (countEl) countEl.classList.add('is-changing');
-        setTimeout(function(){
-          countNum.textContent = String(index + 1);
-          if (countEl) countEl.classList.remove('is-changing');
-        }, rm ? 0 : 150);
+    }
+
+    function setActiveImage(newIndex, dir){
+      var outEl = flyers[index];
+      var inEl  = flyers[newIndex];
+      if (outEl === inEl) return;
+      if (rm){
+        outEl.classList.remove('is-active');
+        outEl.style.cssText = '';
+        inEl.classList.add('is-active');
+        inEl.style.cssText = '';
+        return;
       }
+      inEl.style.transition = 'none';
+      inEl.style.opacity = '0';
+      inEl.style.transform = 'translateX(' + (dir * 40) + 'px)';
+      inEl.classList.add('is-active');
+      void inEl.offsetWidth;               // commit the off-screen start state
+      inEl.style.transition = '';
+      requestAnimationFrame(function(){
+        outEl.style.transition = '';
+        outEl.style.opacity = '0';
+        outEl.style.transform = 'translateX(' + (-dir * 40) + 'px)';
+        inEl.style.opacity = '1';
+        inEl.style.transform = 'translateX(0)';
+      });
+      setTimeout(function(){
+        outEl.classList.remove('is-active');
+        outEl.style.cssText = '';
+        inEl.style.cssText = '';
+      }, 400);
     }
 
-    function place(animate){
-      if (animate && !rm){
-        track.style.willChange = 'transform';
-        track.style.transition = '';
-      } else {
-        track.style.transition = 'none';
+    function setDescription(newIndex){
+      var s = solutions[newIndex];
+      if (!s) return;
+      if (rm){
+        if (descTitle) descTitle.textContent = s.title;
+        if (descText) descText.textContent = s.desc;
+        return;
       }
-      track.style.transform = 'translateX(' + (-pos * 100) + '%)';
-      if (!animate || rm){
-        void track.offsetWidth;          // commit the un-animated jump
-        track.style.transition = '';     // re-arm for the next animated move
-        track.style.willChange = 'auto';
+      descWrap.classList.add('is-updating');
+      clearTimeout(descTimer);
+      descTimer = setTimeout(function(){
+        if (descTitle) descTitle.textContent = s.title;
+        if (descText) descText.textContent = s.desc;
+        descWrap.classList.remove('is-updating');
+      }, 400);
+    }
+
+    var mq = window.matchMedia('(max-width:768px)');
+    function updateMobileWindow(){
+      if (!mq.matches){
+        labels.forEach(function(l){ l.hidden = false; });
+        return;
       }
+      var start = Math.max(0, Math.min(index - 1, count - 3));
+      labels.forEach(function(l, li){ l.hidden = (li < start || li >= start + 3); });
     }
 
-    /* cross-fades exactly the outgoing/incoming slot elements; returns a
-       cleanup closure that resets both once the move has settled. */
-    function fadeStep(fromPos, toPos){
-      var outEl = slots[fromPos];
-      var inEl  = slots[toPos];
-      if (!outEl || !inEl) return function(){};
-      inEl.classList.add('is-entering');
-      void inEl.offsetWidth;             // commit the 0-opacity start state
-      outEl.classList.add('is-leaving');
-      requestAnimationFrame(function(){ inEl.classList.remove('is-entering'); });  // now it fades 0->1
-      return function(){
-        outEl.classList.remove('is-leaving');
-        inEl.classList.remove('is-entering');
-      };
-    }
-
-    function armSettle(wrap, cleanup){
-      var onEnd = function(e){
-        if (e && e.propertyName !== 'transform') return;
-        track.removeEventListener('transitionend', onEnd);
-        clearTimeout(t);
-        track.style.willChange = 'auto';
-        if (wrap){
-          if (pos === 0){ pos = count; place(false); }
-          else if (pos === count + 1){ pos = 1; place(false); }
-        }
-        if (cleanup) cleanup();
-        setAnimPaused(false, 'transition');
-        busy = false;
-      };
-      var t = setTimeout(onEnd, 760);   // fallback if transitionend is missed
-      track.addEventListener('transitionend', onEnd);
-    }
-
-    function step(dir){
-      if (busy) return;
+    function navigate(newIndex, dir){
+      newIndex = ((newIndex % count) + count) % count;
+      if (busy || newIndex === index) return;
       busy = true;
-      setAnimPaused(true, 'transition');
-      var fromPos = pos;
-      index = (index + dir + count) % count;
-      pos += dir;
-      render();
-      if (rm){ pos = index + 1; place(false); setAnimPaused(false, 'transition'); busy = false; return; }
-      var cleanup = fadeStep(fromPos, pos);
-      place(true);
-      armSettle(true, cleanup);
+      setActiveLabel(newIndex);
+      setActiveImage(newIndex, dir);
+      setDescription(newIndex);
+      index = newIndex;
+      updateMobileWindow();
+      setTimeout(function(){ busy = false; }, rm ? 0 : 400);
     }
 
-    function goTo(i){
-      i = ((i % count) + count) % count;
-      if (busy || i === index) return;
-      busy = true;
-      setAnimPaused(true, 'transition');
-      var fromPos = pos;
-      index = i;
-      pos = index + 1;
-      render();
-      if (rm){ place(false); setAnimPaused(false, 'transition'); busy = false; return; }
-      var cleanup = fadeStep(fromPos, pos);
-      place(true);
-      armSettle(false, cleanup);
-    }
-
-    place(false);
-    render();
+    setActiveLabel(index);
+    updateMobileWindow();
+    if (mq.addEventListener) mq.addEventListener('change', updateMobileWindow);
+    else if (mq.addListener) mq.addListener(updateMobileWindow);
+    window.addEventListener('resize', updateMobileWindow, { passive: true });
 
     /* ---- auto-advance: every 8s, paused by interaction (resume 5s
        later) and by the carousel being off-screen or the tab hidden ---- */
@@ -2475,7 +2412,7 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
     function scheduleAuto(){
       clearTimeout(autoTimer);
       if (document.hidden || !inView) return;
-      autoTimer = setTimeout(function(){ step(1); scheduleAuto(); }, AUTO_MS);
+      autoTimer = setTimeout(function(){ navigate(index + 1, 1); scheduleAuto(); }, AUTO_MS);
     }
     function pauseAuto(){
       clearTimeout(autoTimer);
@@ -2484,33 +2421,34 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
       resumeTimer = setTimeout(scheduleAuto, RESUME_MS);
     }
 
-    if (prevBtn) prevBtn.addEventListener('click', function(){ pauseAuto(); step(-1); });
-    if (nextBtn) nextBtn.addEventListener('click', function(){ pauseAuto(); step(1); });
-    dots.forEach(function(d, i){ d.addEventListener('click', function(){ pauseAuto(); goTo(i); }); });
+    if (prevBtn) prevBtn.addEventListener('click', function(){ pauseAuto(); navigate(index - 1, -1); });
+    if (nextBtn) nextBtn.addEventListener('click', function(){ pauseAuto(); navigate(index + 1, 1); });
+    labels.forEach(function(label, i){
+      label.addEventListener('click', function(){
+        pauseAuto();
+        navigate(i, i > index ? 1 : -1);
+      });
+    });
 
-    /* pause on "BOOK A QUOTE" too — the scroll-to-quiz itself is wired
-       separately (below, by initHeroQuiz) via .js-book-meeting */
-    Array.prototype.forEach.call(root.querySelectorAll('.solcar-cta'), function(cta){
+    Array.prototype.forEach.call(root.querySelectorAll('.solcar-desc-cta'), function(cta){
       cta.addEventListener('click', function(){ pauseAuto(); });
     });
 
-    if (viewport){
-      viewport.setAttribute('tabindex', '0');
-      viewport.setAttribute('aria-roledescription', 'carousel');
-      viewport.addEventListener('keydown', function(e){
-        if (e.key === 'ArrowLeft'){ e.preventDefault(); pauseAuto(); step(-1); }
-        else if (e.key === 'ArrowRight'){ e.preventDefault(); pauseAuto(); step(1); }
-      });
-    }
+    nav.setAttribute('tabindex', '0');
+    nav.setAttribute('aria-roledescription', 'carousel');
+    nav.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowLeft'){ e.preventDefault(); pauseAuto(); navigate(index - 1, -1); }
+      else if (e.key === 'ArrowRight'){ e.preventDefault(); pauseAuto(); navigate(index + 1, 1); }
+    });
 
-    /* touch swipe (all devices): horizontal drag past 40px, and more
+    /* touch swipe on the flyer itself: horizontal drag past 40px, and more
        horizontal than vertical so page scrolling still wins otherwise */
     var sx = null, sy = null;
-    root.addEventListener('touchstart', function(e){
+    imageTrack.addEventListener('touchstart', function(e){
       if (!e.touches || e.touches.length !== 1) return;
       sx = e.touches[0].clientX; sy = e.touches[0].clientY;
     }, { passive: true });
-    root.addEventListener('touchend', function(e){
+    imageTrack.addEventListener('touchend', function(e){
       if (sx === null) return;
       var tch = e.changedTouches && e.changedTouches[0];
       var dx = tch ? tch.clientX - sx : 0;
@@ -2518,53 +2456,14 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
       sx = sy = null;
       if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
       pauseAuto();
-      step(dx < 0 ? 1 : -1);
+      dx < 0 ? navigate(index + 1, 1) : navigate(index - 1, -1);
     }, { passive: true });
 
-    window.addEventListener('resize', function(){ if (!busy) place(false); }, { passive: true });
-
-    /* ---- arrow preview: hover morphs the arrow (CSS :hover); on touch,
-       holding shows it and auto-hides after 800ms if never released ---- */
-    function wireArrowPeek(btn){
-      if (!btn) return;
-      var hideTimer = null;
-      btn.addEventListener('touchstart', function(){
-        btn.classList.add('is-peeking');
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(function(){ btn.classList.remove('is-peeking'); }, 800);
-      }, { passive: true });
-      btn.addEventListener('touchend', function(){
-        clearTimeout(hideTimer);
-        setTimeout(function(){ btn.classList.remove('is-peeking'); }, 120);
-      }, { passive: true });
-    }
-    wireArrowPeek(prevBtn);
-    wireArrowPeek(nextBtn);
-
-    /* ---- first-time swipe hint (shown once, tracked via localStorage) ---- */
-    if (hint){
-      var HINT_KEY = 'sitesyncSolcarHintSeen';
-      var seen = false;
-      try { seen = localStorage.getItem(HINT_KEY) === '1'; } catch (err) { seen = false; }
-      if (!seen){
-        hint.style.display = 'block';
-        requestAnimationFrame(function(){
-          requestAnimationFrame(function(){ hint.classList.add('is-visible'); });
-        });
-        setTimeout(function(){
-          hint.classList.remove('is-visible');
-          setTimeout(function(){ hint.style.display = 'none'; }, rm ? 0 : 520);
-          try { localStorage.setItem(HINT_KEY, '1'); } catch (err) { /* ignore */ }
-        }, 6000);
-      }
-    }
-
-    /* ---- visibility: pause icon animation + auto-advance off-screen or
-       when the tab is hidden; resume when back ---- */
+    /* ---- visibility: pause auto-advance off-screen or when the tab is
+       hidden; resume when back ---- */
     if ('IntersectionObserver' in window){
       var io = new IntersectionObserver(function(entries){
         inView = entries[0].isIntersecting;
-        setAnimPaused(!inView, 'visibility');
         if (inView) scheduleAuto(); else { clearTimeout(autoTimer); autoTimer = null; }
       }, { threshold: 0.2 });
       io.observe(root);

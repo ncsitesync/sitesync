@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Revenue Calculator — What Missed Calls &amp; Leads Are Costing You | SiteSync</title>
 <meta name="description" content="See how much revenue your business is losing every month to missed calls and unanswered web leads, and what recovering even a fraction of it is worth.">
-<meta name="theme-color" content="#F4F4F6">
+<meta name="theme-color" content="#1A3A3A">
 <link rel="icon" href="/favicon.png" sizes="any" type="image/png">
 <link rel="apple-touch-icon" href="/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -282,7 +282,8 @@
     background:var(--accent);
     transition:right var(--dur) var(--ease);
   }
-  .nav-links a:hover::after{ right:0; }
+  .nav-links a:hover::after,
+  .nav-links a.is-active::after{ right:0; }
 
   .nav-actions{display:flex;align-items:center;gap:18px;flex-shrink:0;}
   .header-phone{
@@ -434,9 +435,118 @@
     .light-card:hover{transform:none;}
   }
 
-  /* ---------- Intro copy above the calculator ---------- */
-  #calc-intro .section-head{margin-left:auto;margin-right:auto;text-align:center;}
-  #calc-intro .calc-intro-copy{max-width:640px;margin:0 auto;text-align:center;font-size:16px;}
+  /* ---------- Calculator hero (Yamaha-inspired: dark teal, large type,
+     abstract "revenue flowing" chart graphic opposite the copy) ----------
+     Only this section departs from the shared light/dark tokens used
+     elsewhere on the page — the header, calculator card, and footer stay
+     exactly as index.html's design system defines them; the teal is
+     scoped entirely to .calc-hero. */
+  .calc-hero{
+    position:relative;
+    background:#1A3A3A;
+    overflow:hidden;
+    padding:100px 40px;
+  }
+  @media (max-width:480px){ .calc-hero{padding:64px 24px;} }
+  .calc-hero-inner{
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:48px;
+    align-items:center;
+    max-width:var(--container);
+    margin:0 auto;
+  }
+  @media (min-width:860px){
+    .calc-hero-inner{grid-template-columns:1fr 1fr;gap:64px;}
+  }
+
+  /* Mobile: copy first, visual below (order:1/2, source order already
+     matches). Desktop: visual on the left, copy on the right — swap via
+     order rather than reordering the DOM. */
+  .calc-hero-copy{ position:relative; text-align:center; order:1; }
+  .calc-hero-visual{ position:relative; order:2; min-height:200px; display:flex; align-items:center; justify-content:center; }
+  @media (min-width:860px){
+    .calc-hero-copy{ text-align:left; order:2; }
+    .calc-hero-visual{ order:1; }
+  }
+
+  .calc-hero-glow{
+    position:absolute;
+    inset:0;
+    margin:auto;
+    width:320px;height:320px;
+    background:radial-gradient(circle, rgba(72,112,229,0.35) 0%, transparent 70%);
+    filter:blur(40px);
+    pointer-events:none;
+    animation:calcHeroGlowPulse 6s ease-in-out infinite;
+  }
+  @keyframes calcHeroGlowPulse{ 0%,100%{opacity:0.7;} 50%{opacity:1;} }
+  .calc-hero-chart{
+    position:relative;
+    width:100%;
+    max-width:300px;
+    height:auto;
+    filter:drop-shadow(0 8px 24px rgba(72,112,229,0.45));
+  }
+
+  .calc-hero-copy .micro-label{color:rgba(255,255,255,0.7);}
+  .calc-hero-headline{
+    margin:14px 0 0;
+    font-size:clamp(2rem, 4.4vw, 3rem);
+    font-weight:700;
+    line-height:1.08;
+    letter-spacing:-0.02em;
+    color:#fff;
+  }
+  .calc-hero-sub{
+    margin:20px auto 0;
+    font-size:18px;
+    line-height:1.6;
+    color:rgba(255,255,255,0.85);
+    max-width:46ch;
+  }
+  @media (min-width:860px){ .calc-hero-sub{margin-left:0;} }
+  .calc-hero-cta{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:32px;
+    padding:18px 40px;
+    font-size:15px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:#fff;
+    background:var(--accent);
+    border-radius:var(--radius-pill);
+    box-shadow:0 8px 24px rgba(30,64,175,0.4);
+    transition:background var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .calc-hero-cta:hover{
+    background:var(--accent-hover);
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px rgba(30,64,175,0.5);
+  }
+  @media (max-width:480px){ .calc-hero-cta{width:100%;} }
+
+  /* Plays once on load (the hero is always above the fold), matching
+     index.html's own hero entrance pattern rather than the scroll-
+     triggered .reveal system used further down this same page. */
+  @keyframes calcHeroFadeUp{ from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
+  .calc-hero-copy > *{ animation:calcHeroFadeUp 700ms var(--ease) both; }
+  .calc-hero-copy .micro-label{animation-delay:0ms;}
+  .calc-hero-headline{animation-delay:120ms;}
+  .calc-hero-sub{animation-delay:240ms;}
+  .calc-hero-cta{animation-delay:360ms;}
+  .calc-hero-visual{animation:calcHeroFadeUp 900ms var(--ease) 200ms both;}
+  @media (prefers-reduced-motion:reduce){
+    .calc-hero-copy > *, .calc-hero-visual{animation:none;opacity:1;transform:none;}
+    .calc-hero-glow{animation:none;}
+    .calc-hero-cta{transition:background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);}
+    .calc-hero-cta:hover{transform:none;}
+  }
 
   /* ---------- Revenue calculator (copied unchanged from index.html) ---------- */
   .calc-card.light-card{
@@ -608,7 +718,17 @@
   .calc-disclaimer--standalone{text-align:center;margin-top:20px;}
 
   /* ---------- Back to Home ---------- */
-  .calc-back-home{text-align:center;padding:0 24px 40px;}
+  .calc-back-home{padding:0 0 40px;}
+  .calc-back-home-link{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--muted-on-light);
+    transition:color var(--dur) var(--ease);
+  }
+  .calc-back-home-link:hover{color:var(--accent);}
 
   /* ---------- Floating "Book a Consultation" CTA ---------- */
   .floating-cta{
@@ -710,6 +830,7 @@
         <li><a href="index.html#selected-work">Selected Work</a></li>
         <li><a href="index.html#how-it-works">How It Works</a></li>
         <li><a href="index.html#contact">Contact</a></li>
+        <li><a href="calculator.html" class="is-active" aria-current="page">Calculate Your Loss</a></li>
       </ul>
     </nav>
     <div class="nav-actions">
@@ -731,19 +852,32 @@
   <a href="index.html#selected-work">Selected Work</a>
   <a href="index.html#how-it-works">How It Works</a>
   <a href="index.html#contact">Contact</a>
+  <a href="calculator.html" aria-current="page">Calculate Your Loss</a>
 </div>
 
 <main id="main">
 
-  <!-- ================= CALCULATOR INTRO ================= -->
-  <section class="section section--light-band on-light" id="calc-intro">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="micro-label">Revenue calculator</span>
-        <h1 class="display line-mask"><span class="line-mask-inner">What's Really Leaving on the Table?</span></h1>
-        <p>Find out how much revenue you're losing to missed calls and booking requests</p>
+  <!-- ================= CALCULATOR HERO ================= -->
+  <section class="calc-hero" id="calc-hero" aria-label="Revenue calculator introduction">
+    <div class="calc-hero-inner">
+      <div class="calc-hero-visual">
+        <div class="calc-hero-glow" aria-hidden="true"></div>
+        <svg class="calc-hero-chart" viewBox="0 0 320 240" fill="none" aria-hidden="true">
+          <path d="M20 200 L95 148 L165 172 L235 92 L300 42" stroke="#4870E5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="20" cy="200" r="6" fill="#4870E5"/>
+          <circle cx="95" cy="148" r="6" fill="#4870E5"/>
+          <circle cx="165" cy="172" r="6" fill="#4870E5"/>
+          <circle cx="235" cy="92" r="6" fill="#4870E5"/>
+          <circle cx="300" cy="42" r="13" fill="#fff" stroke="#4870E5" stroke-width="4"/>
+          <text x="300" y="47" text-anchor="middle" font-size="14" font-weight="700" fill="#1A3A3A">$</text>
+        </svg>
       </div>
-      <p class="calc-intro-copy reveal">When a customer can't reach you or book online, they move to the next contractor. Every missed call, every abandoned form, every customer who couldn't find an appointment slot — that's lost revenue. Use the calculator below to see what those missed opportunities are actually costing your business each month.</p>
+      <div class="calc-hero-copy">
+        <span class="micro-label">Revenue calculator</span>
+        <h1 class="calc-hero-headline">See Your Real Bottom Line</h1>
+        <p class="calc-hero-sub">Every missed call, abandoned form, and lost booking has a dollar amount. Find out exactly what you're leaving on the table.</p>
+        <a class="calc-hero-cta" href="#revenue-calculator">Start Calculating</a>
+      </div>
     </div>
   </section>
 
@@ -815,7 +949,9 @@
   </section>
 
   <div class="calc-back-home">
-    <a class="btn btn-accent" href="index.html">Back to Home</a>
+    <div class="container">
+      <a class="calc-back-home-link" href="index.html">&larr; Back to Home</a>
+    </div>
   </div>
 
 </main>
