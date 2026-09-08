@@ -637,7 +637,7 @@
       rgba(5,10,24,0.58) 55%,
       rgba(5,10,24,0.58) 100%);
   }
-  @media (max-width:860px){ .hero-right-scrim{ display:none; } }
+  @media (max-width:767px){ .hero-right-scrim{ display:none; } }
 
   /* Mobile: 2 blobs, 2 lines, fewer particles; a bit less blur for GPU headroom. */
   @media (max-width:640px){
@@ -685,8 +685,9 @@
   @media (min-width:1100px){ .hero-content{padding-left:56px;padding-right:56px;} }
   /* tablet: tighter column gutter */
   @media (max-width:1024px){ .hero-content{ gap:24px; } }
-  /* mobile / narrow tablet: stack to ONE column — copy on top, form card below */
-  @media (max-width:860px){
+  /* mobile: stack to ONE column at 767px and below — 768px itself still
+     gets the two-column desktop layout. */
+  @media (max-width:767px){
     .hero-content{ grid-template-columns:minmax(0,1fr); gap:28px; padding:24px 20px; }
   }
 
@@ -706,7 +707,6 @@
   .hero-copy .hero-reassurance{ flex-direction:column; align-items:flex-start; row-gap:8px; }
   .hero-copy .hero-reassurance-item{ text-align:left; }
   .hero-copy .hero-reassurance-divider{ display:none; }
-  .hero-copy .hero-crest{ justify-content:flex-start; }
 
   /* Max-height guard: on short viewports the 100svh box has less room
      than the content needs at its normal sizes, so step the crest/
@@ -719,7 +719,6 @@
   @media (max-height:820px){
     .hero-content{ padding:72px 24px 16px; gap:32px; }
     .hero-badge{ display:none; }
-    .hero-content .hero-crest{ top:12px; width:56px; margin-left:-28px; }
     .hero-sub{ font-size:14px; }
     .hero-copy .hero-sub{ margin-bottom:10px; }
     .hero-services{ font-size:12px; }
@@ -733,14 +732,12 @@
     .hero-sub{ font-size:13px; }
     .hero-copy .hero-sub{ margin-bottom:8px; }
     .hero-services{ display:none; }   /* extra line of copy is the first to go at this height */
-    .hero-crest{ display:none; }
   }
 
   @keyframes heroFadeUp{ from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
-  .hero-crest,.hero-badge,.hero-headline,.hero-sub,.hero-services,.hero-actions,.hero-reassurance{
+  .hero-badge,.hero-headline,.hero-sub,.hero-services,.hero-actions,.hero-reassurance{
     animation:heroFadeUp 700ms var(--ease) both;
   }
-  .hero-crest{animation-delay:0ms;}
   .hero-badge{animation-delay:120ms;}
   .hero-headline{animation-delay:240ms;}
   .hero-sub{animation-delay:360ms;}
@@ -748,7 +745,39 @@
   .hero-actions{animation-delay:480ms;}
   .hero-reassurance{animation-delay:600ms;}
   @media (prefers-reduced-motion:reduce){
-    .hero-crest,.hero-badge,.hero-headline,.hero-sub,.hero-services,.hero-actions,.hero-reassurance{animation:none;opacity:1;transform:none;}
+    .hero-badge,.hero-headline,.hero-sub,.hero-services,.hero-actions,.hero-reassurance{animation:none;opacity:1;transform:none;}
+  }
+
+  /* Mobile layout: move the quiz card up between the headline and the
+     subline instead of leaving it after all the copy. .hero-copy is the
+     flex column that normally holds badge/headline/sub/services/
+     actions/reassurance; display:contents here strips its own box so
+     those children become direct items of .hero-content's grid
+     alongside .hero-quiz, then `order` interleaves them into the wanted
+     sequence — grid order can't reach into a sibling's children
+     otherwise, since .hero-quiz and .hero-copy are siblings, not
+     .hero-quiz and the headline. */
+  @media (max-width:767px){
+    .hero-copy{ display:contents; }
+    /* Grid items default to justify-items:stretch — harmless for text
+       blocks (they wrap to fill the column either way) but it would
+       stretch the badge's visible background pill into a full-width
+       bar, so it needs an explicit justify-self back to content-width,
+       left-aligned. */
+    .hero-badge{ order:2; justify-self:start; }
+    .hero-headline{ order:3; }
+    .hero-quiz{ order:4; }
+    .hero-sub{ order:5; }
+    .hero-services{ order:6; }
+    .hero-actions{ order:7; }
+    .hero-reassurance{ order:8; }
+
+    /* .hero-copy .hero-headline (higher specificity, set above) would
+       otherwise keep winning over a plain .hero-headline override here. */
+    .hero-copy .hero-headline{ font-size:clamp(1.75rem, 6vw, 2rem); }
+    .hero-sub{ font-size:14px; }
+    .hero-services{ font-size:12px; }
+    .hero-actions .btn{ font-size:16px; }
   }
 
   .hero-badge{
@@ -840,33 +869,6 @@
     .hero-reassurance{ flex-direction:column; row-gap:8px; }
     .hero-reassurance-divider{ display:none; }
   }
-
-  /* Centred brand crest: pulled out of the left column and absolutely placed
-     in the hero's upper-centre, horizontally between the two columns. Centres
-     via left:50% + negative margin (not transform) so the heroFadeUp entrance
-     animation's translateY doesn't fight the horizontal centring. Reverts to
-     normal in-flow layout on mobile, where there are no columns. */
-  .hero-crest{
-    position:absolute;
-    top:22px;
-    left:50%;
-    margin-left:-37px;            /* -1 * half of width */
-    width:74px;
-    z-index:2;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .hero-crest img{
-    width:100%;
-    height:auto;
-    filter:drop-shadow(0 8px 24px rgba(0,0,0,0.45));
-  }
-  @media (max-width:860px){
-    /* mobile has no columns — logo returns to normal flow at the top of the copy */
-    .hero-content .hero-crest{ position:static; left:auto; margin:0 0 14px; width:64px; }
-  }
-  @media (max-width:480px){ .hero-content .hero-crest{ width:64px; margin-bottom:14px; } }
 
   /* ---------- Capability cards ----------
      Light Cloth-Barn-palette card: white surface, hairline border, soft
@@ -1205,232 +1207,98 @@
   .steps .step:nth-child(2){transition-delay:100ms;}
   .steps .step:nth-child(3){transition-delay:200ms;}
 
-  /* ---------- Missed Revenue Calculator ----------
-     Vanilla JS, no dependencies. Light section (reuses .section--light-band
-     /.on-light from the capability cards) with one .light-card housing the
-     whole tool — inputs left, results right, one hairline divider between
-     them, no extra dashboard chrome. Range inputs get a JS-driven
-     background-gradient for the filled-track look in Chrome/Safari/Edge;
-     Firefox fills automatically via ::-moz-range-progress, styled to match. */
-  .calc-card.light-card{
-    padding:0;
-    overflow:hidden;
-  }
-  .calc-card.light-card:hover{
-    transform:none;
-    border-color:var(--line-on-light);
-    box-shadow:0 1px 2px rgba(10,10,10,0.04), 0 8px 24px rgba(10,10,10,0.06);
-  }
 
-  /* Scenario pills — selected is solid accent, the rest are outlined.
-     Switching scenarios never rebuilds these buttons, only toggles
-     .is-active/aria-pressed, so there's no re-render flash anywhere
-     in the card. */
-  .calc-scenarios-wrap{padding:28px 24px 0;}
-  @media (min-width:640px){ .calc-scenarios-wrap{padding:32px 32px 0;} }
-  .calc-scenarios{display:flex;flex-wrap:wrap;gap:10px;}
-  .calc-scenario{
-    padding:10px 20px;
-    border-radius:999px;
-    border:1.5px solid var(--line-on-light);
-    background:transparent;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:-0.01em;
-    color:var(--ink);
-    cursor:pointer;
-    transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
-  }
-  .calc-scenario:hover{border-color:var(--accent);}
-  .calc-scenario.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
-
-  /* Period toggle (Monthly/Weekly) — a sub-control scoped to whichever
-     scenario opts in via periodToggle:true, so it's deliberately a
-     lighter, smaller segmented control (gray track + white active pill,
-     no border, no accent fill) rather than a second row of bold tabs
-     that would compete with .calc-scenario above it. */
-  .calc-period-toggle{
-    display:inline-flex;
-    gap:4px;
-    padding:3px;
-    background:var(--light);
-    border-radius:999px;
-    margin-bottom:14px;
-  }
-  .calc-period-toggle[hidden]{display:none;}
-  .calc-period-btn{
-    padding:5px 14px;
-    border-radius:999px;
-    border:none;
-    background:transparent;
-    font-size:12px;
-    font-weight:600;
-    color:var(--muted-on-light);
-    cursor:pointer;
-    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-  }
-  .calc-period-btn:hover{color:var(--ink);}
-  .calc-period-btn.is-active{background:var(--white);color:var(--ink);box-shadow:0 1px 2px rgba(10,10,10,0.08);}
-
-  .calc-grid{
-    display:grid;
-    grid-template-columns:1fr;
-  }
-  @media (min-width:900px){ .calc-grid{grid-template-columns:1fr 1fr;} }
-
-  .calc-inputs{
-    padding:32px 24px;
-    display:flex;
-    flex-direction:column;
-    gap:32px;
-  }
-  @media (min-width:640px){ .calc-inputs{padding:40px 32px;} }
-
-  .calc-results{
-    background:var(--light);
-    padding:32px 24px;
-    border-top:1px solid var(--line-on-light);
-  }
-  @media (min-width:640px){ .calc-results{padding:40px 32px;} }
-  @media (min-width:900px){
-    .calc-results{border-top:none;border-left:1px solid var(--line-on-light);}
-  }
-
-  .calc-slider-group{display:flex;flex-direction:column;}
-  .calc-question{
-    display:block;
-    font-size:15px;
-    font-weight:600;
-    letter-spacing:-0.01em;
-    color:var(--ink);
-    margin-bottom:10px;
-  }
-  .calc-value{
-    font-size:clamp(1.75rem, 4vw, 2.25rem);
-    font-weight:700;
-    letter-spacing:-0.02em;
-    color:var(--accent);
-    line-height:1;
-    margin-bottom:14px;
-  }
-
-  /* Track fill: the element's own `background` is a two-stop gradient
-     JS keeps in sync with the current value (accent up to the thumb,
-     hairline gray after) — appearance:none strips native chrome in
-     WebKit/Blink so that background paints as the visible track. */
-  .calc-slider{
-    -webkit-appearance:none;
-    appearance:none;
-    width:100%;
-    height:8px;
-    border-radius:999px;
-    background:#E5E5E5;
-    cursor:pointer;
-  }
-  .calc-slider::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    appearance:none;
-    width:28px;height:28px;
-    border-radius:50%;
-    background:var(--accent);
-    border:3px solid #fff;
-    box-shadow:0 2px 8px rgba(10,10,10,0.28);
-    cursor:pointer;
-    transition:transform 200ms var(--ease);
-  }
-  .calc-slider::-webkit-slider-thumb:hover{transform:scale(1.08);}
-  .calc-slider::-moz-range-thumb{
-    width:28px;height:28px;
-    border-radius:50%;
-    background:var(--accent);
-    border:3px solid #fff;
-    box-shadow:0 2px 8px rgba(10,10,10,0.28);
-    cursor:pointer;
-  }
-  .calc-slider::-moz-range-track{height:8px;border-radius:999px;background:#E5E5E5;}
-  .calc-slider::-moz-range-progress{height:8px;border-radius:999px;background:var(--accent);}
-  .calc-slider:focus-visible{outline:2px solid var(--accent);outline-offset:6px;}
-  @media (prefers-reduced-motion:reduce){
-    .calc-slider::-webkit-slider-thumb{transition:none;}
-  }
-
-  .calc-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
-  .calc-preset{
-    padding:8px 14px;
-    border-radius:999px;
-    border:1px solid var(--line-on-light);
-    background:var(--white);
-    font-size:13px;
-    font-weight:600;
-    color:var(--ink);
-    cursor:pointer;
-    transition:border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
-  }
-  .calc-preset:hover{border-color:var(--accent);}
-  .calc-preset.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
-
-  .calc-results-label{display:block;margin-bottom:14px;}
-  .calc-big-number{
-    font-size:clamp(2rem, 5vw, 2.75rem);
-    font-weight:700;
-    letter-spacing:-0.02em;
-    color:var(--ink);
-    line-height:1;
-  }
-  .calc-big-number--accent{color:var(--accent);}
-  .calc-unit{
-    font-size:15px;
-    font-weight:500;
-    color:var(--muted-on-light);
-    margin-left:6px;
-  }
-  .calc-sub-number{margin-top:8px;font-size:15px;font-weight:600;color:var(--muted-on-light);}
-  .calc-divider{height:1px;background:var(--line-on-light);margin:28px 0;}
-  .calc-recovery-question{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;}
-  .calc-recovery-slider{margin-top:24px;}
-  .calc-recovery-slider .calc-question{font-size:13px;margin-bottom:12px;}
-
-  .calc-disclaimer{font-size:12px;opacity:0.75;}
-  .calc-disclaimer--standalone{text-align:center;margin-top:20px;}
-
-  /* ---------- Footer CTA ----------
-     Tightened so the whole section — heading through phone number —
-     clears one 1366x768 view without scrolling: padding cut roughly in
-     half from the old 130px/88px, and the actions block's own top
-     margin trimmed to match. */
-  .cta-band{
+  /* ---------- Footer CTA (high-contrast) ----------
+     Solid --accent blue, no gradient/glow layer — deliberately blunt
+     contrast (white on flat blue) rather than the old dark-band-with-
+     soft-glow treatment, so this reads as the page's final, unmissable
+     call to action rather than another quiet section. */
+  .cta-band-v2{
     position:relative;
-    overflow:hidden;
-    background:var(--ink);
-    padding:72px 0;
+    background:var(--accent);
+    padding:80px 40px;
     text-align:center;
   }
-  @media (max-width:640px){ .cta-band{padding:56px 0;} }
-  .cta-band .container{position:relative;z-index:1;}
-  .cta-glow{
-    position:absolute;
-    top:50%;left:50%;
-    width:min(900px, 130vw);
-    height:min(900px, 130vw);
-    transform:translate(-50%,-50%);
-    /* soft gradient does the job on its own — no filter:blur layer needed */
-    background:radial-gradient(circle, rgba(72,112,229,0.26) 0%, rgba(72,112,229,0.10) 40%, transparent 74%);
-    z-index:0;
-    pointer-events:none;
+  .cta-band-v2 .container{padding:0;max-width:var(--container);margin:0 auto;}
+  .cta-band-v2 .micro-label{color:rgba(255,255,255,0.75);}
+  .cta-band-v2-headline{
+    font-size:clamp(2.5rem, 5vw, 3rem);
+    font-weight:700;
+    line-height:1.1;
+    letter-spacing:-0.02em;
+    color:#fff;
+    max-width:18ch;
+    margin:14px auto 0;
   }
-  .cta-band .display{max-width:16ch;margin:0 auto;}
-  .cta-band-sub{margin-top:20px;font-size:16px;max-width:46ch;margin-left:auto;margin-right:auto;}
-  .cta-band-actions{
+  .cta-band-v2-sub{
+    margin:20px auto 0;
+    font-size:18px;
+    color:rgba(255,255,255,0.9);
+    max-width:46ch;
+  }
+  .cta-band-v2-actions{
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:18px;
-    margin-top:32px;
+    margin-top:36px;
   }
-  .cta-band-note{font-size:13px;color:rgba(255,255,255,0.7);}
-  #contact .display.reveal{transition-delay:0ms;}
-  #contact .cta-band-sub.reveal{transition-delay:100ms;}
-  #contact .cta-band-actions.reveal{transition-delay:200ms;}
+  .cta-band-v2-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:16px;
+  }
+  .cta-band-v2-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px 36px;
+    font-size:16px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    border-radius:var(--radius-pill);
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .cta-band-v2-btn:hover{transform:translateY(-2px);}
+  /* "Calculate Your Loss": transparent + a darker-blue border reads as
+     the secondary action against the solid-blue section background. */
+  .cta-band-v2-btn--outline{
+    background:transparent;
+    color:#fff;
+    border:2px solid var(--accent-hover);
+  }
+  .cta-band-v2-btn--outline:hover{background:rgba(255,255,255,0.08);border-color:#fff;}
+  /* "Start Free Consultation": solid white reads as the primary action;
+     inverts to solid blue on hover rather than white-on-white, which
+     would be unreadable. */
+  .cta-band-v2-btn--solid{
+    background:#fff;
+    color:var(--accent);
+    border:2px solid #fff;
+  }
+  .cta-band-v2-btn--solid:hover{background:var(--accent-hover);color:#fff;border-color:var(--accent-hover);}
+  @media (max-width:480px){
+    .cta-band-v2-buttons{flex-direction:column;width:100%;}
+    .cta-band-v2-btn{width:100%;}
+  }
+  .cta-band-v2-note{font-size:12px;color:rgba(255,255,255,0.6);}
+  .cta-band-v2-phone{
+    display:inline-block;
+    font-size:14px;
+    color:#fff;
+    text-decoration:underline;
+  }
+  @media (prefers-reduced-motion:reduce){
+    .cta-band-v2-btn{transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);}
+    .cta-band-v2-btn:hover{transform:none;}
+  }
+  #contact .micro-label.reveal{transition-delay:0ms;}
+  #contact .cta-band-v2-headline.reveal{transition-delay:100ms;}
+  #contact .cta-band-v2-sub.reveal{transition-delay:200ms;}
+  #contact .cta-band-v2-actions.reveal{transition-delay:300ms;}
 
   /* ---------- Footer ---------- */
   .footer{background:var(--ink);border-top:1px solid var(--line);padding:64px 0 32px;}
@@ -1608,8 +1476,8 @@
     text-align:left;
     overflow:hidden;                         /* clips the step cross-fade; rounds the top bar */
     scroll-margin-top:110px;
-    /* Arrives ~600ms after page load — after the headline + buttons — so the
-       eye lands on it as the second focal point. */
+    /* Arrives ~600ms after page load — after the headline + buttons — so
+       the eye lands on it as the second focal point. */
     animation:heroQuizIn 1200ms var(--ease) 600ms both;
   }
   @keyframes heroQuizIn{
@@ -1628,10 +1496,13 @@
     background:#F97316;
     z-index:2;
   }
-  @media (max-width:860px){
-    /* fill the single column exactly (the .hero-content padding is the inset);
-       min-width:0 stops any wide child forcing horizontal overflow at 390px */
-    .hero-quiz{ max-width:100%; width:100%; min-width:0; justify-self:stretch; }
+  @media (max-width:767px){
+    /* Inset from the edges (roughly 90vw) rather than filling the column —
+       min(...,100%) is a safety clamp so it can never exceed the column's
+       own padded width even at the point where 90vw and that width are
+       almost equal (~390px). justify-self stays the base rule's "center"
+       now that the card is deliberately narrower than the column. */
+    .hero-quiz{ width:min(90vw, 100%); min-width:0; margin-bottom:20px; padding:24px; }
   }
   @media (max-width:480px){ .hero-quiz{ padding:18px 14px; } }
 
@@ -1851,6 +1722,7 @@
         <li><a href="#selected-work">Selected Work</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
         <li><a href="#contact">Contact</a></li>
+        <li><a href="calculator.html">Calculate Your Loss</a></li>
       </ul>
     </nav>
     <div class="nav-actions">
@@ -1872,6 +1744,7 @@
   <a href="#selected-work">Selected Work</a>
   <a href="#how-it-works">How It Works</a>
   <a href="#contact">Contact</a>
+  <a href="calculator.html">Calculate Your Loss</a>
 </div>
 
 <main id="main">
@@ -1904,9 +1777,6 @@
 
     <div class="hero-content">
       <div class="hero-copy">
-        <div class="hero-crest">
-          <img src="herologo.png" alt="SiteSync" width="72" height="72" loading="eager" decoding="async" fetchpriority="high">
-        </div>
         <p class="hero-badge">North Carolina Automation &amp; Web Design</p>
         <h1 class="hero-headline">The lead was there. We'll capitalize on it.</h1>
         <p class="hero-sub">Convert more leads into paying customers. SiteSync builds the websites and automated systems that capture leads, follow up instantly, and turn more opportunities into revenue.</p>
@@ -2071,6 +1941,22 @@
     </div>
   </section>
 
+  <!-- ================= REVENUE CALCULATOR TEASER ================= -->
+  <section class="section on-light" id="revenue-teaser">
+    <div class="container">
+      <div class="teaser-inner">
+        <div class="teaser-copy reveal">
+          <span class="micro-label">Real business shaping online</span>
+          <h2 class="display line-mask"><span class="line-mask-inner">What's Costing You the Most?</span></h2>
+          <p>Most contractors are losing thousands each month without knowing it. See exactly what your missed leads, missed calls, and missed bookings are costing you.</p>
+        </div>
+        <div class="teaser-cta reveal">
+          <a class="btn btn-accent" href="calculator.html">Calculate Your Loss</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= SELECTED WORK ================= -->
   <section class="section" id="selected-work">
     <div class="container">
@@ -2159,84 +2045,19 @@
     </div>
   </section>
 
-  <!-- ================= REVENUE CALCULATOR ================= -->
-  <section class="section section--light-band on-light" id="revenue-calculator">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="micro-label">Revenue calculator</span>
-        <h2 class="display line-mask"><span class="line-mask-inner">What's it costing you?</span></h2>
-      </div>
-
-      <div class="calc-card light-card reveal">
-        <div class="calc-scenarios-wrap">
-          <div class="calc-scenarios" id="calcScenarios" role="group" aria-label="Choose a scenario">
-            <button type="button" class="calc-scenario is-active" data-scenario="missedCalls" aria-pressed="true">Missed Calls</button>
-            <button type="button" class="calc-scenario" data-scenario="webLeads" aria-pressed="false">Web Leads</button>
-          </div>
-        </div>
-
-        <div class="calc-grid">
-          <div class="calc-inputs">
-            <div class="calc-period-toggle" id="calcPeriodToggle" role="group" aria-label="Choose a time period" hidden>
-              <button type="button" class="calc-period-btn is-active" data-period="monthly" aria-pressed="true">Monthly</button>
-              <button type="button" class="calc-period-btn" data-period="weekly" aria-pressed="false">Weekly</button>
-            </div>
-
-            <div class="calc-slider-group">
-              <label class="calc-question" for="calcVolume" id="calcVolumeQuestion">How many calls do you miss each month?</label>
-              <div class="calc-value" id="calcVolumeValue" aria-hidden="true">20 calls</div>
-              <input type="range" id="calcVolume" class="calc-slider" min="0" max="100" step="1" value="20" aria-label="How many calls do you miss each month?">
-            </div>
-
-            <div class="calc-slider-group">
-              <label class="calc-question" for="calcJobValue">What's your average job worth?</label>
-              <div class="calc-value" id="calcJobValueValue" aria-hidden="true">$450</div>
-              <input type="range" id="calcJobValue" class="calc-slider" min="100" max="40000" step="50" value="450" aria-label="What's your average job worth?">
-              <div class="calc-presets" role="group" aria-label="Average job value presets">
-                <button type="button" class="calc-preset" data-value="450">$450</button>
-                <button type="button" class="calc-preset" data-value="2500">$2,500</button>
-                <button type="button" class="calc-preset" data-value="10000">$10,000</button>
-                <button type="button" class="calc-preset" data-value="25000">$25,000</button>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="calc-results" aria-live="polite">
-            <span class="micro-label calc-results-label" id="calcResultLabel">Total value of the calls you're already missing.</span>
-            <div class="calc-big-number"><span id="calcPrimaryAmount">$9,000</span><span class="calc-unit" id="calcPrimaryUnit">/ month</span></div>
-            <div class="calc-sub-number" id="calcPrimarySecondary"><span id="calcPrimaryYearly">$108,000</span> / year</div>
-            <div class="calc-sub-number" id="calcPrimaryOneTime" hidden>from a single campaign</div>
-
-            <div class="calc-divider" aria-hidden="true"></div>
-
-            <p class="calc-recovery-question" id="calcRecoveryQuestion">What if you recovered just 20%?</p>
-            <div class="calc-big-number calc-big-number--accent">+<span id="calcRecoveredAmount">$1,800</span><span class="calc-unit" id="calcRecoveredUnit">/ month</span></div>
-            <div class="calc-sub-number" id="calcRecoveredSecondary">+<span id="calcRecoveredYearly">$21,600</span> / year</div>
-
-            <div class="calc-slider-group calc-recovery-slider">
-              <label class="calc-question" for="calcRecoveryRate">Test your recovery rate</label>
-              <input type="range" id="calcRecoveryRate" class="calc-slider" min="20" max="100" step="5" value="20" aria-label="Test your recovery rate">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <p class="calc-disclaimer calc-disclaimer--standalone reveal">Estimates are for demonstration purposes only. Actual results vary.</p>
-    </div>
-  </section>
-
   <!-- ================= FOOTER CTA ================= -->
-  <section class="cta-band" id="contact">
-    <div class="cta-glow" aria-hidden="true"></div>
+  <section class="cta-band-v2" id="contact">
     <div class="container">
-      <h2 class="display reveal line-mask"><span class="line-mask-inner">Ready to look like</span></h2>
-      <h2 class="display reveal line-mask"><span class="line-mask-inner">the best option in town?</span></h2>
-      <p class="cta-band-sub reveal">40-minute call. I'll show you exactly what's leaking and what it's worth to fix it.</p>
-      <div class="cta-band-actions reveal">
-        <button type="button" class="btn btn-primary js-book-meeting">Start Free Consultation</button>
-        <p class="cta-band-note">No contracts. Cancel anytime.</p>
-        <a class="micro-label" href="tel:+19109901576" style="color:#fff;">(910) 990-1576</a>
+      <span class="micro-label reveal">Ready to move forward?</span>
+      <h2 class="cta-band-v2-headline reveal">Let's Build Your Competitive Advantage</h2>
+      <p class="cta-band-v2-sub reveal">See exactly what you're losing. Then let's fix it.</p>
+      <div class="cta-band-v2-actions reveal">
+        <div class="cta-band-v2-buttons">
+          <a class="cta-band-v2-btn cta-band-v2-btn--outline" href="calculator.html">Calculate Your Loss</a>
+          <button type="button" class="cta-band-v2-btn cta-band-v2-btn--solid js-book-meeting">Start Free Consultation</button>
+        </div>
+        <p class="cta-band-v2-note">No contracts. Cancel anytime.</p>
+        <a class="cta-band-v2-phone" href="tel:+19109901576">(910) 990-1576</a>
       </div>
     </div>
   </section>
@@ -2755,335 +2576,6 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
       if (document.hidden){ clearTimeout(autoTimer); autoTimer = null; }
       else if (inView) scheduleAuto();
     });
-  })();
-
-  /* ---------- Missed Revenue Calculator ----------
-     Vanilla JS, no dependencies. Two sliders (volume, average job
-     value) drive four dollar figures (lost monthly/yearly, recovered
-     monthly/yearly) plus a "test your recovery rate" slider that only
-     affects the recovered pair. Every input re-runs updateCalculator()
-     synchronously — no debouncing — so the display is always exactly in
-     sync with the sliders; the ~400ms requestAnimationFrame tween is
-     purely a visual count-up layered on top of that, not the source of
-     truth. Both scenarios use the same model — volume x job value, no
-     close rate — so nothing here is scenario-specific.
-     Verified math: 20 calls x $450 = $9,000/mo, x12 = $108,000/yr;
-     20% recovery = $1,800/mo, x12 = $21,600/yr — matches the defaults. */
-  (function initRevenueCalculator(){
-    // Single source of truth for every scenario. Add another scenario by
-    // appending one entry here — no other code in this IIFE names a
-    // scenario, so nothing else needs to change.
-    var SCENARIOS = {
-      missedCalls: {
-        label: 'Missed Calls',
-        type: 'recurring',
-        volumeQuestion: 'How many calls do you miss each month?',
-        volumeUnit: 'calls',
-        volumeMin: 0, volumeMax: 100, volumeDefault: 20, volumeStep: 1,
-        // No close-rate slider — same model as Web Leads: every missed
-        // call is assumed a ready buyer.
-        resultLabel: "Total value of the calls you're already missing.",
-        recoveryQuestion: 'What if you recovered just {r}%?',
-        recoveryMin: 20, recoveryMax: 100, recoveryStep: 5, recoveryDefault: 20
-      },
-      webLeads: {
-        label: 'Web Leads',
-        type: 'recurring',
-        // periodToggle:true switches the volume slider's question/unit/
-        // range/default between the entries below instead of using a
-        // single fixed set — enable it on another scenario later by
-        // adding periodToggle:true and a periods:{monthly,weekly} object
-        // to that scenario's entry; nothing else in this file names
-        // "webLeads" or checks for it specifically.
-        periodToggle: true,
-        periods: {
-          monthly: {
-            label: 'Monthly',
-            volumeQuestion: "How many form leads don't get a fast reply each month?",
-            volumeUnit: 'leads / month',
-            volumeMin: 0, volumeMax: 100, volumeDefault: 20, volumeStep: 1,
-            monthlyMultiplier: 1
-          },
-          weekly: {
-            label: 'Weekly',
-            volumeQuestion: "How many form leads don't get a fast reply each week?",
-            volumeUnit: 'leads / week',
-            volumeMin: 0, volumeMax: 50, volumeDefault: 5, volumeStep: 1,
-            monthlyMultiplier: 4.33
-          }
-        },
-        // No close-rate slider — every lead is assumed a ready buyer.
-        resultLabel: "Total value of the leads you're already paying for.",
-        recoveryQuestion: 'What if you recovered just {r}%?',
-        recoveryMin: 20, recoveryMax: 100, recoveryStep: 5, recoveryDefault: 20
-      }
-    };
-    var DEFAULT_PERIOD = 'monthly';
-    var DEFAULT_SCENARIO = 'missedCalls';
-
-    var scenarioButtons = document.querySelectorAll('.calc-scenario');
-    var volumeInput = document.getElementById('calcVolume');
-    var jobValueInput = document.getElementById('calcJobValue');
-    var recoveryRateInput = document.getElementById('calcRecoveryRate');
-    if (!volumeInput || !jobValueInput || !recoveryRateInput || !scenarioButtons.length) return;
-
-    var periodToggleEl = document.getElementById('calcPeriodToggle');
-    var periodButtons = document.querySelectorAll('.calc-period-btn');
-
-    var volumeQuestionEl = document.getElementById('calcVolumeQuestion');
-    var volumeValueEl = document.getElementById('calcVolumeValue');
-    var jobValueValueEl = document.getElementById('calcJobValueValue');
-    var recoveryQuestionEl = document.getElementById('calcRecoveryQuestion');
-    var resultLabelEl = document.getElementById('calcResultLabel');
-
-    var primaryAmountEl = document.getElementById('calcPrimaryAmount');
-    var primaryUnitEl = document.getElementById('calcPrimaryUnit');
-    var primarySecondaryEl = document.getElementById('calcPrimarySecondary');
-    var primaryOneTimeEl = document.getElementById('calcPrimaryOneTime');
-    var primaryYearlyEl = document.getElementById('calcPrimaryYearly');
-    var recoveredAmountEl = document.getElementById('calcRecoveredAmount');
-    var recoveredUnitEl = document.getElementById('calcRecoveredUnit');
-    var recoveredSecondaryEl = document.getElementById('calcRecoveredSecondary');
-    var recoveredYearlyEl = document.getElementById('calcRecoveredYearly');
-
-    var presetButtons = document.querySelectorAll('.calc-preset');
-    var scenarioSliders = [volumeInput];
-    var allSliders = [volumeInput, jobValueInput, recoveryRateInput];
-
-    var currentScenarioKey = DEFAULT_SCENARIO;
-    // Only meaningful when the active scenario has periodToggle:true;
-    // ignored otherwise. Always reset to DEFAULT_PERIOD on a scenario
-    // switch, per spec.
-    var currentPeriod = DEFAULT_PERIOD;
-    // The dollar figure actually used in the math/display. The slider's
-    // own raw .value is just a linear thumb-position proxy over its
-    // [min,max] — never read back to regenerate this, so the default
-    // (450) and preset clicks land on exact numbers instead of drifting
-    // through a forward-curve-then-snap round trip.
-    var currentJobValue = 450;
-
-    function formatMoney(n){
-      return '$' + Math.round(Math.max(0, n)).toLocaleString('en-US');
-    }
-
-    function pluralize(value, unit){
-      return value + ' ' + (value === 1 ? unit.replace(/s$/, '') : unit);
-    }
-
-    // Square-curve mapping so the wide $100-$40,000 job-value range
-    // stays usable at the low end: value = min + (max-min)*position^2,
-    // snapped to the nearest $50. Low thumb positions barely move the
-    // dollar figure (fine-grained low end); positions near the top of
-    // the track compress large jumps into a short stretch of travel.
-    function jobPositionToValue(raw){
-      var min = parseFloat(jobValueInput.min), max = parseFloat(jobValueInput.max);
-      var range = max - min;
-      var p = (raw - min) / range;
-      var val = min + range * p * p;
-      var snapped = Math.round(val / 50) * 50;
-      // Rounding to the nearest $50 can undershoot the $100 floor near
-      // the very start of the (deliberately compressed) low end — clamp
-      // both ends so the displayed figure never leaves [min, max].
-      return Math.min(max, Math.max(min, snapped));
-    }
-
-    // Inverse of the above — used only to place the thumb for a known
-    // dollar figure (default load, preset clicks), never to re-derive
-    // the displayed number, so those stay exact even on the rare value
-    // that isn't itself on the $50 snap grid.
-    function jobValueToPosition(value){
-      var min = parseFloat(jobValueInput.min), max = parseFloat(jobValueInput.max);
-      var range = max - min;
-      var p = Math.sqrt(Math.max(0, (value - min) / range));
-      return min + range * p;
-    }
-
-    function setSliderFill(input){
-      var min = parseFloat(input.min), max = parseFloat(input.max), val = parseFloat(input.value);
-      var pct = ((val - min) / (max - min)) * 100;
-      input.style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, #E5E5E5 ' + pct + '%)';
-    }
-
-    // rAF-driven count-up, ~400ms, eased — falls back to an instant
-    // snap under reduced motion (or when from === to, which is always
-    // true on first render, so init never visibly "animates from 0").
-    var rafHandles = {};
-    function animateNumber(el, from, to){
-      if (rafHandles[el.id]) cancelAnimationFrame(rafHandles[el.id]);
-      if (reduceMotion || from === to){
-        el.textContent = formatMoney(to);
-        return;
-      }
-      var start = null;
-      var duration = 400;
-      function step(ts){
-        if (start === null) start = ts;
-        var t = Math.min(1, (ts - start) / duration);
-        var eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = formatMoney(from + (to - from) * eased);
-        if (t < 1){
-          rafHandles[el.id] = requestAnimationFrame(step);
-        } else {
-          el.textContent = formatMoney(to);
-          delete rafHandles[el.id];
-        }
-      }
-      rafHandles[el.id] = requestAnimationFrame(step);
-    }
-
-    var prevValues = {};
-    function setNumber(el, to, resetAnimation){
-      var from = (resetAnimation || !(el.id in prevValues)) ? to : prevValues[el.id];
-      prevValues[el.id] = to;
-      animateNumber(el, from, to);
-    }
-
-    function syncPresetActiveState(jobValue){
-      presetButtons.forEach(function(btn){
-        var isActive = parseInt(btn.getAttribute('data-value'), 10) === jobValue;
-        btn.classList.toggle('is-active', isActive);
-      });
-    }
-
-    // Scenarios without periodToggle just use their own top-level
-    // volume* fields directly (unchanged behavior); a periodToggle
-    // scenario swaps in its periods[currentPeriod] entry instead. This
-    // is the one place that knows about the distinction — everything
-    // downstream (applyScenario, applyPeriod, updateCalculator) just
-    // calls this and stays scenario-agnostic.
-    function getVolumeConfig(scenario){
-      return scenario.periodToggle ? scenario.periods[currentPeriod] : scenario;
-    }
-
-    function syncPeriodButtons(){
-      periodButtons.forEach(function(btn){
-        var isActive = btn.getAttribute('data-period') === currentPeriod;
-        btn.classList.toggle('is-active', isActive);
-        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      });
-    }
-
-    function applyVolumeConfig(scenario){
-      var volumeConfig = getVolumeConfig(scenario);
-      volumeQuestionEl.textContent = volumeConfig.volumeQuestion;
-      volumeInput.setAttribute('aria-label', volumeConfig.volumeQuestion);
-      volumeInput.min = volumeConfig.volumeMin;
-      volumeInput.max = volumeConfig.volumeMax;
-      volumeInput.step = volumeConfig.volumeStep;
-      volumeInput.value = volumeConfig.volumeDefault;
-    }
-
-    function applyPeriod(period, resetAnimation){
-      var scenario = SCENARIOS[currentScenarioKey];
-      if (!scenario.periodToggle || period === currentPeriod || !scenario.periods[period]) return;
-      currentPeriod = period;
-      syncPeriodButtons();
-      applyVolumeConfig(scenario);
-      updateCalculator(resetAnimation);
-    }
-
-    function applyScenario(key, resetAnimation){
-      var scenario = SCENARIOS[key];
-      currentScenarioKey = key;
-      currentPeriod = DEFAULT_PERIOD;
-
-      scenarioButtons.forEach(function(btn){
-        var isActive = btn.getAttribute('data-scenario') === key;
-        btn.classList.toggle('is-active', isActive);
-        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      });
-
-      periodToggleEl.hidden = !scenario.periodToggle;
-      syncPeriodButtons();
-      applyVolumeConfig(scenario);
-
-      // Recovery range differs per scenario, so it resets on scenario
-      // switch the same way volume does.
-      recoveryRateInput.min = scenario.recoveryMin;
-      recoveryRateInput.max = scenario.recoveryMax;
-      recoveryRateInput.step = scenario.recoveryStep;
-      recoveryRateInput.value = scenario.recoveryDefault;
-
-      resultLabelEl.textContent = scenario.resultLabel;
-
-      var isRecurring = scenario.type === 'recurring';
-      primaryUnitEl.textContent = isRecurring ? '/ month' : 'one-time campaign';
-      primarySecondaryEl.hidden = !isRecurring;
-      primaryOneTimeEl.hidden = isRecurring;
-      recoveredUnitEl.textContent = isRecurring ? '/ month' : 'from this campaign';
-      recoveredSecondaryEl.hidden = !isRecurring;
-
-      updateCalculator(resetAnimation);
-    }
-
-    function updateCalculator(resetAnimation){
-      var scenario = SCENARIOS[currentScenarioKey];
-      var volumeConfig = getVolumeConfig(scenario);
-      var volume = parseInt(volumeInput.value, 10);
-      var jobValue = currentJobValue;
-      var recoveryRate = parseInt(recoveryRateInput.value, 10);
-      var isRecurring = scenario.type === 'recurring';
-
-      volumeValueEl.textContent = pluralize(volume, volumeConfig.volumeUnit);
-      jobValueValueEl.textContent = '$' + jobValue.toLocaleString('en-US');
-      recoveryQuestionEl.textContent = scenario.recoveryQuestion.replace('{r}', recoveryRate);
-
-      // Results always stay monthly/yearly regardless of the input
-      // period — a weekly input volume is converted to its monthly
-      // equivalent (x4.33) before the dollar math runs, so the "/ month"
-      // and "/ year" labels never need to change. Every scenario now
-      // uses the same model — volume x job value, no close rate — every
-      // call/lead counts at full value.
-      var monthlyVolume = volume * (volumeConfig.monthlyMultiplier || 1);
-      var primary = monthlyVolume * jobValue;
-      var recovered = primary * (recoveryRate / 100);
-
-      setNumber(primaryAmountEl, primary, resetAnimation);
-      setNumber(recoveredAmountEl, recovered, resetAnimation);
-
-      if (isRecurring){
-        setNumber(primaryYearlyEl, primary * 12, resetAnimation);
-        setNumber(recoveredYearlyEl, recovered * 12, resetAnimation);
-      }
-
-      allSliders.forEach(setSliderFill);
-      syncPresetActiveState(jobValue);
-    }
-
-    scenarioButtons.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var key = btn.getAttribute('data-scenario');
-        if (key === currentScenarioKey || !SCENARIOS[key]) return;
-        applyScenario(key, true);
-      });
-    });
-
-    periodButtons.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        applyPeriod(btn.getAttribute('data-period'), true);
-      });
-    });
-
-    scenarioSliders.forEach(function(input){
-      input.addEventListener('input', function(){ updateCalculator(false); });
-    });
-    jobValueInput.addEventListener('input', function(){
-      currentJobValue = jobPositionToValue(parseFloat(jobValueInput.value));
-      updateCalculator(false);
-    });
-    recoveryRateInput.addEventListener('input', function(){ updateCalculator(false); });
-
-    presetButtons.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        currentJobValue = parseInt(btn.getAttribute('data-value'), 10);
-        jobValueInput.value = jobValueToPosition(currentJobValue);
-        updateCalculator(false);
-        jobValueInput.focus();
-      });
-    });
-
-    jobValueInput.value = jobValueToPosition(currentJobValue);
-    applyScenario(DEFAULT_SCENARIO, true);
   })();
 
   /* ---------- Hero form card ----------

@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Revenue Calculator — What Missed Calls &amp; Leads Are Costing You | SiteSync</title>
+<meta name="description" content="See how much revenue your business is losing every month to missed calls and unanswered web leads, and what recovering even a fraction of it is worth.">
+<meta name="theme-color" content="#F4F4F6">
+<link rel="icon" href="/favicon.png" sizes="any" type="image/png">
+<link rel="apple-touch-icon" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#050507;
+    --surface:#0E0E12;
+    --light:#F4F4F6;
+    --white:#FFFFFF;
+    --muted:#8A8A94;
+    --muted-on-light:#5B5B63;
+    --accent:#1E40AF;
+    --accent-bright:#4870E5;
+    --accent-hover:#16357F;
+    --line:rgba(255,255,255,0.08);
+    --line-on-light:rgba(10,10,10,0.08);
+    --line-on-light-hover:rgba(30,64,175,0.35);
+    --line-hover:rgba(255,255,255,0.18);
+    --radius-card:16px;
+    --radius-pill:999px;
+    --ease:cubic-bezier(0.16,1,0.3,1);
+    --dur:400ms;
+    --container:1280px;
+    --nav-clear:108px;
+    --nav-h:93px;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto;} }
+
+  /* This page is light-themed throughout (no dark hero), unlike
+     index.html's dark body default — the header/footer/button
+     components below are copied unchanged from index.html's design
+     system, just placed on a light page background instead of a dark
+     one. */
+  body{
+    margin:0;
+    font-family:'Manrope',system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:var(--light);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3{
+    margin:0;
+    font-weight:700;
+    line-height:1.05;
+    letter-spacing:-0.03em;
+    color:var(--ink);
+  }
+
+  p{
+    margin:0;
+    font-size:15px;
+    line-height:1.65;
+    color:var(--muted-on-light);
+    max-width:60ch;
+  }
+  a{color:inherit;text-decoration:none;}
+  img,video{max-width:100%;display:block;}
+  button{font-family:inherit;}
+
+  [id]{scroll-margin-top:var(--nav-clear);}
+
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible{
+    outline:2px solid var(--accent-bright);
+    outline-offset:3px;
+    border-radius:4px;
+  }
+
+  .skip-link{
+    position:absolute;
+    left:-9999px;
+    top:0;
+    background:var(--accent-bright);
+    color:var(--white);
+    padding:12px 20px;
+    border-radius:0 0 12px 0;
+    z-index:1200;
+  }
+  .skip-link:focus{left:0;}
+
+  .scroll-progress{
+    position:fixed;
+    top:0;left:0;right:0;
+    height:2px;
+    background:var(--accent-bright);
+    transform:scaleX(0);
+    transform-origin:0 0;
+    z-index:1100;
+    pointer-events:none;
+  }
+
+  .container{
+    max-width:var(--container);
+    margin:0 auto;
+    padding:0 24px;
+  }
+  @media (min-width:640px){ .container{padding:0 40px;} }
+  @media (min-width:1100px){ .container{padding:0 56px;} }
+
+  /* ---------- Type registers ---------- */
+  .micro-label{
+    font-size:11px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:var(--muted);
+    display:inline-block;
+  }
+  .on-light .micro-label{color:var(--muted-on-light);}
+
+  .display{
+    font-size:clamp(2.5rem, 5vw, 4.5rem);
+    font-weight:700;
+    line-height:1.05;
+    letter-spacing:-0.03em;
+    margin:0;
+  }
+
+  .on-light{color:var(--ink);}
+  .on-light h1,.on-light h2,.on-light h3{color:var(--ink);}
+  .on-light p{color:var(--muted-on-light);}
+
+  .dot{
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--accent-bright);
+    display:inline-block;
+    flex-shrink:0;
+  }
+  .on-light .dot{background:var(--accent);}
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    padding:6px 14px;
+    border-radius:var(--radius-pill);
+    background:rgba(255,255,255,0.06);
+    border:1px solid var(--line);
+    font-size:11px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    color:var(--muted);
+    width:fit-content;
+  }
+  .on-light .chip{background:rgba(30,64,175,0.06);border-color:rgba(30,64,175,0.18);color:var(--accent);}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:16px 32px;
+    font-size:12.5px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    border-radius:var(--radius-pill);
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+    white-space:nowrap;
+  }
+  .btn-primary{background:var(--accent-bright);color:#fff;}
+  .btn-primary:hover{background:#5C81EF;transform:translateY(-2px);}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-accent:hover{background:var(--accent-hover);transform:translateY(-2px);}
+  .btn-outline{background:transparent;color:#fff;border-color:var(--line);}
+  .btn-outline:hover{background:rgba(255,255,255,0.06);border-color:var(--line-hover);}
+  .btn-sm{padding:12px 22px;font-size:11px;}
+  .btn-block{width:100%;}
+  @media (prefers-reduced-motion:reduce){
+    .btn{transition:background var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);}
+    .btn:hover{transform:none;}
+  }
+
+  /* ---------- Header: sticky light bar (copied from index.html) ---------- */
+  .nav-wrap{
+    position:sticky;
+    top:0;
+    z-index:600;
+    background:rgba(250,250,250,0.92);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line-on-light);
+    transition:box-shadow 300ms var(--ease);
+    will-change:transform;
+    backface-visibility:hidden;
+  }
+  .nav-wrap.is-scrolled{ box-shadow:0 6px 28px rgba(10,10,10,0.14); }
+
+  .nav{
+    max-width:var(--container);
+    margin:0 auto;
+    padding:0 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    height:92px;
+    transform-origin:center center;
+    transition:transform 300ms var(--ease);
+  }
+  .nav-wrap.is-scrolled .nav{ transform:scale(0.9); }
+  @media (min-width:640px){ .nav{padding:0 40px;} }
+  @media (min-width:1100px){ .nav{padding:0 56px;} }
+
+  .brand{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+    min-width:0;
+    flex-shrink:0;
+    transform-origin:left center;
+    transition:transform var(--dur) var(--ease);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .brand{transition:none;}
+    .nav{transition:none;}
+    .nav-wrap{transition:none;}
+  }
+  .brand img{
+    height:36px;
+    width:auto;
+  }
+  .brand-row{display:flex;align-items:center;gap:8px;}
+  .brand-name{
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+  }
+  .brand-tagline{
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--muted-on-light);
+    white-space:nowrap;
+  }
+
+  .nav-links{
+    display:none;
+    align-items:center;
+    justify-content:center;
+    gap:36px;
+    list-style:none;
+    margin:0;padding:0;
+  }
+  .nav-links a{
+    position:relative;
+    padding-block:0.25em;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .nav-links a::after{
+    content:"";
+    position:absolute;
+    left:0;right:100%;
+    bottom:0;
+    height:2px;
+    background:var(--accent);
+    transition:right var(--dur) var(--ease);
+  }
+  .nav-links a:hover::after{ right:0; }
+
+  .nav-actions{display:flex;align-items:center;gap:18px;flex-shrink:0;}
+  .header-phone{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:0.55em;
+    height:44px;
+    padding:0 20px;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    white-space:nowrap;
+    text-decoration:none;
+    color:#fff;
+    background:var(--accent);
+    border-radius:var(--radius-pill);
+    transition:background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .header-phone:hover{ background:var(--accent-hover); transform:translateY(-2px); }
+  .header-phone svg{flex-shrink:0;}
+  @media (prefers-reduced-motion:reduce){
+    .header-phone{transition:background var(--dur) var(--ease);}
+    .header-phone:hover{transform:none;}
+  }
+  @media (max-width:479px){
+    .header-phone span{display:none;}
+    .header-phone{width:44px;padding:0;}
+  }
+
+  .nav-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:44px;height:44px;
+    background:none;
+    border:1px solid var(--line-on-light);
+    border-radius:50%;
+    cursor:pointer;
+    color:var(--ink);
+    flex-shrink:0;
+  }
+  .nav-toggle-bars{position:relative;width:16px;height:11px;display:block;}
+  .nav-toggle .bar{
+    position:absolute;left:0;width:100%;height:1px;
+    background:currentColor;
+    transition:transform 280ms var(--ease), opacity 200ms var(--ease), top 280ms var(--ease);
+  }
+  .nav-toggle .bar-1{top:0;}
+  .nav-toggle .bar-2{top:50%;margin-top:-0.5px;}
+  .nav-toggle .bar-3{top:100%;margin-top:-1px;}
+  .nav-toggle[aria-expanded="true"] .bar-1{top:50%;margin-top:-0.5px;transform:rotate(45deg);}
+  .nav-toggle[aria-expanded="true"] .bar-2{opacity:0;}
+  .nav-toggle[aria-expanded="true"] .bar-3{top:50%;margin-top:-0.5px;transform:rotate(-45deg);}
+
+  .nav-mobile{
+    position:fixed;
+    top:92px;left:0;right:0;
+    background:var(--white);
+    border-bottom:1px solid var(--line-on-light);
+    box-shadow:0 4px 24px rgba(10,10,10,0.08);
+    z-index:590;
+    display:flex;
+    flex-direction:column;
+    padding:8px 24px 20px;
+    transform:translateY(-8px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .nav-mobile.is-open{opacity:1;transform:translateY(0);pointer-events:auto;}
+  .nav-mobile a{
+    opacity:0;
+    transform:translateX(-18px);
+    transition:opacity 320ms var(--ease), transform 320ms var(--ease);
+  }
+  .nav-mobile.is-open a{
+    opacity:1;
+    transform:translateX(0);
+  }
+  .nav-mobile a{
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    padding-block:14px;
+    border-bottom:1px solid var(--line-on-light);
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    color:var(--ink);
+  }
+  .nav-mobile a:last-child{border-bottom:none;}
+  body.menu-open{overflow:hidden;}
+
+  @media (min-width:900px){
+    .nav-links{display:flex;}
+    .nav-toggle{display:none;}
+    .nav-mobile{display:none;}
+  }
+
+  /* ---------- Reveal-on-scroll ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(var(--reveal-y, 40px));
+    transition:opacity 900ms var(--ease), transform 900ms var(--ease);
+  }
+  .reveal.is-visible{opacity:1;transform:translateY(0);}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{transition:opacity 900ms var(--ease) !important;transform:none !important;}
+  }
+
+  .line-mask{display:block;overflow:hidden;}
+  .line-mask-inner{
+    display:block;
+    transform:translateY(108%);
+    transition:transform 900ms var(--ease);
+  }
+  .reveal.is-visible .line-mask-inner{transform:translateY(0);}
+  @media (prefers-reduced-motion:reduce){
+    .line-mask-inner{transition:none !important;transform:none !important;}
+  }
+
+  /* ---------- Sections ---------- */
+  .section{padding:120px 0;}
+  @media (max-width:640px){ .section{padding:80px 0;} }
+  .section-head{max-width:640px;margin-bottom:56px;}
+  .section-head .display{font-size:clamp(2rem, 4.4vw, 3rem);margin-top:16px;}
+  .section-head p{margin-top:18px;font-size:16px;}
+
+  .section--light-band{background:var(--light);}
+
+  .light-card{
+    position:relative;
+    background:var(--white);
+    border:1px solid var(--line-on-light);
+    border-radius:var(--radius-card);
+    box-shadow:0 1px 2px rgba(10,10,10,0.04), 0 8px 24px rgba(10,10,10,0.06);
+    padding:20px;
+    transition:border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .light-card:hover{
+    border-color:var(--line-on-light-hover);
+    transform:translateY(-6px);
+    box-shadow:0 2px 4px rgba(10,10,10,0.06), 0 20px 40px rgba(10,10,10,0.1);
+  }
+  @media (prefers-reduced-motion:reduce){
+    .light-card{transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);}
+    .light-card:hover{transform:none;}
+  }
+
+  /* ---------- Intro copy above the calculator ---------- */
+  #calc-intro .section-head{margin-left:auto;margin-right:auto;text-align:center;}
+  #calc-intro .calc-intro-copy{max-width:640px;margin:0 auto;text-align:center;font-size:16px;}
+
+  /* ---------- Revenue calculator (copied unchanged from index.html) ---------- */
+  .calc-card.light-card{
+    padding:0;
+    overflow:hidden;
+  }
+  .calc-card.light-card:hover{
+    transform:none;
+    border-color:var(--line-on-light);
+    box-shadow:0 1px 2px rgba(10,10,10,0.04), 0 8px 24px rgba(10,10,10,0.06);
+  }
+
+  .calc-scenarios-wrap{padding:28px 24px 0;}
+  @media (min-width:640px){ .calc-scenarios-wrap{padding:32px 32px 0;} }
+  .calc-scenarios{display:flex;flex-wrap:wrap;gap:10px;}
+  .calc-scenario{
+    padding:10px 20px;
+    border-radius:999px;
+    border:1.5px solid var(--line-on-light);
+    background:transparent;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .calc-scenario:hover{border-color:var(--accent);}
+  .calc-scenario.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  .calc-period-toggle{
+    display:inline-flex;
+    gap:4px;
+    padding:3px;
+    background:var(--light);
+    border-radius:999px;
+    margin-bottom:14px;
+  }
+  .calc-period-toggle[hidden]{display:none;}
+  .calc-period-btn{
+    padding:5px 14px;
+    border-radius:999px;
+    border:none;
+    background:transparent;
+    font-size:12px;
+    font-weight:600;
+    color:var(--muted-on-light);
+    cursor:pointer;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .calc-period-btn:hover{color:var(--ink);}
+  .calc-period-btn.is-active{background:var(--white);color:var(--ink);box-shadow:0 1px 2px rgba(10,10,10,0.08);}
+
+  .calc-grid{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  @media (min-width:900px){ .calc-grid{grid-template-columns:1fr 1fr;} }
+
+  .calc-inputs{
+    padding:32px 24px;
+    display:flex;
+    flex-direction:column;
+    gap:32px;
+  }
+  @media (min-width:640px){ .calc-inputs{padding:40px 32px;} }
+
+  .calc-results{
+    background:var(--light);
+    padding:32px 24px;
+    border-top:1px solid var(--line-on-light);
+  }
+  @media (min-width:640px){ .calc-results{padding:40px 32px;} }
+  @media (min-width:900px){
+    .calc-results{border-top:none;border-left:1px solid var(--line-on-light);}
+  }
+
+  .calc-slider-group{display:flex;flex-direction:column;}
+  .calc-question{
+    display:block;
+    font-size:15px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    margin-bottom:10px;
+  }
+  .calc-value{
+    font-size:clamp(1.75rem, 4vw, 2.25rem);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:var(--accent);
+    line-height:1;
+    margin-bottom:14px;
+  }
+
+  .calc-slider{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:8px;
+    border-radius:999px;
+    background:#E5E5E5;
+    cursor:pointer;
+  }
+  .calc-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:var(--accent);
+    border:3px solid #fff;
+    box-shadow:0 2px 8px rgba(10,10,10,0.28);
+    cursor:pointer;
+    transition:transform 200ms var(--ease);
+  }
+  .calc-slider::-webkit-slider-thumb:hover{transform:scale(1.08);}
+  .calc-slider::-moz-range-thumb{
+    width:28px;height:28px;
+    border-radius:50%;
+    background:var(--accent);
+    border:3px solid #fff;
+    box-shadow:0 2px 8px rgba(10,10,10,0.28);
+    cursor:pointer;
+  }
+  .calc-slider::-moz-range-track{height:8px;border-radius:999px;background:#E5E5E5;}
+  .calc-slider::-moz-range-progress{height:8px;border-radius:999px;background:var(--accent);}
+  .calc-slider:focus-visible{outline:2px solid var(--accent);outline-offset:6px;}
+  @media (prefers-reduced-motion:reduce){
+    .calc-slider::-webkit-slider-thumb{transition:none;}
+  }
+
+  .calc-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .calc-preset{
+    padding:8px 14px;
+    border-radius:999px;
+    border:1px solid var(--line-on-light);
+    background:var(--white);
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .calc-preset:hover{border-color:var(--accent);}
+  .calc-preset.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  .calc-results-label{display:block;margin-bottom:14px;}
+  .calc-big-number{
+    font-size:clamp(2rem, 5vw, 2.75rem);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+    line-height:1;
+  }
+  .calc-big-number--accent{color:var(--accent);}
+  .calc-unit{
+    font-size:15px;
+    font-weight:500;
+    color:var(--muted-on-light);
+    margin-left:6px;
+  }
+  .calc-sub-number{margin-top:8px;font-size:15px;font-weight:600;color:var(--muted-on-light);}
+  .calc-divider{height:1px;background:var(--line-on-light);margin:28px 0;}
+  .calc-recovery-question{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;}
+  .calc-recovery-slider{margin-top:24px;}
+  .calc-recovery-slider .calc-question{font-size:13px;margin-bottom:12px;}
+
+  .calc-disclaimer{font-size:12px;opacity:0.75;}
+  .calc-disclaimer--standalone{text-align:center;margin-top:20px;}
+
+  /* ---------- Back to Home ---------- */
+  .calc-back-home{text-align:center;padding:0 24px 40px;}
+
+  /* ---------- Floating "Book a Consultation" CTA ---------- */
+  .floating-cta{
+    position:fixed;
+    right:24px;
+    bottom:24px;
+    z-index:500;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px 28px;
+    background:var(--accent);
+    color:#fff;
+    font-size:13px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    border-radius:var(--radius-pill);
+    box-shadow:0 8px 24px rgba(30,64,175,0.35);
+    transition:background var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .floating-cta:hover{
+    background:var(--accent-hover);
+    transform:translateY(-2px);
+    box-shadow:0 12px 28px rgba(30,64,175,0.45);
+  }
+  @media (max-width:480px){
+    .floating-cta{right:16px;bottom:16px;padding:14px 20px;font-size:12px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .floating-cta{transition:background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);}
+    .floating-cta:hover{transform:none;}
+  }
+
+  /* ---------- Footer (copied from index.html) ---------- */
+  .footer{background:var(--ink);border-top:1px solid var(--line);padding:64px 0 32px;}
+  .footer-top{
+    display:flex;
+    flex-direction:column;
+    gap:40px;
+    padding-bottom:44px;
+    border-bottom:1px solid var(--line);
+  }
+  @media (min-width:760px){
+    .footer-top{flex-direction:row;justify-content:space-between;align-items:flex-start;}
+  }
+  .footer-brand img{height:18px;width:auto;}
+  .footer-brand-row{display:flex;align-items:center;gap:10px;}
+  .footer-brand-name{font-size:17px;font-weight:700;letter-spacing:-0.02em;color:#fff;}
+  .footer-brand p{margin-top:16px;font-size:14px;max-width:32ch;color:var(--muted);}
+  .footer-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;}
+  @media (min-width:480px){ .footer-cols{grid-template-columns:repeat(2, minmax(140px,auto));gap:56px;} }
+  .footer-col h4{
+    font-size:11px;
+    font-weight:500;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  .footer-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .footer-col a{
+    font-size:14.5px;
+    color:rgba(255,255,255,0.8);
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    transition:color var(--dur) var(--ease);
+  }
+  .footer-col a:hover{color:#fff;}
+  .footer-bottom{
+    padding-top:28px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    font-size:12px;
+    color:rgba(255,255,255,0.35);
+  }
+  @media (min-width:640px){
+    .footer-bottom{flex-direction:row;justify-content:space-between;}
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<div class="nav-wrap" id="navWrap">
+  <header class="nav" id="nav">
+    <a class="brand" href="index.html" aria-label="SiteSync home">
+      <span class="brand-row">
+        <img src="herologo.png" alt="SiteSync" width="36" height="36" decoding="async">
+        <span class="brand-name">SiteSync</span>
+      </span>
+      <span class="brand-tagline">Automation &amp; Web Design</span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="index.html#selected-work">Selected Work</a></li>
+        <li><a href="index.html#how-it-works">How It Works</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <a class="header-phone" href="tel:+19109901576" aria-label="Call us now at (910) 990-1576">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8c1.4 2.7 3.6 5 6.4 6.4l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1l-2.2 2.3z"/></svg>
+        <span>Call Us Now</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navMobile">
+        <span class="nav-toggle-bars" aria-hidden="true">
+          <span class="bar bar-1"></span>
+          <span class="bar bar-2"></span>
+          <span class="bar bar-3"></span>
+        </span>
+      </button>
+    </div>
+  </header>
+</div>
+<div class="nav-mobile" id="navMobile">
+  <a href="index.html#selected-work">Selected Work</a>
+  <a href="index.html#how-it-works">How It Works</a>
+  <a href="index.html#contact">Contact</a>
+</div>
+
+<main id="main">
+
+  <!-- ================= CALCULATOR INTRO ================= -->
+  <section class="section section--light-band on-light" id="calc-intro">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="micro-label">Revenue calculator</span>
+        <h1 class="display line-mask"><span class="line-mask-inner">What's Really Leaving on the Table?</span></h1>
+        <p>Find out how much revenue you're losing to missed calls and booking requests</p>
+      </div>
+      <p class="calc-intro-copy reveal">When a customer can't reach you or book online, they move to the next contractor. Every missed call, every abandoned form, every customer who couldn't find an appointment slot — that's lost revenue. Use the calculator below to see what those missed opportunities are actually costing your business each month.</p>
+    </div>
+  </section>
+
+  <!-- ================= REVENUE CALCULATOR ================= -->
+  <section class="section section--light-band on-light" id="revenue-calculator">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="micro-label">Revenue calculator</span>
+        <h2 class="display line-mask"><span class="line-mask-inner">What's it costing you?</span></h2>
+      </div>
+
+      <div class="calc-card light-card reveal">
+        <div class="calc-scenarios-wrap">
+          <div class="calc-scenarios" id="calcScenarios" role="group" aria-label="Choose a scenario">
+            <button type="button" class="calc-scenario is-active" data-scenario="missedCalls" aria-pressed="true">Missed Calls</button>
+            <button type="button" class="calc-scenario" data-scenario="webLeads" aria-pressed="false">Web Leads</button>
+          </div>
+        </div>
+
+        <div class="calc-grid">
+          <div class="calc-inputs">
+            <div class="calc-period-toggle" id="calcPeriodToggle" role="group" aria-label="Choose a time period" hidden>
+              <button type="button" class="calc-period-btn is-active" data-period="monthly" aria-pressed="true">Monthly</button>
+              <button type="button" class="calc-period-btn" data-period="weekly" aria-pressed="false">Weekly</button>
+            </div>
+
+            <div class="calc-slider-group">
+              <label class="calc-question" for="calcVolume" id="calcVolumeQuestion">How many calls do you miss each month?</label>
+              <div class="calc-value" id="calcVolumeValue" aria-hidden="true">20 calls</div>
+              <input type="range" id="calcVolume" class="calc-slider" min="0" max="100" step="1" value="20" aria-label="How many calls do you miss each month?">
+            </div>
+
+            <div class="calc-slider-group">
+              <label class="calc-question" for="calcJobValue">What's your average job worth?</label>
+              <div class="calc-value" id="calcJobValueValue" aria-hidden="true">$450</div>
+              <input type="range" id="calcJobValue" class="calc-slider" min="100" max="40000" step="50" value="450" aria-label="What's your average job worth?">
+              <div class="calc-presets" role="group" aria-label="Average job value presets">
+                <button type="button" class="calc-preset" data-value="450">$450</button>
+                <button type="button" class="calc-preset" data-value="2500">$2,500</button>
+                <button type="button" class="calc-preset" data-value="10000">$10,000</button>
+                <button type="button" class="calc-preset" data-value="25000">$25,000</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="calc-results" aria-live="polite">
+            <span class="micro-label calc-results-label" id="calcResultLabel">Total value of the calls you're already missing.</span>
+            <div class="calc-big-number"><span id="calcPrimaryAmount">$9,000</span><span class="calc-unit" id="calcPrimaryUnit">/ month</span></div>
+            <div class="calc-sub-number" id="calcPrimarySecondary"><span id="calcPrimaryYearly">$108,000</span> / year</div>
+            <div class="calc-sub-number" id="calcPrimaryOneTime" hidden>from a single campaign</div>
+
+            <div class="calc-divider" aria-hidden="true"></div>
+
+            <p class="calc-recovery-question" id="calcRecoveryQuestion">What if you recovered just 20%?</p>
+            <div class="calc-big-number calc-big-number--accent">+<span id="calcRecoveredAmount">$1,800</span><span class="calc-unit" id="calcRecoveredUnit">/ month</span></div>
+            <div class="calc-sub-number" id="calcRecoveredSecondary">+<span id="calcRecoveredYearly">$21,600</span> / year</div>
+
+            <div class="calc-slider-group calc-recovery-slider">
+              <label class="calc-question" for="calcRecoveryRate">Test your recovery rate</label>
+              <input type="range" id="calcRecoveryRate" class="calc-slider" min="20" max="100" step="5" value="20" aria-label="Test your recovery rate">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="calc-disclaimer calc-disclaimer--standalone reveal">Estimates are for demonstration purposes only. Actual results vary.</p>
+    </div>
+  </section>
+
+  <div class="calc-back-home">
+    <a class="btn btn-accent" href="index.html">Back to Home</a>
+  </div>
+
+</main>
+
+<a class="floating-cta" href="index.html#quiz">Book a Consultation</a>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-brand-row">
+          <img src="herologo.png" alt="SiteSync" width="18" height="18" loading="lazy" decoding="async">
+          <span class="footer-brand-name">SiteSync</span>
+        </span>
+        <p>Web design and automation for local service businesses across North Carolina.</p>
+      </div>
+      <div class="footer-cols">
+        <div class="footer-col">
+          <h4>Site</h4>
+          <ul>
+            <li><a href="index.html#selected-work">Selected Work</a></li>
+            <li><a href="index.html#how-it-works">How It Works</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="mailto:ncsitesync@gmail.com">ncsitesync@gmail.com</a></li>
+            <li><a href="tel:+19109901576">(910) 990-1576</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> SiteSync. All rights reserved.</span>
+      <span>Based in North Carolina.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Footer year ---------- */
+  var yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* ---------- Shared scroll handler (copied from index.html) ---------- */
+  var navWrap = document.getElementById('navWrap');
+  var scrollProgress = document.getElementById('scrollProgress');
+  var scrollTicking = false;
+  var NAV_ENTER_THRESHOLD = 50;
+  var NAV_EXIT_THRESHOLD = 42;
+  var navIsScrolled = false;
+  var lastScrollY = -Infinity;
+
+  function updateOnScroll(){
+    var y = window.scrollY;
+
+    if (Math.abs(y - lastScrollY) < 4){
+      scrollTicking = false;
+      return;
+    }
+    lastScrollY = y;
+
+    if (navWrap){
+      if (!navIsScrolled && y > NAV_ENTER_THRESHOLD){
+        navIsScrolled = true;
+        navWrap.classList.add('is-scrolled');
+      } else if (navIsScrolled && y < NAV_EXIT_THRESHOLD){
+        navIsScrolled = false;
+        navWrap.classList.remove('is-scrolled');
+      }
+    }
+
+    if (scrollProgress){
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - doc.clientHeight;
+      var frac = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+      scrollProgress.style.transform = 'scaleX(' + frac + ')';
+    }
+
+    scrollTicking = false;
+  }
+  function requestScrollTick(){
+    if (!scrollTicking){ scrollTicking = true; requestAnimationFrame(updateOnScroll); }
+  }
+  window.addEventListener('scroll', requestScrollTick, {passive:true});
+  window.addEventListener('resize', requestScrollTick, {passive:true});
+  requestScrollTick();
+
+  /* ---------- Mobile nav ---------- */
+  var navToggle = document.getElementById('navToggle');
+  var navMobile = document.getElementById('navMobile');
+  if (navToggle && navMobile){
+    function setStagger(reverse){
+      var items = navMobile.querySelectorAll('a, .btn');
+      var n = items.length;
+      items.forEach(function(el, i){
+        var order = reverse ? (n - 1 - i) : i;
+        el.style.transitionDelay = reduceMotion ? '0ms' : (order * 60) + 'ms';
+      });
+    }
+    function onMenuKeydown(e){
+      if (e.key === 'Escape' || e.key === 'Esc'){
+        closeMenu();
+        navToggle.focus();
+      }
+    }
+    function openMenu(){
+      setStagger(false);
+      navMobile.classList.add('is-open');
+      navToggle.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('menu-open');
+      document.addEventListener('keydown', onMenuKeydown);
+    }
+    function closeMenu(){
+      setStagger(true);
+      navMobile.classList.remove('is-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('menu-open');
+      document.removeEventListener('keydown', onMenuKeydown);
+    }
+    navToggle.addEventListener('click', function(){
+      if (navMobile.classList.contains('is-open')) closeMenu(); else openMenu();
+    });
+    navMobile.querySelectorAll('a, button').forEach(function(a){
+      a.addEventListener('click', closeMenu);
+    });
+  }
+
+  /* ---------- Scroll reveal ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if (reduceMotion || !('IntersectionObserver' in window)){
+    revealEls.forEach(function(el){ el.classList.add('is-visible'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.15, rootMargin:'0px 0px -40px 0px'});
+    revealEls.forEach(function(el){ io.observe(el); });
+  }
+
+  /* ---------- Revenue Calculator (copied unchanged from index.html) ----------
+     Vanilla JS, no dependencies. Two sliders (volume, average job
+     value) drive four dollar figures (lost monthly/yearly, recovered
+     monthly/yearly) plus a "test your recovery rate" slider that only
+     affects the recovered pair. Every input re-runs updateCalculator()
+     synchronously — no debouncing — so the display is always exactly in
+     sync with the sliders; the ~400ms requestAnimationFrame tween is
+     purely a visual count-up layered on top of that, not the source of
+     truth. Both scenarios use the same model — volume x job value, no
+     close rate — so nothing here is scenario-specific.
+     Verified math: 20 calls x $450 = $9,000/mo, x12 = $108,000/yr;
+     20% recovery = $1,800/mo, x12 = $21,600/yr — matches the defaults. */
+  (function initRevenueCalculator(){
+    var SCENARIOS = {
+      missedCalls: {
+        label: 'Missed Calls',
+        type: 'recurring',
+        volumeQuestion: 'How many calls do you miss each month?',
+        volumeUnit: 'calls',
+        volumeMin: 0, volumeMax: 100, volumeDefault: 20, volumeStep: 1,
+        resultLabel: "Total value of the calls you're already missing.",
+        recoveryQuestion: 'What if you recovered just {r}%?',
+        recoveryMin: 20, recoveryMax: 100, recoveryStep: 5, recoveryDefault: 20
+      },
+      webLeads: {
+        label: 'Web Leads',
+        type: 'recurring',
+        periodToggle: true,
+        periods: {
+          monthly: {
+            label: 'Monthly',
+            volumeQuestion: "How many form leads don't get a fast reply each month?",
+            volumeUnit: 'leads / month',
+            volumeMin: 0, volumeMax: 100, volumeDefault: 20, volumeStep: 1,
+            monthlyMultiplier: 1
+          },
+          weekly: {
+            label: 'Weekly',
+            volumeQuestion: "How many form leads don't get a fast reply each week?",
+            volumeUnit: 'leads / week',
+            volumeMin: 0, volumeMax: 50, volumeDefault: 5, volumeStep: 1,
+            monthlyMultiplier: 4.33
+          }
+        },
+        resultLabel: "Total value of the leads you're already paying for.",
+        recoveryQuestion: 'What if you recovered just {r}%?',
+        recoveryMin: 20, recoveryMax: 100, recoveryStep: 5, recoveryDefault: 20
+      }
+    };
+    var DEFAULT_PERIOD = 'monthly';
+    var DEFAULT_SCENARIO = 'missedCalls';
+
+    var scenarioButtons = document.querySelectorAll('.calc-scenario');
+    var volumeInput = document.getElementById('calcVolume');
+    var jobValueInput = document.getElementById('calcJobValue');
+    var recoveryRateInput = document.getElementById('calcRecoveryRate');
+    if (!volumeInput || !jobValueInput || !recoveryRateInput || !scenarioButtons.length) return;
+
+    var periodToggleEl = document.getElementById('calcPeriodToggle');
+    var periodButtons = document.querySelectorAll('.calc-period-btn');
+
+    var volumeQuestionEl = document.getElementById('calcVolumeQuestion');
+    var volumeValueEl = document.getElementById('calcVolumeValue');
+    var jobValueValueEl = document.getElementById('calcJobValueValue');
+    var recoveryQuestionEl = document.getElementById('calcRecoveryQuestion');
+    var resultLabelEl = document.getElementById('calcResultLabel');
+
+    var primaryAmountEl = document.getElementById('calcPrimaryAmount');
+    var primaryUnitEl = document.getElementById('calcPrimaryUnit');
+    var primarySecondaryEl = document.getElementById('calcPrimarySecondary');
+    var primaryOneTimeEl = document.getElementById('calcPrimaryOneTime');
+    var primaryYearlyEl = document.getElementById('calcPrimaryYearly');
+    var recoveredAmountEl = document.getElementById('calcRecoveredAmount');
+    var recoveredUnitEl = document.getElementById('calcRecoveredUnit');
+    var recoveredSecondaryEl = document.getElementById('calcRecoveredSecondary');
+    var recoveredYearlyEl = document.getElementById('calcRecoveredYearly');
+
+    var presetButtons = document.querySelectorAll('.calc-preset');
+    var scenarioSliders = [volumeInput];
+    var allSliders = [volumeInput, jobValueInput, recoveryRateInput];
+
+    var currentScenarioKey = DEFAULT_SCENARIO;
+    var currentPeriod = DEFAULT_PERIOD;
+    var currentJobValue = 450;
+
+    function formatMoney(n){
+      return '$' + Math.round(Math.max(0, n)).toLocaleString('en-US');
+    }
+
+    function pluralize(value, unit){
+      return value + ' ' + (value === 1 ? unit.replace(/s$/, '') : unit);
+    }
+
+    function jobPositionToValue(raw){
+      var min = parseFloat(jobValueInput.min), max = parseFloat(jobValueInput.max);
+      var range = max - min;
+      var p = (raw - min) / range;
+      var val = min + range * p * p;
+      var snapped = Math.round(val / 50) * 50;
+      return Math.min(max, Math.max(min, snapped));
+    }
+
+    function jobValueToPosition(value){
+      var min = parseFloat(jobValueInput.min), max = parseFloat(jobValueInput.max);
+      var range = max - min;
+      var p = Math.sqrt(Math.max(0, (value - min) / range));
+      return min + range * p;
+    }
+
+    function setSliderFill(input){
+      var min = parseFloat(input.min), max = parseFloat(input.max), val = parseFloat(input.value);
+      var pct = ((val - min) / (max - min)) * 100;
+      input.style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, #E5E5E5 ' + pct + '%)';
+    }
+
+    var rafHandles = {};
+    function animateNumber(el, from, to){
+      if (rafHandles[el.id]) cancelAnimationFrame(rafHandles[el.id]);
+      if (reduceMotion || from === to){
+        el.textContent = formatMoney(to);
+        return;
+      }
+      var start = null;
+      var duration = 400;
+      function step(ts){
+        if (start === null) start = ts;
+        var t = Math.min(1, (ts - start) / duration);
+        var eased = 1 - Math.pow(1 - t, 3);
+        el.textContent = formatMoney(from + (to - from) * eased);
+        if (t < 1){
+          rafHandles[el.id] = requestAnimationFrame(step);
+        } else {
+          el.textContent = formatMoney(to);
+          delete rafHandles[el.id];
+        }
+      }
+      rafHandles[el.id] = requestAnimationFrame(step);
+    }
+
+    var prevValues = {};
+    function setNumber(el, to, resetAnimation){
+      var from = (resetAnimation || !(el.id in prevValues)) ? to : prevValues[el.id];
+      prevValues[el.id] = to;
+      animateNumber(el, from, to);
+    }
+
+    function syncPresetActiveState(jobValue){
+      presetButtons.forEach(function(btn){
+        var isActive = parseInt(btn.getAttribute('data-value'), 10) === jobValue;
+        btn.classList.toggle('is-active', isActive);
+      });
+    }
+
+    function getVolumeConfig(scenario){
+      return scenario.periodToggle ? scenario.periods[currentPeriod] : scenario;
+    }
+
+    function syncPeriodButtons(){
+      periodButtons.forEach(function(btn){
+        var isActive = btn.getAttribute('data-period') === currentPeriod;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+
+    function applyVolumeConfig(scenario){
+      var volumeConfig = getVolumeConfig(scenario);
+      volumeQuestionEl.textContent = volumeConfig.volumeQuestion;
+      volumeInput.setAttribute('aria-label', volumeConfig.volumeQuestion);
+      volumeInput.min = volumeConfig.volumeMin;
+      volumeInput.max = volumeConfig.volumeMax;
+      volumeInput.step = volumeConfig.volumeStep;
+      volumeInput.value = volumeConfig.volumeDefault;
+    }
+
+    function applyPeriod(period, resetAnimation){
+      var scenario = SCENARIOS[currentScenarioKey];
+      if (!scenario.periodToggle || period === currentPeriod || !scenario.periods[period]) return;
+      currentPeriod = period;
+      syncPeriodButtons();
+      applyVolumeConfig(scenario);
+      updateCalculator(resetAnimation);
+    }
+
+    function applyScenario(key, resetAnimation){
+      var scenario = SCENARIOS[key];
+      currentScenarioKey = key;
+      currentPeriod = DEFAULT_PERIOD;
+
+      scenarioButtons.forEach(function(btn){
+        var isActive = btn.getAttribute('data-scenario') === key;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+
+      periodToggleEl.hidden = !scenario.periodToggle;
+      syncPeriodButtons();
+      applyVolumeConfig(scenario);
+
+      recoveryRateInput.min = scenario.recoveryMin;
+      recoveryRateInput.max = scenario.recoveryMax;
+      recoveryRateInput.step = scenario.recoveryStep;
+      recoveryRateInput.value = scenario.recoveryDefault;
+
+      resultLabelEl.textContent = scenario.resultLabel;
+
+      var isRecurring = scenario.type === 'recurring';
+      primaryUnitEl.textContent = isRecurring ? '/ month' : 'one-time campaign';
+      primarySecondaryEl.hidden = !isRecurring;
+      primaryOneTimeEl.hidden = isRecurring;
+      recoveredUnitEl.textContent = isRecurring ? '/ month' : 'from this campaign';
+      recoveredSecondaryEl.hidden = !isRecurring;
+
+      updateCalculator(resetAnimation);
+    }
+
+    function updateCalculator(resetAnimation){
+      var scenario = SCENARIOS[currentScenarioKey];
+      var volumeConfig = getVolumeConfig(scenario);
+      var volume = parseInt(volumeInput.value, 10);
+      var jobValue = currentJobValue;
+      var recoveryRate = parseInt(recoveryRateInput.value, 10);
+      var isRecurring = scenario.type === 'recurring';
+
+      volumeValueEl.textContent = pluralize(volume, volumeConfig.volumeUnit);
+      jobValueValueEl.textContent = '$' + jobValue.toLocaleString('en-US');
+      recoveryQuestionEl.textContent = scenario.recoveryQuestion.replace('{r}', recoveryRate);
+
+      var monthlyVolume = volume * (volumeConfig.monthlyMultiplier || 1);
+      var primary = monthlyVolume * jobValue;
+      var recovered = primary * (recoveryRate / 100);
+
+      setNumber(primaryAmountEl, primary, resetAnimation);
+      setNumber(recoveredAmountEl, recovered, resetAnimation);
+
+      if (isRecurring){
+        setNumber(primaryYearlyEl, primary * 12, resetAnimation);
+        setNumber(recoveredYearlyEl, recovered * 12, resetAnimation);
+      }
+
+      allSliders.forEach(setSliderFill);
+      syncPresetActiveState(jobValue);
+    }
+
+    scenarioButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var key = btn.getAttribute('data-scenario');
+        if (key === currentScenarioKey || !SCENARIOS[key]) return;
+        applyScenario(key, true);
+      });
+    });
+
+    periodButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        applyPeriod(btn.getAttribute('data-period'), true);
+      });
+    });
+
+    scenarioSliders.forEach(function(input){
+      input.addEventListener('input', function(){ updateCalculator(false); });
+    });
+    jobValueInput.addEventListener('input', function(){
+      currentJobValue = jobPositionToValue(parseFloat(jobValueInput.value));
+      updateCalculator(false);
+    });
+    recoveryRateInput.addEventListener('input', function(){ updateCalculator(false); });
+
+    presetButtons.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        currentJobValue = parseInt(btn.getAttribute('data-value'), 10);
+        jobValueInput.value = jobValueToPosition(currentJobValue);
+        updateCalculator(false);
+        jobValueInput.focus();
+      });
+    });
+
+    jobValueInput.value = jobValueToPosition(currentJobValue);
+    applyScenario(DEFAULT_SCENARIO, true);
+  })();
+
+})();
+</script>
+</body>
+</html>
