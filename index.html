@@ -474,36 +474,38 @@
      just a <video> in place of Cloth Barn's plain background-image div.
      Load-in stagger (heroFadeUp) is Cloth Barn's own animation, ported
      as-is rather than reusing the old line-mask reveal. */
-  /* The hero + the sticky nav together fill EXACTLY one screen. The nav is
-     position:sticky so it occupies 93px (--nav-h) of flow above the hero;
-     subtracting that is what makes "one scroll = next section, no gap"
-     work — a bare 100svh would push the hero 93px past the fold.
-       Desktop (>=861px): locked height + overflow:hidden — the compact
-         two-column content is tuned to sit well inside it, so the hero
-         never scrolls internally and the next section starts flush.
-       Mobile (<=860px): min-height + visible overflow — the taller stacked
-         form card must never be clipped; the page just scrolls through it
-         into the (flush, no-margin) next section.
-     No margin/padding on .hero itself, so nothing adds space below it. */
+  /* The hero + the sticky nav together fill EXACTLY one screen at every
+     width. The nav is position:sticky so it occupies 93px (--nav-h) of
+     flow above the hero; subtracting that (not a literal padding-top) is
+     what makes "header + hero = one screen" work without double-counting
+     the header's space — a padding-top would only be correct if the nav
+     were position:fixed (removed from flow), which it isn't. min-height
+     (not a locked height) plus visible overflow means the hero can still
+     grow — quiz card expanding to a taller step, a short viewport needing
+     more room — without ever clipping; it just adds a little scroll
+     instead of cutting content off. No margin/padding on .hero itself, so
+     nothing adds space below it. */
+  /* .hero itself carries NO size or overflow — it just wraps .hero-content
+     (the only in-flow child; the mesh/lines/glow/particle layers are all
+     position:absolute so they don't count) and sizes to fit it exactly,
+     same as the reference build. min-height and centering both live on
+     .hero-content instead (below).
+     This replaces a real, confirmed bug: .hero previously had
+     overflow-x:hidden paired with overflow-y:visible. Per the CSS
+     Overflow spec, when one axis is anything other than visible, a
+     visible value on the OTHER axis is forced to compute as auto instead
+     — so overflow-y was silently behaving as auto, turning .hero into a
+     scrollable box the instant anything inside it needed more room than
+     the box currently had (e.g. mid quiz-step-height-animation). That's
+     the nested scrollbar. Removing the axis mismatch removes the bug;
+     .hero doesn't need its own overflow at all once nothing constrains
+     its height. Horizontal-scroll safety for the decorative background
+     layers now lives on body (overflow-x:hidden, see near the top of
+     this stylesheet) instead. */
   .hero{
     position:relative;
     margin:0;
-    min-height:calc(100svh - var(--nav-h));
-    display:flex;
-    align-items:center;
-    justify-content:center;
     isolation:isolate;
-    overflow-x:hidden;
-    overflow-y:visible;
-  }
-  @supports not (min-height:calc(100svh - 1px)){
-    .hero{ min-height:calc(100vh - var(--nav-h)); }
-  }
-  @media (min-width:861px){
-    .hero{ height:calc(100svh - var(--nav-h)); overflow:hidden; }
-    @supports not (height:calc(100svh - 1px)){
-      .hero{ height:calc(100vh - var(--nav-h)); }
-    }
   }
 
   /* ============================================================
@@ -660,77 +662,80 @@
     .hero-glow{animation:none !important;opacity:0.7;will-change:auto;}
   }
 
-  /* Split two-column hero: left = copy, right = form card.
-     minmax(0,1fr) (not a bare 1fr) so a long word / wide option grid can't
-     force a column past its track and blow out or clip the layout.
-     align-items:center is Grid's equivalent of flexbox's cross-axis
-     centering: each column's box is sized to its own content (not
-     stretched) and centered within the row — so the (now smaller)
-     .hero-quiz card sits vertically centered against the left column,
-     with equal space above and below, rather than pinned to the top. */
+  /* Single real flex column, at every width — badge, headline, sub,
+     services, quiz card, buttons, trust row are all TRUE flex siblings,
+     not grid-column neighbors. .hero-copy is display:contents (below) so
+     it contributes no box of its own; `order` places .hero-quiz — a DOM
+     sibling of .hero-copy, not its child — between the service strip and
+     the CTA buttons. Because everything is one flex flow, the button row
+     is a genuine next-sibling of the quiz card: it moves down by exactly
+     the card's rendered height whenever the card grows (step change,
+     height-expand animation), with no separate column, no fixed height on
+     any ancestor, and no absolute positioning anywhere in the chain. */
+  /* min-height (not height) here — not on .hero — is what makes "header +
+     hero = one screen" work: the sticky nav already reserves its own
+     --nav-h of flow space above the hero, so subtracting it keeps the
+     total at exactly 100svh without double-counting the header (a literal
+     padding-top would double-count it, since the header is
+     position:sticky and never leaves flow — it isn't fixed). Being a
+     min-height (a floor, not a cap) with no max-height anywhere in this
+     chain means content can always grow past one screen — a slightly
+     taller quiz step, a very short window — without ever being clipped or
+     needing its own scroll container; the page just scrolls a little
+     further, exactly like any other normal block content. */
   .hero-content{
     position:relative;
     z-index:1;
     max-width:1180px;
     width:100%;
     margin:0 auto;
-    padding:110px 24px 32px;                 /* top pad reserves room for the centred crest */
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-    gap:48px;
-    align-items:center;
-    text-align:left;
-  }
-  @media (min-width:640px){ .hero-content{padding-left:40px;padding-right:40px;} }
-  @media (min-width:1100px){ .hero-content{padding-left:56px;padding-right:56px;} }
-  /* tablet: tighter column gutter */
-  @media (max-width:1024px){ .hero-content{ gap:24px; } }
-  /* mobile: stack to ONE column at 767px and below — 768px itself still
-     gets the two-column desktop layout. */
-  @media (max-width:767px){
-    .hero-content{ grid-template-columns:minmax(0,1fr); gap:28px; padding:24px 20px; }
-  }
-
-  /* left column */
-  .hero-copy{
+    padding:40px 1.25rem;
+    min-height:calc(100svh - var(--nav-h));
     display:flex;
     flex-direction:column;
-    align-items:flex-start;
-    text-align:left;
-    min-width:0;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:clamp(1.5rem, 3vw, 2.5rem);
   }
-  .hero-copy .hero-headline{ font-size:clamp(2.25rem, 3.2vw, 3.25rem); }
-  .hero-copy .hero-sub{ margin:0 0 16px; }
-  .hero-copy .hero-services{ margin:0 0 20px; }
-  .hero-copy .hero-actions{ justify-content:flex-start; }
-  /* stack the trust statements in the narrower column */
-  .hero-copy .hero-reassurance{ flex-direction:column; align-items:flex-start; row-gap:8px; }
-  .hero-copy .hero-reassurance-item{ text-align:left; }
-  .hero-copy .hero-reassurance-divider{ display:none; }
+  @supports not (min-height:calc(100svh - 1px)){
+    .hero-content{ min-height:calc(100vh - var(--nav-h)); }
+  }
+  @media (min-width:768px){ .hero-content{ padding:60px 40px; } }
+
+  .hero-copy{ display:contents; }
+
+  /* Grid's justify-items:stretch doesn't apply here — flex's align-items
+     defaults to shrink-to-fit per item, so only items that WANT to stay
+     shrink-wrapped (the badge pill, the quiz card, which manages its own
+     width) need anything explicit; the text blocks and the button/trust
+     rows need align-self:stretch so they wrap at the column's full width
+     instead of sizing to their own max-content width (a flex-item default
+     that would otherwise let the headline render as one long unwrapped
+     line rather than wrapping like a normal block). */
+  .hero-badge{ order:1; align-self:center; }
+  .hero-headline{ order:2; align-self:stretch; max-width:900px; margin:0 auto 12px; }
+  .hero-sub{ order:3; align-self:stretch; }
+  .hero-services{ order:4; align-self:stretch; }
+  .hero-quiz{ order:5; align-self:center; }
+  .hero-actions{ order:6; align-self:stretch; }
+  .hero-reassurance{ order:7; align-self:stretch; }
 
   /* Max-height guard: on short viewports the 100svh box has less room
-     than the content needs at its normal sizes, so step the crest/
-     headline/sub down in two tiers rather than letting anything clip. */
-  /* Short viewports (≈1366x768 and below): drop the decorative badge, shrink
-     the crest, and tighten the copy so the headline → quiz card all clear the
-     fold without scrolling. Headline keeps its full size. The subline and
-     service strip are both longer than the copy this tier was originally
-     tuned for, so they get extra compaction here too. */
+     than the content needs at its normal sizes, so tighten the copy in
+     two tiers rather than letting anything clip. Headline keeps its full
+     size; the subline and service strip get extra compaction. */
   @media (max-height:820px){
-    .hero-content{ padding:72px 24px 16px; gap:32px; }
-    .hero-badge{ display:none; }
-    .hero-sub{ font-size:14px; }
-    .hero-copy .hero-sub{ margin-bottom:10px; }
-    .hero-services{ font-size:12px; }
-    .hero-copy .hero-services{ margin-bottom:14px; }
+    .hero-content{ padding:56px 1.25rem 16px; }
+    .hero-sub{ font-size:14px; margin-bottom:10px; }
+    .hero-services{ font-size:12px; margin-bottom:14px; }
     .hero-reassurance{ margin-top:10px; }
     .hero-reassurance-item{ font-size:12px; }
     .hero-quiz{ padding:14px; }
     .quiz-grid .quiz-opt{ min-height:70px; padding:12px; }   /* already at the compact floor */
   }
   @media (max-height:640px){
-    .hero-sub{ font-size:13px; }
-    .hero-copy .hero-sub{ margin-bottom:8px; }
+    .hero-sub{ font-size:13px; margin-bottom:8px; }
     .hero-services{ display:none; }   /* extra line of copy is the first to go at this height */
   }
 
@@ -748,38 +753,6 @@
     .hero-badge,.hero-headline,.hero-sub,.hero-services,.hero-actions,.hero-reassurance{animation:none;opacity:1;transform:none;}
   }
 
-  /* Mobile layout: move the quiz card up between the headline and the
-     subline instead of leaving it after all the copy. .hero-copy is the
-     flex column that normally holds badge/headline/sub/services/
-     actions/reassurance; display:contents here strips its own box so
-     those children become direct items of .hero-content's grid
-     alongside .hero-quiz, then `order` interleaves them into the wanted
-     sequence — grid order can't reach into a sibling's children
-     otherwise, since .hero-quiz and .hero-copy are siblings, not
-     .hero-quiz and the headline. */
-  @media (max-width:767px){
-    .hero-copy{ display:contents; }
-    /* Grid items default to justify-items:stretch — harmless for text
-       blocks (they wrap to fill the column either way) but it would
-       stretch the badge's visible background pill into a full-width
-       bar, so it needs an explicit justify-self back to content-width,
-       left-aligned. */
-    .hero-badge{ order:2; justify-self:start; }
-    .hero-headline{ order:3; }
-    .hero-quiz{ order:4; }
-    .hero-sub{ order:5; }
-    .hero-services{ order:6; }
-    .hero-actions{ order:7; }
-    .hero-reassurance{ order:8; }
-
-    /* .hero-copy .hero-headline (higher specificity, set above) would
-       otherwise keep winning over a plain .hero-headline override here. */
-    .hero-copy .hero-headline{ font-size:clamp(1.75rem, 6vw, 2rem); }
-    .hero-sub{ font-size:14px; }
-    .hero-services{ font-size:12px; }
-    .hero-actions .btn{ font-size:16px; }
-  }
-
   .hero-badge{
     display:inline-block;
     font-size:11px;
@@ -790,7 +763,7 @@
     background:var(--accent);
     padding:8px 16px;
     border-radius:4px;
-    margin-bottom:12px;
+    margin-bottom:16px;                      /* eyebrow -> headline gap */
   }
   /* Single centered statement, wraps to ~2 balanced lines within the 900px
      column — no forced <br>, no nowrap. */
@@ -865,10 +838,8 @@
     margin:0 16px;
     flex-shrink:0;
   }
-  @media (max-width:767px){
-    .hero-reassurance{ flex-direction:column; row-gap:8px; }
-    .hero-reassurance-divider{ display:none; }
-  }
+  /* No mobile stacking override: "No contracts. / Cancel anytime." is short
+     enough to stay on one line down to the smallest supported viewport. */
 
   /* ---------- Capability cards ----------
      Light Cloth-Barn-palette card: white surface, hairline border, soft
@@ -902,45 +873,166 @@
   .on-light .chip{background:rgba(30,64,175,0.06);border-color:rgba(30,64,175,0.18);color:var(--accent);}
   .on-light .dot{background:var(--accent);}
 
-  /* ---------- "What Are You Struggling With?" — glowing solution carousel ----------
-     A glassmorphic, glowing nav bar (5 labels + circular arrows) drives a
-     single large "flyer" graphic and a description block below it. All 5
-     flyers are stacked (position:absolute) inside a fixed-aspect-ratio
-     box; JS drives each transition entirely via inline transform/opacity
-     (the CSS below only supplies the transition timing + the resting
-     off-screen default), which is what lets the same mechanism animate
-     correctly in EITHER direction — next slides the old flyer out left
-     and brings the new one in from the right, prev is the mirror image.
-     The description cross-fades out quickly, swaps text once the image
-     settles (400ms), then fades back in — "updates after the image
-     settles," not simultaneously with it. Auto-advances every 8s, paused
-     by any interaction (arrows, labels, swipe) and resumed 5s later, and
-     paused entirely off-screen/tab-hidden (IntersectionObserver). Nav
-     background is intentionally a good deal more opaque than the literal
-     rgba(30,64,175,0.1) spec value — the section sits on a light
-     background, and at 10% opacity blue-on-near-white leaves white nav
-     text/icons with nowhere near enough contrast to read; boosting the
-     fill is what makes the glassmorphic glow actually work here. */
-  #what-we-do{ background:#F8F9FB; padding:80px 40px; }
+  /* ---------- "What Are You Struggling With?" — solution carousel ----------
+     A clean, low-glow nav bar always shows exactly 3 labels (left/right
+     dimmed, center active) and rotates them like a real carousel: 5 fixed
+     DOM "slots" sit in a track past the 3-wide viewport (offsets -2..+2
+     relative to the active solution, each a flex-basis of 20% of the
+     track's own 166.6667%-wide box — i.e. exactly one third of the
+     viewport, all in %, no JS measurement needed). A step slides the
+     track by one slot-width, then, once settled, snaps the track back to
+     its resting position and rebinds all 5 slots' icon/text to the new
+     index — the same "animate, then reset + rebind" trick used by the
+     image/description swap below, just applied to text labels instead of
+     a DOM clone. Whichever slot is about to become the new center gets
+     .is-active added right before the slide starts, so its bold/accent
+     styling transitions concurrently with the motion. The flyer image
+     below is cross-faded/slid with inline transform/opacity (snap the
+     incoming one off-screen on the entry side with transition:none,
+     force a reflow, animate both to rest over 400ms) — which is what
+     lets the same code animate correctly in both directions. The
+     description cross-fades out fast and swaps text only once the image
+     has settled (400ms), never simultaneously with the slide. Auto-
+     advances every 8s, paused by any interaction and resumed 5s later,
+     and paused entirely off-screen/tab-hidden. */
+
+  /* ============================================================
+     ABOUT STRIP — a single <a> straddling the hero/carousel seam.
+     Placed as its own sibling between the two <section>s (in the HTML,
+     right after the hero's closing tag) rather than nested inside
+     either — the cleaner of the two options the task offered, and the
+     only one needed here: neither .hero nor #what-we-do currently has
+     overflow:hidden or a locked height (the hero's version of that was
+     the actual cause of a different bug, already removed two tasks
+     ago), so there's nothing to clip it regardless.
+     .about-strip-wrap carries the negative margin-top that pulls the
+     card up over the hero's bottom edge, plus the max-width/centering/
+     side padding; .about-strip is the actual bordered, shadowed, z-
+     indexed card — overflow:hidden on IT (not the wrap) is what clips
+     the image's hover-scale to the rounded border instead of letting it
+     bulge past the corners. Both non-positioned sections it straddles
+     (.hero and #what-we-do) paint in normal document flow with no
+     z-index of their own, so this card's explicit z-index always wins
+     regardless of DOM order — no extra stacking changes needed on
+     either section. #what-we-do's own padding-top (below) is widened
+     to clear the ~55% of the card that hangs below the seam. */
+  .about-strip-wrap{
+    position:relative;
+    z-index:5;
+    max-width:1100px;
+    margin:-180px auto 0;
+    padding:0 24px;
+  }
+  .about-strip{
+    display:block;
+    position:relative;
+    border-radius:14px;
+    overflow:hidden;
+    border:2px solid #F97316;
+    box-shadow:0 10px 30px -8px rgba(0,0,0,0.4), 0 0 0 rgba(249,115,22,0);
+    cursor:pointer;
+    transform:translateY(0);
+    transition:transform 250ms var(--ease), box-shadow 250ms var(--ease), border-color 250ms var(--ease);
+  }
+  .about-strip:hover,
+  .about-strip:focus-visible{
+    transform:translateY(-4px);
+    border-color:#FDBA74;
+    box-shadow:0 18px 40px -8px rgba(0,0,0,0.45), 0 0 32px 6px rgba(249,115,22,0.45);
+  }
+  .about-strip:active{ transform:translateY(0) scale(0.99); }
+  .about-strip:focus-visible{ outline:2px solid #fff; outline-offset:4px; }
+  .about-strip-img{
+    display:block;
+    width:100%;
+    aspect-ratio:3/1;
+    object-fit:cover;
+    object-position:center;
+    transition:transform 250ms var(--ease);
+  }
+  .about-strip:hover .about-strip-img,
+  .about-strip:focus-visible .about-strip-img{ transform:scale(1.03); }
+  .about-strip-overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to top, rgba(5,10,24,0.7) 0%, rgba(5,10,24,0.12) 45%, rgba(5,10,24,0) 65%);
+    pointer-events:none;
+  }
+  .about-strip-label{
+    position:absolute;
+    right:16px; bottom:16px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    min-height:44px;
+    padding:10px 14px 10px 18px;
+    border-radius:999px;
+    background:rgba(5,10,24,0.55);
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
+  }
+  .about-strip-text{
+    font-size:clamp(13px, 1.6vw, 16px);
+    font-weight:700;
+    color:#fff;
+    white-space:nowrap;
+  }
+  .about-strip-text-short{ display:none; }
+  .about-strip-arrow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:28px; height:28px;
+    flex-shrink:0;
+    border-radius:50%;
+    background:#F97316;
+    color:#fff;
+    transition:transform 250ms var(--ease);
+  }
+  .about-strip-arrow svg{ width:15px; height:15px; }
+  .about-strip:hover .about-strip-arrow,
+  .about-strip:focus-visible .about-strip-arrow{ transform:translateX(4px); }
+
+  @media (max-width:767px){
+    .about-strip-wrap{ margin-top:-70px; padding:0 1.25rem; }
+    .about-strip-img{ aspect-ratio:2/1; object-position:30% center; }
+    .about-strip-text-full{ display:none; }
+    .about-strip-text-short{ display:inline; }
+  }
+  @media (max-width:480px){
+    .about-strip-label{ right:10px; bottom:10px; padding:8px 12px 8px 14px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .about-strip{ transition:border-color 150ms linear, box-shadow 150ms linear; }
+    .about-strip:hover,
+    .about-strip:focus-visible{ transform:none; }
+    .about-strip-img,.about-strip-arrow{ transition:none; }
+    .about-strip:hover .about-strip-img,
+    .about-strip:focus-visible .about-strip-img,
+    .about-strip:hover .about-strip-arrow,
+    .about-strip:focus-visible .about-strip-arrow{ transform:none; }
+  }
+
+  #what-we-do{ background:#F8F9FB; padding:230px 40px 50px; }
   #what-we-do .container{ padding-left:0; padding-right:0; max-width:960px; }
   #what-we-do .section-head{ margin-left:auto; margin-right:auto; text-align:center; }
 
   .solcar{ position:relative; }
 
-  /* ---- glowing nav bar ---- */
+  /* ---- nav bar: flat, angular, low-glow ---- */
   .solcar-nav{
     display:flex;
     align-items:center;
-    gap:10px;
-    width:clamp(300px, 90vw, 900px);
-    margin:0 auto 40px;
-    padding:12px 16px;
-    border-radius:40px;
-    background:rgba(30,64,175,0.88);
-    border:2px solid #60A5FA;
-    box-shadow:0 0 20px rgba(96,165,250,0.5);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
+    gap:8px;
+    width:100%;
+    max-width:640px;
+    margin:0 auto 20px;
+    padding:12px 20px;
+    background:#fff;
+    border-radius:8px;
+    border-bottom:1px solid #E5E7EB;
+    box-shadow:0 2px 8px rgba(0,0,0,0.05);
     opacity:0;
     animation:solcarFadeIn 500ms var(--ease) both;
   }
@@ -948,42 +1040,41 @@
     flex-shrink:0;
     display:flex; align-items:center; justify-content:center;
     width:44px; height:44px;
-    border-radius:50%;
-    background:rgba(96,165,250,0.2);
-    border:1px solid #60A5FA;
-    color:#fff;
+    border-radius:8px;
+    border:0;
+    background:none;
+    color:#374151;
     cursor:pointer;
-    box-shadow:0 0 12px rgba(96,165,250,0.4);
-    transition:box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
   }
-  .solcar-nav-arrow svg{ width:22px; height:22px; }
-  .solcar-nav-arrow:hover{ background:rgba(96,165,250,0.35); box-shadow:0 0 20px rgba(96,165,250,0.75); }
-  .solcar-nav-arrow:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
+  .solcar-nav-arrow svg{ width:24px; height:24px; }
+  .solcar-nav-arrow:hover{ background:#F3F4F6; color:var(--accent); }
+  .solcar-nav-arrow:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 
-  .solcar-nav-labels{
-    flex:1;
-    min-width:0;
+  .solcar-nav-viewport{ flex:1; min-width:0; overflow:hidden; }
+  .solcar-nav-track{
     display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:4px;
+    width:166.6667%;
+    transform:translateX(-20%);
+    transition:transform 400ms cubic-bezier(0.16,1,0.3,1);
   }
-  .solcar-nav-label{
-    flex:1;
+  .solcar-nav-slot{
+    flex:0 0 20%;
     min-width:0;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:5px;
-    padding:6px 4px;
+    gap:3px;
+    padding:4px 4px;
     background:none;
     border:0;
-    color:#fff;
+    border-radius:6px;
+    color:#374151;
     opacity:0.6;
     cursor:pointer;
     transition:opacity var(--dur) var(--ease);
   }
-  .solcar-nav-icon{ width:20px; height:20px; flex-shrink:0; transition:filter var(--dur) var(--ease); }
+  .solcar-nav-icon{ width:20px; height:20px; flex-shrink:0; transition:color var(--dur) var(--ease); }
   .solcar-nav-text{
     font-size:13px;
     font-weight:600;
@@ -992,15 +1083,25 @@
     overflow:hidden;
     text-overflow:ellipsis;
     max-width:100%;
+    transition:font-size var(--dur) var(--ease), color var(--dur) var(--ease);
   }
-  .solcar-nav-label.is-active{ opacity:1; }
-  .solcar-nav-label.is-active .solcar-nav-icon{ filter:drop-shadow(0 0 6px rgba(96,165,250,0.9)); }
-  .solcar-nav-label:hover{ opacity:0.85; }
-  .solcar-nav-label:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
+  .solcar-nav-slot.is-active{ opacity:1; background:rgba(30,64,175,0.08); }
+  .solcar-nav-slot.is-active .solcar-nav-icon{ color:var(--accent); }
+  .solcar-nav-slot.is-active .solcar-nav-text{ font-size:16px; font-weight:700; color:var(--ink); }
+  .solcar-nav-slot.is-pop{ animation:solcarLabelPop 300ms var(--ease); }
 
-  /* ---- flyer image ---- */
+  @keyframes solcarLabelPop{ 0%{ transform:scale(1); } 50%{ transform:scale(1.05); } 100%{ transform:scale(1); } }
+
+  /* ---- flyer image ----
+     max-width:460px deliberately matches the flyer SVGs' own
+     viewBox="0 0 460 300" 1:1 — shrinking the wrapper further while
+     keeping the 460:300 aspect-ratio below would start letterboxing the
+     SVGs (their fixed-position text/icon coordinates are drawn for that
+     exact canvas), so 460px is the floor for a distortion-free reduction;
+     it also lands the rendered height at exactly 300px, the top of the
+     target 300-350px band. */
   .solcar-image-wrap{
-    max-width:500px;
+    max-width:460px;
     margin:0 auto;
     opacity:0;
     transform:translateX(-24px);
@@ -1033,16 +1134,18 @@
   .solcar-desc-wrap{
     max-width:520px;
     margin:0 auto;
-    padding:24px 0;
+    padding:16px 0;
     text-align:center;
     opacity:0;
     animation:solcarFadeIn 300ms var(--ease) 200ms both;
+    transition:opacity 300ms var(--ease);
   }
-  .solcar-desc-title{ font-size:22px; font-weight:700; letter-spacing:-0.01em; color:var(--ink); margin:0 0 10px; }
-  .solcar-desc-text{ font-size:16px; font-weight:400; line-height:1.6; color:var(--ink); opacity:0.8; margin:0; }
+  .solcar-desc-wrap.is-updating{ opacity:0; }
+  .solcar-desc-title{ font-size:18px; font-weight:700; letter-spacing:-0.01em; color:var(--ink); margin:0 0 8px; }
+  .solcar-desc-text{ font-size:14px; font-weight:400; line-height:1.45; color:var(--ink); opacity:0.8; margin:0; }
   .solcar-desc-cta{
     display:inline-flex; align-items:center; justify-content:center;
-    margin-top:24px;
+    margin-top:12px;
     padding:12px 32px;
     border:0; border-radius:8px;
     background:var(--accent);
@@ -1058,19 +1161,26 @@
   @keyframes solcarFadeIn{ from{opacity:0;} to{opacity:1;} }
   @keyframes solcarFadeSlideIn{ from{opacity:0;transform:translateX(-24px);} to{opacity:1;transform:translateX(0);} }
 
-  /* mobile: nav shows a sliding 3-label window (JS toggles [hidden] on the
-     rest); arrows already meet the 44px+ tap-target floor at all sizes. */
+  /* mobile: still exactly 3 slots (same track mechanism); arrows already
+     meet the 44px+ tap-target floor at all sizes. */
   @media (max-width:768px){
-    #what-we-do{ padding:64px 24px; }
-    .solcar-nav{ padding:10px 12px; gap:8px; }
+    #what-we-do{ padding:36px 24px; }
+    .solcar-nav{ padding:8px 12px; gap:4px; margin-bottom:16px; }
+    .solcar-nav-slot{ padding:3px 2px; }
     .solcar-nav-text{ font-size:12px; }
+    .solcar-nav-slot.is-active .solcar-nav-text{ font-size:14px; }
     .solcar-image-wrap{ max-width:90vw; }
+    .solcar-desc-wrap{ padding:12px 0; }
+    .solcar-desc-title{ font-size:16px; margin-bottom:6px; }
+    .solcar-desc-text{ font-size:13px; }
+    .solcar-desc-cta{ margin-top:12px; }
   }
 
   @media (prefers-reduced-motion:reduce){
     .solcar-nav,.solcar-image-wrap,.solcar-desc-wrap{ animation:none; opacity:1; transform:none; }
     .solcar-flyer{ transition:opacity 200ms linear; }
-    .solcar-nav-arrow,.solcar-nav-label,.solcar-desc-cta{ transition:none; }
+    .solcar-nav-arrow,.solcar-nav-slot,.solcar-nav-track,.solcar-nav-text,.solcar-desc-cta,.solcar-desc-wrap{ transition:none; }
+    .solcar-nav-slot.is-pop{ animation:none; }
     .solcar-desc-cta:hover{ transform:none; }
   }
 
@@ -1164,10 +1274,15 @@
      contrast (white on flat blue) rather than the old dark-band-with-
      soft-glow treatment, so this reads as the page's final, unmissable
      call to action rather than another quiet section. */
+  /* padding cut from 80px to 48px — at 80px, this solid-blue band's own
+     top/bottom padding plus its content's internal margins (headline/sub/
+     actions margin-top stacking on top of each other) added up to far
+     more empty space than the actual headline+sub+buttons content needed,
+     reading as a tall dead band above/below a small centered block. */
   .cta-band-v2{
     position:relative;
     background:var(--accent);
-    padding:80px 40px;
+    padding:48px 40px;
     text-align:center;
   }
   .cta-band-v2 .container{padding:0;max-width:var(--container);margin:0 auto;}
@@ -1179,10 +1294,10 @@
     letter-spacing:-0.02em;
     color:#fff;
     max-width:18ch;
-    margin:14px auto 0;
+    margin:10px auto 0;
   }
   .cta-band-v2-sub{
-    margin:20px auto 0;
+    margin:14px auto 0;
     font-size:18px;
     color:rgba(255,255,255,0.9);
     max-width:46ch;
@@ -1192,7 +1307,7 @@
     flex-direction:column;
     align-items:center;
     gap:18px;
-    margin-top:36px;
+    margin-top:28px;
   }
   .cta-band-v2-buttons{
     display:flex;
@@ -1251,13 +1366,19 @@
   #contact .cta-band-v2-sub.reveal{transition-delay:200ms;}
   #contact .cta-band-v2-actions.reveal{transition-delay:300ms;}
 
-  /* ---------- Footer ---------- */
-  .footer{background:var(--ink);border-top:1px solid var(--line);padding:64px 0 32px;}
+  /* ---------- Footer ----------
+     Compacted: vertical padding roughly halved, tighter gaps throughout,
+     type stepped down one size across the board (tagline/links/column
+     headings), while .footer-brand-name stays the largest text in the
+     block so the wordmark still anchors it. .footer-cols was already a
+     2-column grid at every width (no stacking media query ever existed
+     here) — SITE and CONTACT already sit side by side on mobile. */
+  .footer{background:var(--ink);border-top:1px solid var(--line);padding:32px 0 16px;}
   .footer-top{
     display:flex;
     flex-direction:column;
-    gap:40px;
-    padding-bottom:44px;
+    gap:24px;
+    padding-bottom:24px;
     border-bottom:1px solid var(--line);
   }
   @media (min-width:760px){
@@ -1268,118 +1389,38 @@
      icon-only, so the name that used to be baked into the old image
      is added back as text here. */
   .footer-brand-row{display:flex;align-items:center;gap:10px;}
-  .footer-brand-name{font-size:17px;font-weight:700;letter-spacing:-0.02em;color:#fff;}
-  .footer-brand p{margin-top:16px;font-size:14px;max-width:32ch;}
-  .footer-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;}
-  @media (min-width:480px){ .footer-cols{grid-template-columns:repeat(2, minmax(140px,auto));gap:56px;} }
+  .footer-brand-name{font-size:16px;font-weight:700;letter-spacing:-0.02em;color:#fff;}
+  .footer-brand p{margin-top:10px;font-size:13px;line-height:1.4;max-width:32ch;}
+  .footer-cols{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+  @media (min-width:480px){ .footer-cols{grid-template-columns:repeat(2, minmax(140px,auto));gap:40px;} }
   .footer-col h4{
-    font-size:11px;
+    font-size:10px;
     font-weight:500;
     letter-spacing:0.16em;
     text-transform:uppercase;
     color:var(--muted);
-    margin-bottom:18px;
+    margin-bottom:12px;
   }
-  .footer-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .footer-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
   .footer-col a{
-    font-size:14.5px;
+    font-size:13px;
     color:rgba(255,255,255,0.8);
-    min-height:44px;
+    min-height:36px;
     display:flex;
     align-items:center;
     transition:color var(--dur) var(--ease);
   }
   .footer-col a:hover{color:#fff;}
   .footer-bottom{
-    padding-top:28px;
+    padding-top:16px;
     display:flex;
     flex-direction:column;
-    gap:10px;
+    gap:8px;
     font-size:12px;
     color:rgba(255,255,255,0.35);
   }
   @media (min-width:640px){
     .footer-bottom{flex-direction:row;justify-content:space-between;}
-  }
-
-  /* ---------- Instagram popup (Cloth Barn .fb-toast pattern) ----------
-     Complementary landmark, not a dialog: no backdrop, no focus trap, no
-     scroll lock. Appears once at 3.5s, fades+rises, stays until
-     dismissed (dismissal persists via localStorage). href is a
-     placeholder pending the real Instagram URL.
-
-     Bug this replaces: .ig-toast-link svg had no width/height, on either
-     the element or its CSS — an inline SVG with no explicit size falls
-     back to the browser default intrinsic box (~300x150px), which blew
-     the whole pill out to icon-sized-as-a-poster with the label pushed
-     out/clipped. Every icon below is now sized in both the markup and
-     the CSS. */
-  /* Narrowed from 240px to fit "Follow us" (was "Follow us on
-     Instagram", which is why it used to truncate) — 160px rather than
-     a literal 150px so the text has real breathing room instead of
-     landing right back at the ellipsis edge. */
-  .ig-toast{
-    position:fixed;
-    right:24px;bottom:24px;
-    z-index:850;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    width:160px;
-    height:48px;
-    padding:0 8px 0 14px;
-    background:var(--white);
-    border-radius:var(--radius-pill);
-    box-shadow:0 12px 32px -8px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.1);
-    opacity:0;
-    transform:translateY(12px);
-    transition:opacity 600ms var(--ease), transform 600ms var(--ease);
-  }
-  .ig-toast[hidden]{display:none;}
-  .ig-toast.is-visible{opacity:1;transform:translateY(0);}
-
-  .ig-toast-link{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex:1 1 auto;
-    min-width:0;
-    color:var(--ink);
-  }
-  .ig-toast-link:hover{color:var(--accent);}
-  .ig-toast-link svg{width:20px;height:20px;flex-shrink:0;color:var(--accent);}
-  .ig-toast-link span{
-    font-size:14px;
-    font-weight:600;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  .ig-toast-close{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:28px;height:28px;
-    border-radius:50%;
-    flex-shrink:0;
-    color:var(--muted-on-light);
-    background:transparent;
-    border:none;
-    cursor:pointer;
-    transition:background 300ms var(--ease), color 300ms var(--ease);
-  }
-  .ig-toast-close:hover{background:rgba(10,10,10,0.06);color:var(--ink);}
-  .ig-toast-close svg{width:12px;height:12px;display:block;}
-
-  /* Hidden entirely below 640px, not just repositioned — !important
-     because it has to win over both the base display:flex and the
-     is-visible/hidden states regardless of which one JS has toggled. */
-  @media (max-width:640px){
-    .ig-toast{display:none !important;}
-  }
-  @media (prefers-reduced-motion:reduce){
-    .ig-toast{transition:opacity 250ms linear;transform:none;}
   }
 
   /* ---------- Scroll progress ---------- */
@@ -1405,25 +1446,31 @@
     border:0;
   }
 
-  /* ---------- Hero form card (right column) ----------
-     Right cell of the .hero-content grid. Always fully visible — the 3-step
-     quiz shows step 1 by default, no collapse/expand.
-     Pure-white panel, hairline border, deep float shadow and a 3px warm-accent
-     top bar, so it reads as the hero's focal point against the animated mesh.
-     The quiz internals were built dark, so their colours are re-mapped for
-     light — scoped to .hero-quiz only. */
+  /* ---------- Hero form card ----------
+     A DOM sibling of .hero-copy, not its child; `order` (see the flex
+     column rules near .hero-content) places it between the service strip
+     and the CTA buttons at every width — a real flex sibling, so nothing
+     below it needs to know the card's height in advance. height is never
+     set here (stays auto at rest); the step-to-step expand animation
+     (JS, initHeroQuiz) only ever pins an explicit height on .quiz-body
+     DURING a transition and releases it back to auto once settled, so
+     this outer wrapper's box always equals the card's real rendered
+     height — never smaller, never stale.
+     Pure-white panel against the louder background (see .hero-media):
+     hairline border, a firmer float shadow, and a 3px warm-accent top
+     bar, so it reads as a clearly defined card. The quiz internals were
+     built dark, so their colours are re-mapped for light — scoped to
+     .hero-quiz only. */
   .hero-quiz{
     position:relative;
-    width:100%;
-    max-width:420px;
-    justify-self:center;
+    width:min(560px, 100%);
     margin:0;
     padding:20px;
     background:#fff;
     color:#0E0E12;
-    border:1px solid rgba(0,0,0,0.08);
+    border:1px solid rgba(30,64,175,0.14);
     border-radius:16px;
-    box-shadow:0 16px 32px -8px rgba(0,0,0,0.35), 0 40px 80px -12px rgba(0,0,0,0.45);
+    box-shadow:0 1px 2px rgba(0,0,0,0.06), 0 16px 32px -8px rgba(5,10,24,0.45), 0 32px 64px -16px rgba(5,10,24,0.35);
     text-align:left;
     overflow:hidden;                         /* clips the step cross-fade; rounds the top bar */
     scroll-margin-top:110px;
@@ -1447,14 +1494,10 @@
     background:#F97316;
     z-index:2;
   }
-  @media (max-width:767px){
-    /* Inset from the edges (roughly 90vw) rather than filling the column —
-       min(...,100%) is a safety clamp so it can never exceed the column's
-       own padded width even at the point where 90vw and that width are
-       almost equal (~390px). justify-self stays the base rule's "center"
-       now that the card is deliberately narrower than the column. */
-    .hero-quiz{ width:min(90vw, 100%); min-width:0; margin-bottom:20px; padding:24px; }
-  }
+  /* No mobile width override needed: .hero-content now carries its own
+     1.25rem horizontal padding (see the max-width:767px block near
+     .hero-content), so the card's base width:min(560px,100%) already
+     fills exactly that padded column with no extra inset math. */
   @media (max-width:480px){ .hero-quiz{ padding:18px 14px; } }
 
   /* Bold intro line above the progress bar. The card is white, so the
@@ -1467,7 +1510,7 @@
     color:#0E0E12;
     text-align:left;
   }
-  .hero-quiz .quiz-progress{ background:rgba(16,24,40,0.10); margin-right:0; }
+  .hero-quiz .quiz-progress{ height:4px; background:rgba(16,24,40,0.10); margin-right:0; }
   .hero-quiz .quiz-progress-label{ color:#5B5B63; }
   .hero-quiz .quiz-q{ color:#0E0E12; }
   .hero-quiz .quiz-opt{
@@ -1479,8 +1522,10 @@
   .hero-quiz .quiz-opt-icon{ color:#5B5B63; }
   .hero-quiz .quiz-opt[aria-pressed="true"]{ border-color:var(--accent); background:rgba(30,64,175,0.08); }
   .hero-quiz .quiz-opt[aria-pressed="true"] .quiz-opt-icon{ color:var(--accent); }
-  .hero-quiz .quiz-field label{ color:#0E0E12; }
-  .hero-quiz .quiz-field input{ color:#0E0E12; background:#fff; border-color:#E0E7FF; }
+  /* Reduced form prominence: smaller labels + tighter input padding than
+     the shared/base .quiz-field styling, scoped to the hero card only. */
+  .hero-quiz .quiz-field label{ color:#0E0E12; font-size:13px; }
+  .hero-quiz .quiz-field input{ color:#0E0E12; background:#fff; border-color:#E0E7FF; padding:10px; }
   .hero-quiz .quiz-field input::placeholder{ color:#8A8A94; }
   .hero-quiz .quiz-err{ color:#c0392b; }
   .hero-quiz .quiz-consent{ color:#4B5563; }
@@ -1571,8 +1616,21 @@
   }
   .quiz-field input:focus{outline:none;border-color:var(--accent-bright);box-shadow:0 0 0 3px rgba(72,112,229,0.22);}
   .quiz-field input[aria-invalid="true"]{border-color:#e06a6a;}
-  .quiz-err{margin:4px 0 0;font-size:11.5px;font-weight:700;color:#e79a9a;}
-  .quiz-err:empty{display:none;}
+  /* Space is reserved (min-height, always block) rather than collapsed
+     when empty, so the card never jumps height the moment an error first
+     appears — it just fades into space that was already there. */
+  .quiz-err{
+    margin:4px 0 0;
+    min-height:14px;
+    font-size:11.5px;
+    line-height:14px;
+    font-weight:700;
+    color:#e79a9a;
+    opacity:0;
+    transition:opacity 150ms var(--ease);
+  }
+  .quiz-err:not(:empty){ opacity:1; }
+  @media (prefers-reduced-motion:reduce){ .quiz-err{ transition:none; } }
 
   /* Step 1's phone + consent fields aren't in the DOM's static flow until the
      field above them has something in it — height:0/overflow:hidden clips the
@@ -1653,6 +1711,130 @@
     .quiz-thanks{transition:opacity 150ms linear !important;transform:none !important;}
     .quiz-check circle,.quiz-check path{stroke-dashoffset:0;animation:none;}
   }
+
+  /* ============================================================
+     HERO RESPONSIVE OVERRIDES — deliberately placed at the very end of
+     this stylesheet, after every base .hero-*/.quiz-* rule (badge,
+     headline, sub, services, actions, reassurance around line 840+, and
+     the whole .hero-quiz card + its .quiz-lead/.quiz-list/etc scoped
+     rules around line 1400+). All three blocks below share equal
+     selector specificity with those base rules, so CSS breaks the tie by
+     source order — and the base rules used to come AFTER these blocks,
+     which meant the base rule silently won on every shared property
+     (desktop headline size, badge size, .hero-actions/.hero-reassurance
+     justify-content, .hero-quiz padding, .quiz-lead margin, all of it).
+     That's the actual cause of "No contracts. | Cancel anytime." staying
+     centered on desktop despite the flex-start rule below explicitly
+     setting it — the override was real, it just always lost. Keep any
+     future .hero-*/.quiz-* responsive overrides down here too, not mixed
+     in earlier with the base rules, or the same bug comes back.
+     ============================================================ */
+
+  /* Mobile spacing (below 768px): the general clamp() gap covers most
+     pairs, but the quiz-card -> button-row gap and the buttons -> trust-
+     row gap have their own explicit minimums per spec, so they're set
+     directly on the relevant element's margin rather than relying on the
+     shared flex gap. Buttons stay side by side at every width — flex:1 1 0
+     splits the row evenly, min-width:0 lets each shrink below its content
+     size instead of forcing a wrap, and the font-size/padding clamp()s
+     scale the label down just enough that "BOOK A QUOTE" and "LEARN MORE"
+     both still fit on one line (white-space:nowrap, from the base .btn
+     rule) down to a 375px-wide screen. */
+  @media (max-width:767px){
+    .hero-headline{ font-size:clamp(1.75rem, 6vw, 2rem); }
+    .hero-sub{ font-size:14px; }
+    .hero-services{ font-size:12px; }
+    .hero-quiz{ margin-top:2rem; }              /* quiz card -> button row, 2rem minimum, unchanged */
+    .hero-actions{
+      flex-direction:row;
+      justify-content:center;
+      align-items:stretch;
+      gap:0.75rem;
+      width:100%;
+      margin-top:0;
+    }
+    .hero-actions .btn{
+      flex:1 1 0;
+      min-width:0;
+      font-size:clamp(11px, 3vw, 15px);
+      padding:clamp(10px, 2.5vw, 16px) clamp(12px, 4vw, 32px);
+    }
+    .hero-reassurance{ margin-top:1.25rem; }    /* buttons -> "No contracts. Cancel anytime." */
+  }
+
+  /* Desktop (1024px+): a real two-column grid. .hero-copy stops being
+     display:contents and becomes an actual left-aligned flex column again
+     (grid column 1); .hero-quiz — already its next DOM sibling — falls
+     into column 2 with no `order` needed. gap on .hero-copy is the SOLE
+     spacing mechanism here (each child's own mobile margin is zeroed
+     alongside it) so the two don't stack. .hero-services is dropped
+     entirely at this width: it's the one line of copy this task's own
+     left-column spec never lists, and cutting it is what keeps the left
+     column short enough to fit next to a 3-step quiz card in one screen —
+     everything else (badge, headline, sub, buttons, trust row) stays.
+     min-height + align-content:center (grid's equivalent of the mobile
+     flex column's justify-content:center) replicate, on this row-based
+     grid, exactly the vertical centering .hero-content's base rule
+     already does for the single-column mobile layout. */
+  @media (min-width:1024px){
+    .hero-content{
+      display:grid;
+      grid-template-columns:1.1fr 0.9fr;
+      gap:clamp(2rem, 4vw, 4rem);
+      align-items:center;
+      align-content:center;
+      min-height:calc(100svh - var(--nav-h));
+      max-width:1280px;
+      padding:48px 56px;
+      text-align:left;
+    }
+    .hero-copy{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      text-align:left;
+      gap:0.85rem;
+    }
+    .hero-badge{ align-self:flex-start; font-size:10px; margin-bottom:0; }
+    .hero-headline{
+      max-width:640px;
+      margin:0;
+      font-size:clamp(2.1rem, 2.6vw, 2.75rem);   /* noticeably smaller than the single-column size, still dominant */
+    }
+    .hero-sub{ margin:0; font-size:16px; max-width:52ch; }
+    .hero-services{ display:none; }
+    .hero-actions{ justify-content:flex-start; margin:0; }
+    .hero-reassurance{ justify-content:flex-start; margin:0; }
+    .hero-reassurance-item{ text-align:left; }
+
+    /* Right column: width:min(560px,100%) (unchanged) already scales the
+       card to whatever the 0.9fr track resolves to. Padding + step-3
+       spacing tightened here so the tallest step (quiz-list, 4 options,
+       plus the Submit + Back buttons) has the best chance of fitting
+       inside one screen next to the left column. */
+    .hero-quiz{ align-self:center; margin:0; padding:16px; }
+    .hero-quiz .quiz-lead{ margin-bottom:6px; }
+    .hero-quiz .quiz-list{ gap:8px; }
+    .hero-quiz .quiz-list .quiz-opt{ padding:11px 14px; }
+    .hero-quiz .quiz-grid{ gap:8px; }
+    .hero-quiz .quiz-grid .quiz-opt{ min-height:64px; padding:10px; }
+  }
+
+  /* Short desktop windows (~700-800px tall, e.g. a 1366x768 laptop):
+     compress further instead of letting step 3 clip or force a scroll.
+     Placed after the block above so it wins ties when both conditions
+     are true. */
+  @media (min-width:1024px) and (max-height:820px){
+    .hero-content{ padding:24px 56px; gap:clamp(1.5rem, 3vw, 3rem); }
+    .hero-copy{ gap:0.5rem; }
+    .hero-headline{ font-size:clamp(1.85rem, 2.2vw, 2.25rem); }
+    .hero-sub{ font-size:14px; }
+    .hero-quiz{ padding:14px; }
+    .hero-quiz .quiz-lead{ margin-bottom:4px; }
+    .hero-quiz .quiz-list{ gap:6px; }
+    .hero-quiz .quiz-list .quiz-opt{ padding:9px 12px; }
+    .hero-quiz .quiz-grid .quiz-opt{ min-height:58px; padding:9px; }
+  }
 </style>
 </head>
 <body>
@@ -1728,22 +1910,25 @@
 
     <div class="hero-content">
       <div class="hero-copy">
-        <p class="hero-badge">North Carolina Automation &amp; Web Design</p>
+        <p class="hero-badge">SiteSync Automation &amp; Web Design</p>
         <h1 class="hero-headline">The lead was there. We'll capitalize on it.</h1>
-        <p class="hero-sub">Convert more leads into paying customers. SiteSync builds the websites and automated systems that capture leads, follow up instantly, and turn more opportunities into revenue.</p>
+        <p class="hero-sub">When you pay to generate a lead, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</p>
         <p class="hero-services">Lead Capture &bull; Instant Follow-Up &bull; Appointment Booking &bull; Review Generation &bull; Customer Reactivation</p>
+
         <div class="hero-actions">
           <button type="button" class="btn btn-accent js-book-meeting">Book a Quote</button>
           <a class="btn btn-outline js-scroll-carousel" href="#what-we-do">Learn More</a>
         </div>
         <div class="hero-reassurance">
-          <span class="hero-reassurance-item">When you pay to generate a lead, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</span>
+          <span class="hero-reassurance-item">No contracts.</span>
           <span class="hero-reassurance-divider" aria-hidden="true"></span>
           <span class="hero-reassurance-item">Cancel anytime.</span>
         </div>
       </div>
 
-      <!-- Right column: 3-step quiz, always fully visible (step 1 by default) -->
+      <!-- Right column on desktop (grid); on mobile, `order` moves this
+           in-flow between the service strip and the CTA buttons — see the
+           max-width:767px block below .hero-content. -->
       <div class="hero-quiz" id="quizCard" aria-label="Get started with SiteSync">
         <div class="quiz" id="quiz">
           <p class="quiz-lead">Start a consultation here</p>
@@ -1833,27 +2018,29 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
 
-          <div class="solcar-nav-labels" id="solcarNavLabels">
-            <button type="button" class="solcar-nav-label" data-index="0" aria-current="true">
-              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              <span class="solcar-nav-text">Missed Calls</span>
-            </button>
-            <button type="button" class="solcar-nav-label" data-index="1" aria-current="false">
-              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-              <span class="solcar-nav-text">Missing Bookings</span>
-            </button>
-            <button type="button" class="solcar-nav-label" data-index="2" aria-current="false">
-              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-              <span class="solcar-nav-text">Website Revamp</span>
-            </button>
-            <button type="button" class="solcar-nav-label" data-index="3" aria-current="false">
-              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 17.8 6.1 20.5l1.3-6.3L2.7 9.6l6.3-.7z"/></svg>
-              <span class="solcar-nav-text">More Google Reviews</span>
-            </button>
-            <button type="button" class="solcar-nav-label" data-index="4" aria-current="false">
-              <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
-              <span class="solcar-nav-text">Losing Leads</span>
-            </button>
+          <div class="solcar-nav-viewport">
+            <div class="solcar-nav-track" id="solcarNavTrack">
+              <button type="button" class="solcar-nav-slot" data-offset="-2" tabindex="-1" aria-hidden="true">
+                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+                <span class="solcar-nav-text"></span>
+              </button>
+              <button type="button" class="solcar-nav-slot" data-offset="-1">
+                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+                <span class="solcar-nav-text"></span>
+              </button>
+              <button type="button" class="solcar-nav-slot is-active" data-offset="0" aria-current="true">
+                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+                <span class="solcar-nav-text"></span>
+              </button>
+              <button type="button" class="solcar-nav-slot" data-offset="1">
+                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+                <span class="solcar-nav-text"></span>
+              </button>
+              <button type="button" class="solcar-nav-slot" data-offset="2" tabindex="-1" aria-hidden="true">
+                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+                <span class="solcar-nav-text"></span>
+              </button>
+            </div>
           </div>
 
           <button type="button" class="solcar-nav-arrow solcar-nav-arrow--next" aria-label="Next solution">
@@ -1902,6 +2089,30 @@
               <g transform="translate(58,80)" stroke="#93A5C4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M0 25l12-12 8 8 16-16"/><path d="M28 5h8v8"/></g>
               <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">LEADS NEVER</text>
               <text x="60" y="236" fill="#93A5C4" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">GO COLD</text>
+            </svg>
+
+            <svg class="solcar-flyer" data-index="5" viewBox="0 0 460 300" role="img" aria-label="First Response Wins">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#F97316" opacity="0.18"/>
+              <g transform="translate(64,64)" stroke="#F97316" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M26 4 6 28h14l-2 16 20-24h-14z"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">FIRST RESPONSE</text>
+              <text x="60" y="236" fill="#F97316" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">WINS</text>
+            </svg>
+
+            <svg class="solcar-flyer" data-index="6" viewBox="0 0 460 300" role="img" aria-label="24/7 Lead Capture">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#6366F1" opacity="0.18"/>
+              <g transform="translate(56,58)" stroke="#6366F1" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M42 25.58A18 18 0 1 1 22.42 6 14 14 0 0 0 42 25.58z"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">24/7 LEAD</text>
+              <text x="60" y="236" fill="#6366F1" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">CAPTURE</text>
+            </svg>
+
+            <svg class="solcar-flyer" data-index="7" viewBox="0 0 460 300" role="img" aria-label="Turn Cold Leads Warm">
+              <rect width="460" height="300" fill="#050A18"/>
+              <circle cx="80" cy="70" r="130" fill="#14B8A6" opacity="0.18"/>
+              <g transform="translate(56,64)" stroke="#14B8A6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M46 8v12h-12"/><path d="M2 40v-12h12"/><path d="M7.02 18a18 18 0 0 1 29.7-6.72L46 20M2 28l9.28 8.72A18 18 0 0 0 40.98 30"/></g>
+              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="24" letter-spacing="0.5">TURN COLD LEADS</text>
+              <text x="60" y="236" fill="#14B8A6" font-family="Arial, sans-serif" font-weight="700" font-size="24" letter-spacing="0.5">WARM</text>
             </svg>
 
           </div>
@@ -2058,18 +2269,6 @@
     </div>
   </div>
 </footer>
-
-<!-- ================= INSTAGRAM POPUP ================= -->
-<!-- TODO: href="#" is a placeholder — swap in the real Instagram URL. -->
-<aside class="ig-toast" id="igToast" aria-label="Instagram" hidden>
-  <a class="ig-toast-link" id="igToastLink" href="#" target="_blank" rel="noopener" aria-label="Follow us on Instagram">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none"/></svg>
-    <span aria-hidden="true">Follow us</span>
-  </a>
-  <button class="ig-toast-close" id="igToastClose" type="button" aria-label="Dismiss Instagram notice">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
-  </button>
-</aside>
 
 <script>
 const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5HxnBsFRQ4k0D54S8XvkMKVg3y4g3c9hmABfUKL5NeUdkQCy7dUffEI9hpF1x/exec";
@@ -2240,92 +2439,111 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
   /* Selected Work is now static <img> thumbnails — no iframe previews, no
      per-frame scaling JS, no extra resize listener. */
 
-  /* ---------- Instagram popup (Cloth Barn .fb-toast pattern) ----------
-     Complementary landmark — no backdrop, no focus trap, no scroll lock.
-     Appears once, 3.5s after load, and stays until dismissed; dismissal
-     persists via localStorage so it doesn't nag on repeat visits. */
-  (function initInstagramToast(){
-    var toast = document.getElementById('igToast');
-    var closeBtn = document.getElementById('igToastClose');
-    if (!toast || !closeBtn) return;
-
-    var STORAGE_KEY = 'sitesync-ig-toast-dismissed';
-    try {
-      if (localStorage.getItem(STORAGE_KEY) === '1') return;
-    } catch (e){ /* localStorage unavailable (private mode etc.) — proceed without persistence */ }
-
-    function dismiss(){
-      toast.classList.remove('is-visible');
-      window.setTimeout(function(){ toast.hidden = true; }, 600); // matches .ig-toast's 600ms transition
-      try { localStorage.setItem(STORAGE_KEY, '1'); } catch (e){}
-      document.removeEventListener('keydown', onKeydown);
-    }
-
-    function onKeydown(e){
-      if (e.key === 'Escape' || e.key === 'Esc') dismiss();
-    }
-
-    window.setTimeout(function(){
-      toast.hidden = false;
-      void toast.offsetWidth;
-      requestAnimationFrame(function(){ toast.classList.add('is-visible'); });
-      document.addEventListener('keydown', onKeydown);
-    }, 3500);
-
-    closeBtn.addEventListener('click', dismiss);
-  })();
-
   /* ---------- "What Are You Struggling With?" solution carousel ----------
-     A glowing nav bar (5 labels + arrows) drives one large flyer image and
-     a description block. Both the outgoing and incoming flyer are moved
-     with plain inline transform/opacity (snap the incoming one off-screen
-     on the entry side with transition:none, force a reflow, then animate
+     5 fixed nav "slots" (offsets -2..+2 relative to the active solution)
+     sit in a track past the 3-wide viewport; a step slides the whole
+     track by one slot-width (400ms), then, once settled, snaps the track
+     back to its resting position and rebinds every slot's icon/text to
+     the new index — same "animate, then reset + rebind" trick used
+     elsewhere in this file for infinite-loop carousels, applied here to
+     text labels instead of a cloned card. The slot about to become the
+     new center gets .is-active added right before the slide starts, so
+     its bold/accent styling transitions concurrently with the motion;
+     rebindSlots() briefly zeroes each slot's own transitions while it
+     swaps content, so the post-slide snap-and-rebind never visibly
+     re-animates. Both the outgoing and incoming flyer are moved with
+     plain inline transform/opacity (snap the incoming one off-screen on
+     the entry side with transition:none, force a reflow, then animate
      both to their resting state over 400ms) so the same code animates
      correctly in either direction — nextBtn passes dir=+1 (exit left,
-     enter from right), prevBtn passes dir=-1 (mirrored); nav-label clicks
-     infer dir from index order. The active label swaps instantly; the
-     description cross-fades out fast and back in only once the image has
-     settled (400ms), never simultaneously with the slide. Reuses the same
-     auto-advance/pause/resume/visibility pattern as the rest of this file
-     (8s interval, 5s resume delay, paused off-screen or tab-hidden). CTA
-     carries .js-book-meeting (wired later by initHeroQuiz) for the
+     enter from right), prevBtn passes dir=-1 (mirrored); slot clicks
+     infer dir from their fixed offset. The description cross-fades out
+     fast and back in only once the image has settled (400ms), never
+     simultaneously with the slide. Reuses the same auto-advance/pause/
+     resume/visibility pattern as the rest of this file (8s interval, 5s
+     resume delay, paused off-screen or tab-hidden). CTA carries
+     .js-book-meeting (wired later by initHeroQuiz) for the
      scroll-to-quiz. */
   (function initSolutionCarousel(){
     var root       = document.getElementById('solutionCarousel');
     var nav        = document.getElementById('solcarNav');
-    var labelsWrap = document.getElementById('solcarNavLabels');
+    var track      = document.getElementById('solcarNavTrack');
     var imageTrack = document.getElementById('solcarImageTrack');
     var descWrap   = document.getElementById('solcarDescWrap');
     var descTitle  = document.getElementById('solcarDescTitle');
     var descText   = document.getElementById('solcarDescText');
-    if (!root || !nav || !labelsWrap || !imageTrack || !descWrap) return;
+    if (!root || !nav || !track || !imageTrack || !descWrap) return;
 
     var prevBtn = nav.querySelector('.solcar-nav-arrow--prev');
     var nextBtn = nav.querySelector('.solcar-nav-arrow--next');
-    var labels  = Array.prototype.slice.call(labelsWrap.querySelectorAll('.solcar-nav-label'));
+    var slots   = Array.prototype.slice.call(track.querySelectorAll('.solcar-nav-slot'));
     var flyers  = Array.prototype.slice.call(imageTrack.querySelectorAll('.solcar-flyer'));
-    var count   = labels.length;
-    if (count < 2 || flyers.length !== count) return;
     var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var solutions = [
-      { title: 'Missed Calls Get Answered', desc: "Customers who can't reach you get a text back with your details and can book a time slot. Potential customers become booked jobs." },
-      { title: 'Customers Book Themselves', desc: "Online appointment scheduling means customers don't wait for your callback. 24/7 availability = more bookings." },
-      { title: 'A Site Built to Convert', desc: 'Fast, mobile-perfect, trust-building. Your site becomes your best salesperson, not just a digital business card.' },
-      { title: '5-Star Reviews on Autopilot', desc: 'Happy customers get automatic review requests. More stars = higher rankings = more calls.' },
-      { title: 'Leads Never Go Cold', desc: 'Every inquiry gets followed up automatically via text and email. Cold leads become booked jobs.' }
+      { label: 'Missed Calls', title: 'Missed Calls Get Answered', desc: "Customers who can't reach you get a text back with your details and can book a time slot. Potential customers become booked jobs.",
+        icon: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>' },
+      { label: 'Missing Bookings', title: 'Customers Book Themselves', desc: "Online appointment scheduling means customers don't wait for your callback. 24/7 availability = more bookings.",
+        icon: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>' },
+      { label: 'Website Revamp', title: 'A Site Built to Convert', desc: 'Fast, mobile-perfect, trust-building. Your site becomes your best salesperson, not just a digital business card.',
+        icon: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>' },
+      { label: 'More Google Reviews', title: '5-Star Reviews on Autopilot', desc: 'Happy customers get automatic review requests. More stars = higher rankings = more calls.',
+        icon: '<path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 17.8 6.1 20.5l1.3-6.3L2.7 9.6l6.3-.7z"/>' },
+      { label: 'Losing Leads', title: 'Leads Never Go Cold', desc: 'Every inquiry gets followed up automatically via text and email. Cold leads become booked jobs.',
+        icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>' },
+      { label: 'Speed to Lead', title: 'First Response Wins', desc: 'Respond to inquiries within minutes, not hours. Prospects who get contacted first are 3x more likely to book. Automation ensures you\'re always first.',
+        icon: '<path d="M13 2 3 14h7l-1 8 10-12h-7z"/>' },
+      { label: 'Off Hours Receptionist', title: '24/7 Lead Capture', desc: 'Customers calling after hours get answered. Automated responses capture their info, book appointments, or transfer to voicemail. No missed leads while you sleep.',
+        icon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>' },
+      { label: 'Reactivation System', title: 'Turn Cold Leads Warm', desc: 'Past prospects who went quiet get re-engaged automatically. Personalized follow-ups remind them why they called in the first place. Second chances become second sales.',
+        icon: '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>' }
     ];
+    var count = solutions.length;
+    if (flyers.length !== count) return;
 
     var index = 0;
     var busy  = false;
     var descTimer = null;
+    var BASE_PCT = -20;   // resting translateX for the 5-slot track (one slot-width in)
 
-    function setActiveLabel(i){
-      labels.forEach(function(label, li){
-        var on = li === i;
-        label.classList.toggle('is-active', on);
-        label.setAttribute('aria-current', on ? 'true' : 'false');
+    function fillSlot(slot, solIndex, active){
+      var s = solutions[solIndex];
+      var icon = slot.querySelector('.solcar-nav-icon');
+      var text = slot.querySelector('.solcar-nav-text');
+      if (icon) icon.innerHTML = s.icon;
+      if (text) text.textContent = s.label;
+      slot.classList.toggle('is-active', active);
+      slot.setAttribute('aria-current', active ? 'true' : 'false');
+    }
+
+    /* rebind every slot to `index` with transitions briefly suppressed, so
+       the settle-time content swap (which happens in the same tick as the
+       track's instant snap back to BASE_PCT) never plays its own fade. */
+    function rebuildSlots(){
+      slots.forEach(function(slot){ slot.style.transition = 'none'; });
+      slots.forEach(function(slot){
+        var offset = parseInt(slot.getAttribute('data-offset'), 10);
+        var solIndex = ((index + offset) % count + count) % count;
+        fillSlot(slot, solIndex, offset === 0);
       });
+      void track.offsetWidth;
+      slots.forEach(function(slot){ slot.style.transition = ''; });
+    }
+
+    function popActive(){
+      if (rm) return;
+      var active = slots[2];
+      if (!active) return;
+      active.classList.remove('is-pop');
+      void active.offsetWidth;
+      active.classList.add('is-pop');
+      setTimeout(function(){ active.classList.remove('is-pop'); }, 300);
+    }
+
+    function setTrack(pct, animate){
+      if (!animate) track.style.transition = 'none';
+      track.style.transform = 'translateX(' + pct + '%)';
+      if (!animate){ void track.offsetWidth; track.style.transition = ''; }
     }
 
     function setActiveImage(newIndex, dir){
@@ -2376,33 +2594,40 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
       }, 400);
     }
 
-    var mq = window.matchMedia('(max-width:768px)');
-    function updateMobileWindow(){
-      if (!mq.matches){
-        labels.forEach(function(l){ l.hidden = false; });
-        return;
-      }
-      var start = Math.max(0, Math.min(index - 1, count - 3));
-      labels.forEach(function(l, li){ l.hidden = (li < start || li >= start + 3); });
-    }
-
     function navigate(newIndex, dir){
       newIndex = ((newIndex % count) + count) % count;
       if (busy || newIndex === index) return;
       busy = true;
-      setActiveLabel(newIndex);
+
+      /* pre-activate the slot about to become the new center so its
+         bold/accent styling transitions concurrently with the slide */
+      var futureActive = slots[2 + dir];
+      if (futureActive) futureActive.classList.add('is-active');
+      slots[2].classList.remove('is-active');
+
       setActiveImage(newIndex, dir);
       setDescription(newIndex);
-      index = newIndex;
-      updateMobileWindow();
-      setTimeout(function(){ busy = false; }, rm ? 0 : 400);
+
+      if (rm){
+        index = newIndex;
+        rebuildSlots();
+        setTrack(BASE_PCT, false);
+        busy = false;
+        return;
+      }
+
+      setTrack(BASE_PCT - dir * 20, true);
+      setTimeout(function(){
+        index = newIndex;
+        setTrack(BASE_PCT, false);
+        rebuildSlots();
+        popActive();
+        busy = false;
+      }, 400);
     }
 
-    setActiveLabel(index);
-    updateMobileWindow();
-    if (mq.addEventListener) mq.addEventListener('change', updateMobileWindow);
-    else if (mq.addListener) mq.addListener(updateMobileWindow);
-    window.addEventListener('resize', updateMobileWindow, { passive: true });
+    rebuildSlots();
+    setTrack(BASE_PCT, false);
 
     /* ---- auto-advance: every 8s, paused by interaction (resume 5s
        later) and by the carousel being off-screen or the tab hidden ---- */
@@ -2423,10 +2648,12 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
 
     if (prevBtn) prevBtn.addEventListener('click', function(){ pauseAuto(); navigate(index - 1, -1); });
     if (nextBtn) nextBtn.addEventListener('click', function(){ pauseAuto(); navigate(index + 1, 1); });
-    labels.forEach(function(label, i){
-      label.addEventListener('click', function(){
+    slots.forEach(function(slot){
+      slot.addEventListener('click', function(){
+        var offset = parseInt(slot.getAttribute('data-offset'), 10);
+        if (offset < -1 || offset > 1 || offset === 0) return;   // only the dimmed left/right neighbors are clickable
         pauseAuto();
-        navigate(i, i > index ? 1 : -1);
+        navigate(index + offset, offset > 0 ? 1 : -1);
       });
     });
 
@@ -2625,14 +2852,28 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
       stepsWrap.classList.toggle('is-back', dir === 'back');
       stepsWrap.style.willChange = 'transform, opacity';   // GPU hint for the cross-fade only
 
-      /* Pure transform + opacity cross-fade — no height tween, no layout.
-         The incoming step is position:relative from frame one, so the body
-         resizes to it instantly while the content slides/fades across. */
+      /* Height animates alongside the existing transform + opacity
+         cross-fade, since step 3 (a 4-option list) is taller than step 1
+         (two inputs). quizBody is pinned to its CURRENT pixel height
+         first (so the pin itself causes no visible jump), then — once the
+         incoming step is in flow and quizBody.scrollHeight reflects the
+         NEW step's real height — animated to that value over 350ms. It's
+         released back to height:auto once settled, so at rest (and for
+         anything taller added later) the wrapper always sizes itself to
+         whatever the card actually renders, never a stale pinned number. */
+      var fromH = quizBody.scrollHeight;
+      quizBody.style.height = fromH + 'px';
+      void quizBody.offsetHeight;   // commit the pin before the swap below
+
       outEl.classList.remove('is-active');
       outEl.classList.add('is-exiting');
       inEl.hidden = false;
       inEl.classList.add('is-active', 'is-entering');
       requestAnimationFrame(function(){ inEl.classList.remove('is-entering'); });
+
+      var toH = quizBody.scrollHeight;   // inEl is position:relative now, so this is the new total
+      quizBody.style.transition = 'height 350ms ' + EASE;
+      requestAnimationFrame(function(){ quizBody.style.height = toH + 'px'; });
 
       var settled = false;
       function done(){
@@ -2642,6 +2883,8 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
         outEl.hidden = true;
         stepsWrap.classList.remove('is-back');
         stepsWrap.style.willChange = 'auto';
+        quizBody.style.transition = '';
+        quizBody.style.height = 'auto';   // rest state: always auto, never a stale pinned px value
         busy = false;
         step = n;
         focusStep(inEl);
@@ -2670,10 +2913,22 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
       if (!d) return 'Enter your phone number.';
       return (d.length >= 10 && /^[\d\s().+-]+$/.test(v)) ? '' : 'Enter a valid phone number.';
     }
-    function checkField(el, errEl, fn){
+    /* Errors never show until the visitor has actually earned one: typed
+       something in the field (startedTyping) and then left it (blur ->
+       touched), or tried to advance/submit (force=true, from callers that
+       already know the attempt was real). Blurring an untouched, never-
+       typed-in field — e.g. the page's own auto-focus of quizName on load
+       losing focus to something else before the visitor types anything —
+       is explicitly NOT an error and must stay silent. checkField still
+       always COMPUTES and returns validity either way, since that's what
+       drives the Next button regardless of whether the message is shown. */
+    var touched = { name:false, phone:false };
+    var startedTyping = { name:false, phone:false };
+    function checkField(el, errEl, fn, force){
       var msg = fn(el.value || '');
-      errEl.textContent = msg;
-      el.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      var show = force || touched[el === nameEl ? 'name' : 'phone'];
+      errEl.textContent = show ? msg : '';
+      el.setAttribute('aria-invalid', (show && msg) ? 'true' : 'false');
       return !msg;
     }
     function fieldsValid(){ return !nameMsg(nameEl.value) && !phoneMsg(phoneEl.value); }
@@ -2722,13 +2977,27 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
        blur or for the number to actually validate. Validity itself is still
        checked on blur (for the inline error messages) and on every
        keystroke (to drive the Next button), independent of the reveal. */
-    nameEl.addEventListener('input', refreshSubmit);
+    nameEl.addEventListener('input', function(){
+      startedTyping.name = true;
+      refreshSubmit();
+      if (touched.name) checkField(nameEl, nameErr, nameMsg, true);   // clears the error live, the moment it's valid
+    });
     phoneEl.addEventListener('input', function(){
+      startedTyping.phone = true;
       if (phoneEl.value.length > 0) openReveal(consentWrap);
       refreshSubmit();
+      if (touched.phone) checkField(phoneEl, phoneErr, phoneMsg, true);
     });
-    nameEl.addEventListener('blur', function(){ checkField(nameEl, nameErr, nameMsg); });
-    phoneEl.addEventListener('blur', function(){ checkField(phoneEl, phoneErr, phoneMsg); });
+    nameEl.addEventListener('blur', function(){
+      if (!startedTyping.name) return;   // focused and left without typing — not an error yet
+      touched.name = true;
+      checkField(nameEl, nameErr, nameMsg, true);
+    });
+    phoneEl.addEventListener('blur', function(){
+      if (!startedTyping.phone) return;
+      touched.phone = true;
+      checkField(phoneEl, phoneErr, phoneMsg, true);
+    });
     consentEl.addEventListener('change', refreshSubmit);
 
     /* ============================================================
@@ -2780,8 +3049,9 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
        advances to step 2 — lead info is already captured. */
     qForm.addEventListener('submit', function(e){
       e.preventDefault();
-      if (!checkField(nameEl, nameErr, nameMsg)){ nameEl.focus(); return; }
-      if (!checkField(phoneEl, phoneErr, phoneMsg)){ phoneEl.focus(); return; }
+      touched.name = true; touched.phone = true;   // a real advance attempt — show whatever's wrong
+      if (!checkField(nameEl, nameErr, nameMsg, true)){ nameEl.focus(); return; }
+      if (!checkField(phoneEl, phoneErr, phoneMsg, true)){ phoneEl.focus(); return; }
       if (!consentEl.checked){ consentEl.focus(); return; }
       goTo(2, 'fwd');
     });
@@ -2835,6 +3105,8 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
         finalBtn.classList.remove('is-loading');
       }
       if (qForm.reset) qForm.reset();
+      touched.name = false; touched.phone = false;
+      startedTyping.name = false; startedTyping.phone = false;
       nameErr.textContent = '';
       phoneErr.textContent = '';
       nameEl.removeAttribute('aria-invalid');
