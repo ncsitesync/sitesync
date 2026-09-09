@@ -509,158 +509,63 @@
   }
 
   /* ============================================================
-     Hero background — animated gradient mesh + connection lines.
-       LAYER 1  .hero-media : dark base + 3 slow drifting blurred blobs
-       LAYER 2  .hero-lines : 3 static faint paths, slow opacity breathe
-       LAYER 3  .hero-veil  : soft radial darkening for text contrast
-     Transform + opacity only. will-change:transform on the blobs only.
-     Cycle times are long (48-60s) so the GPU barely ticks; the whole
-     stack is paused via IntersectionObserver once the hero scrolls away.
+     Hero background — static photo (walkingaway.png), no animation.
+       .hero-media       : the photo (cover / center) + flat dark tint
+       .hero-media::after : edge vignette so the photo settles into the page
+       .hero-veil        : soft central darkening behind the headline
+       .hero-right-scrim : darkens the right half behind the form card
      ============================================================ */
+  /* Photo scrolls normally with the hero (background-attachment:scroll) —
+     as the page scrolls down the image rides up with the section and
+     leaves the viewport at the top. cover never distorts (crop only); the
+     source is 1536x1024 (3:2), a mild vertical trim against a typical
+     ~16:9 desktop viewport. position is biased slightly up (40%) so the
+     crop takes more of the empty foreground floor than the sky/figure. */
   .hero-media{
     position:absolute;inset:0;z-index:-2;
-    background:#050A18;
+    background-image:url('walkingaway.png');
+    background-size:cover;
+    background-position:center 40%;
+    background-repeat:no-repeat;
+    background-attachment:scroll;
+    background-color:#050A18;                   /* fallback while the photo loads */
     overflow:hidden;
   }
-  /* vignette so the mesh edges don't glow */
+
+  /* Readability overlays, deliberately light so the photo stays visible and
+     impactful. Composited over the headline zone they land near ~0.4 total
+     darkening — enough for white text, still clearly a photo behind it.
+       ::before  ~0.3 flat tint across the whole hero
+       ::after   gentle corner vignette (0 at centre)
+       .hero-veil  soft central pool for headline contrast
+       .hero-right-scrim  a touch more shade behind the white form card */
+  .hero-media::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:rgba(5,7,12,0.32);
+  }
   .hero-media::after{
     content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(ellipse 120% 120% at 50% 50%, rgba(5,10,24,0) 42%, rgba(5,10,24,0.9) 100%);
-  }
-  .mesh-blob{
-    position:absolute;border-radius:50%;
-    filter:blur(140px);                        /* very soft edges — subtle, blends into the dark base */
-    will-change:transform;                     /* GPU layer for the slow drift */
-    pointer-events:none;
-  }
-  .mesh-blob-1{
-    width:1000px;height:1000px;top:-16%;left:-10%;
-    background:rgba(30,64,175,0.40);            /* #1E40AF */
-    animation:meshDrift1 64s ease-in-out infinite;
-  }
-  .mesh-blob-2{
-    width:820px;height:820px;top:6%;right:-14%;
-    background:rgba(37,99,235,0.30);            /* #2563EB */
-    animation:meshDrift2 72s ease-in-out infinite -18s;
-  }
-  .mesh-blob-3{
-    width:1100px;height:1100px;bottom:-22%;left:12%;
-    background:rgba(30,58,138,0.35);            /* #1E3A8A */
-    animation:meshDrift3 80s ease-in-out infinite -30s;
-  }
-
-  /* slow breathing accent bloom behind the headline — adds depth/glow */
-  .hero-glow{
-    position:absolute;z-index:-1;pointer-events:none;
-    left:50%;top:44%;width:min(760px,86vw);height:min(760px,86vw);
-    transform:translate(-50%,-50%);
-    background:radial-gradient(circle, rgba(72,112,229,0.30) 0%, rgba(37,99,235,0.14) 38%, rgba(5,10,24,0) 70%);
-    animation:heroGlow 30s ease-in-out infinite;
-    will-change:transform;
-  }
-  @keyframes heroGlow{
-    0%,100% { opacity:0.55; transform:translate(-50%,-50%) scale(0.92); }
-    50%     { opacity:1;    transform:translate(-50%,-50%) scale(1.08); }
-  }
-
-  /* drifting data-point particles — "leads flowing in" */
-  .hero-particles{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
-  .hero-particle{
-    position:absolute;width:4px;height:4px;border-radius:50%;
-    background:#93C5FD;box-shadow:0 0 8px 2px rgba(96,165,250,0.45);
-    opacity:0;
-    will-change:transform;
-    animation:heroFloat var(--d,17s) ease-in-out var(--delay,0s) infinite,
-              heroTwinkle calc(var(--d,17s) / 2) ease-in-out var(--delay,0s) infinite;
-  }
-  @keyframes heroFloat{
-    0%   {transform:translate3d(0,0,0) scale(var(--s,1));}
-    50%  {transform:translate3d(var(--drift,24px),-36px,0) scale(var(--s,1));}
-    100% {transform:translate3d(0,0,0) scale(var(--s,1));}
-  }
-  @keyframes heroTwinkle{
-    0%,100% {opacity:0.1;}
-    50%     {opacity:0.55;}
-  }
-  /* Gentle drift — small translate, minimal scale — so it reads as "barely
-     moving" and the GPU does almost no resampling of the blurred layers. */
-  @keyframes meshDrift1{
-    0%   {transform:translate3d(0,0,0) scale(1);}
-    33%  {transform:translate3d(9%,6%,0) scale(1.06);}
-    66%  {transform:translate3d(-6%,11%,0) scale(0.96);}
-    100% {transform:translate3d(0,0,0) scale(1);}
-  }
-  @keyframes meshDrift2{
-    0%   {transform:translate3d(0,0,0) scale(1);}
-    40%  {transform:translate3d(-11%,5%,0) scale(1.05);}
-    72%  {transform:translate3d(-3%,-8%,0) scale(0.97);}
-    100% {transform:translate3d(0,0,0) scale(1);}
-  }
-  @keyframes meshDrift3{
-    0%   {transform:translate3d(0,0,0) scale(1);}
-    30%  {transform:translate3d(7%,-9%,0) scale(0.96);}
-    60%  {transform:translate3d(11%,4%,0) scale(1.07);}
-    100% {transform:translate3d(0,0,0) scale(1);}
-  }
-  /* Connection lines: 3 thin paths, no dash-draw (that repainted the SVG
-     every frame). Slow ~22s opacity pulse, max 0.30. Dots are static — no
-     pulse animation at all. */
-  .hero-lines{
-    position:absolute;inset:0;z-index:-1;width:100%;height:100%;
-    pointer-events:none;
-  }
-  .hero-lines .ln path{
-    fill:none;stroke:#60A5FA;stroke-width:1;
-    opacity:0.3;
-    animation:lnBreathe 22s ease-in-out infinite;
-  }
-  .hero-lines .ln circle{ fill:#60A5FA; opacity:0.28; }   /* static dots, no animation */
-  .hero-lines .ln-2 path{animation-delay:-8s;}
-  .hero-lines .ln-3 path{animation-delay:-15s;}
-  @keyframes lnBreathe{
-    0%,100% {opacity:0.16;}
-    50%     {opacity:0.30;}
+    background:radial-gradient(ellipse 120% 120% at 50% 50%, rgba(5,10,24,0) 50%, rgba(5,10,24,0.5) 100%);
   }
 
   .hero-veil{
     position:absolute;inset:0;z-index:0;pointer-events:none;
-    background:radial-gradient(ellipse 62% 56% at 50% 50%, rgba(5,10,24,0.64) 0%, rgba(5,10,24,0.36) 46%, rgba(5,10,24,0) 76%);
+    background:radial-gradient(ellipse 62% 56% at 50% 50%, rgba(5,10,24,0.4) 0%, rgba(5,10,24,0.2) 48%, rgba(5,10,24,0) 78%);
   }
 
   /* Darkens the right half only, so the white form card reads as a distinct
-     panel floating off the mesh. Soft gradient edge keeps the left side's
-     animated colours fully visible and the split cohesive. */
+     panel floating off the photo. Soft gradient edge keeps the left side of
+     the image fully visible and the split cohesive. */
   .hero-right-scrim{
     position:absolute;top:0;bottom:0;right:0;width:52%;
     z-index:0;pointer-events:none;
     background:linear-gradient(to right,
       rgba(5,10,24,0) 0%,
-      rgba(5,10,24,0.38) 24%,
-      rgba(5,10,24,0.58) 55%,
-      rgba(5,10,24,0.58) 100%);
+      rgba(5,10,24,0.26) 24%,
+      rgba(5,10,24,0.4) 55%,
+      rgba(5,10,24,0.4) 100%);
   }
   @media (max-width:767px){ .hero-right-scrim{ display:none; } }
-
-  /* Mobile: 2 blobs, 2 lines, fewer particles; a bit less blur for GPU headroom. */
-  @media (max-width:640px){
-    .mesh-blob{filter:blur(100px);}
-    .mesh-blob-3{display:none;}
-    .hero-lines .ln-3{display:none;}
-    .hero-particle:nth-child(n+5){display:none;}
-  }
-
-  /* Reduced motion: freeze the mesh in a pleasing static spread; no lines,
-     no particles, static glow. */
-  @media (prefers-reduced-motion:reduce){
-    .mesh-blob{animation:none !important;will-change:auto;}
-    .mesh-blob-1{transform:translate3d(12%,8%,0) scale(1.1);}
-    .mesh-blob-2{transform:translate3d(-14%,4%,0) scale(1.06);}
-    .mesh-blob-3{transform:translate3d(10%,-12%,0) scale(1.12);}
-    .hero-lines{display:none !important;}
-    .hero-particles{display:none !important;}
-    .hero-particle{will-change:auto;}
-    .hero-glow{animation:none !important;opacity:0.7;will-change:auto;}
-  }
 
   /* Single real flex column, at every width — badge, headline, sub,
      services, quiz card, buttons, trust row are all TRUE flex siblings,
@@ -873,332 +778,22 @@
   .on-light .chip{background:rgba(30,64,175,0.06);border-color:rgba(30,64,175,0.18);color:var(--accent);}
   .on-light .dot{background:var(--accent);}
 
-  /* ---------- "What Are You Struggling With?" — solution carousel ----------
-     A clean, low-glow nav bar always shows exactly 3 labels (left/right
-     dimmed, center active) and rotates them like a real carousel: 5 fixed
-     DOM "slots" sit in a track past the 3-wide viewport (offsets -2..+2
-     relative to the active solution, each a flex-basis of 20% of the
-     track's own 166.6667%-wide box — i.e. exactly one third of the
-     viewport, all in %, no JS measurement needed). A step slides the
-     track by one slot-width, then, once settled, snaps the track back to
-     its resting position and rebinds all 5 slots' icon/text to the new
-     index — the same "animate, then reset + rebind" trick used by the
-     image/description swap below, just applied to text labels instead of
-     a DOM clone. Whichever slot is about to become the new center gets
-     .is-active added right before the slide starts, so its bold/accent
-     styling transitions concurrently with the motion. The flyer image
-     below is cross-faded/slid with inline transform/opacity (snap the
-     incoming one off-screen on the entry side with transition:none,
-     force a reflow, animate both to rest over 400ms) — which is what
-     lets the same code animate correctly in both directions. The
-     description cross-fades out fast and swaps text only once the image
-     has settled (400ms), never simultaneously with the slide. Auto-
-     advances every 8s, paused by any interaction and resumed 5s later,
-     and paused entirely off-screen/tab-hidden. */
-
-  /* ============================================================
-     ABOUT STRIP — a single <a> straddling the hero/carousel seam.
-     Placed as its own sibling between the two <section>s (in the HTML,
-     right after the hero's closing tag) rather than nested inside
-     either — the cleaner of the two options the task offered, and the
-     only one needed here: neither .hero nor #what-we-do currently has
-     overflow:hidden or a locked height (the hero's version of that was
-     the actual cause of a different bug, already removed two tasks
-     ago), so there's nothing to clip it regardless.
-     .about-strip-wrap carries the negative margin-top that pulls the
-     card up over the hero's bottom edge, plus the max-width/centering/
-     side padding; .about-strip is the actual bordered, shadowed, z-
-     indexed card — overflow:hidden on IT (not the wrap) is what clips
-     the image's hover-scale to the rounded border instead of letting it
-     bulge past the corners. Both non-positioned sections it straddles
-     (.hero and #what-we-do) paint in normal document flow with no
-     z-index of their own, so this card's explicit z-index always wins
-     regardless of DOM order — no extra stacking changes needed on
-     either section. #what-we-do's own padding-top (below) is widened
-     to clear the ~55% of the card that hangs below the seam. */
-  .about-strip-wrap{
-    position:relative;
-    z-index:5;
-    max-width:1100px;
-    margin:-180px auto 0;
-    padding:0 24px;
-  }
-  .about-strip{
-    display:block;
-    position:relative;
-    border-radius:14px;
-    overflow:hidden;
-    border:2px solid #F97316;
-    box-shadow:0 10px 30px -8px rgba(0,0,0,0.4), 0 0 0 rgba(249,115,22,0);
-    cursor:pointer;
-    transform:translateY(0);
-    transition:transform 250ms var(--ease), box-shadow 250ms var(--ease), border-color 250ms var(--ease);
-  }
-  .about-strip:hover,
-  .about-strip:focus-visible{
-    transform:translateY(-4px);
-    border-color:#FDBA74;
-    box-shadow:0 18px 40px -8px rgba(0,0,0,0.45), 0 0 32px 6px rgba(249,115,22,0.45);
-  }
-  .about-strip:active{ transform:translateY(0) scale(0.99); }
-  .about-strip:focus-visible{ outline:2px solid #fff; outline-offset:4px; }
-  .about-strip-img{
-    display:block;
-    width:100%;
-    aspect-ratio:3/1;
-    object-fit:cover;
-    object-position:center;
-    transition:transform 250ms var(--ease);
-  }
-  .about-strip:hover .about-strip-img,
-  .about-strip:focus-visible .about-strip-img{ transform:scale(1.03); }
-  .about-strip-overlay{
-    position:absolute;
-    inset:0;
-    background:linear-gradient(to top, rgba(5,10,24,0.7) 0%, rgba(5,10,24,0.12) 45%, rgba(5,10,24,0) 65%);
-    pointer-events:none;
-  }
-  .about-strip-label{
-    position:absolute;
-    right:16px; bottom:16px;
-    display:inline-flex;
-    align-items:center;
-    gap:10px;
-    min-height:44px;
-    padding:10px 14px 10px 18px;
-    border-radius:999px;
-    background:rgba(5,10,24,0.55);
-    backdrop-filter:blur(4px);
-    -webkit-backdrop-filter:blur(4px);
-  }
-  .about-strip-text{
-    font-size:clamp(13px, 1.6vw, 16px);
-    font-weight:700;
-    color:#fff;
-    white-space:nowrap;
-  }
-  .about-strip-text-short{ display:none; }
-  .about-strip-arrow{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    width:28px; height:28px;
-    flex-shrink:0;
-    border-radius:50%;
-    background:#F97316;
-    color:#fff;
-    transition:transform 250ms var(--ease);
-  }
-  .about-strip-arrow svg{ width:15px; height:15px; }
-  .about-strip:hover .about-strip-arrow,
-  .about-strip:focus-visible .about-strip-arrow{ transform:translateX(4px); }
-
-  @media (max-width:767px){
-    .about-strip-wrap{ margin-top:-70px; padding:0 1.25rem; }
-    .about-strip-img{ aspect-ratio:2/1; object-position:30% center; }
-    .about-strip-text-full{ display:none; }
-    .about-strip-text-short{ display:inline; }
-  }
-  @media (max-width:480px){
-    .about-strip-label{ right:10px; bottom:10px; padding:8px 12px 8px 14px; }
-  }
-
-  @media (prefers-reduced-motion:reduce){
-    .about-strip{ transition:border-color 150ms linear, box-shadow 150ms linear; }
-    .about-strip:hover,
-    .about-strip:focus-visible{ transform:none; }
-    .about-strip-img,.about-strip-arrow{ transition:none; }
-    .about-strip:hover .about-strip-img,
-    .about-strip:focus-visible .about-strip-img,
-    .about-strip:hover .about-strip-arrow,
-    .about-strip:focus-visible .about-strip-arrow{ transform:none; }
-  }
-
-  #what-we-do{ background:#F8F9FB; padding:230px 40px 50px; }
-  #what-we-do .container{ padding-left:0; padding-right:0; max-width:960px; }
-  #what-we-do .section-head{ margin-left:auto; margin-right:auto; text-align:center; }
-
-  .solcar{ position:relative; }
-
-  /* ---- nav bar: flat, angular, low-glow ---- */
-  .solcar-nav{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    width:100%;
-    max-width:640px;
-    margin:0 auto 20px;
-    padding:12px 20px;
-    background:#fff;
-    border-radius:8px;
-    border-bottom:1px solid #E5E7EB;
-    box-shadow:0 2px 8px rgba(0,0,0,0.05);
-    opacity:0;
-    animation:solcarFadeIn 500ms var(--ease) both;
-  }
-  .solcar-nav-arrow{
-    flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    width:44px; height:44px;
-    border-radius:8px;
-    border:0;
-    background:none;
-    color:#374151;
-    cursor:pointer;
-    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
-  }
-  .solcar-nav-arrow svg{ width:24px; height:24px; }
-  .solcar-nav-arrow:hover{ background:#F3F4F6; color:var(--accent); }
-  .solcar-nav-arrow:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-
-  .solcar-nav-viewport{ flex:1; min-width:0; overflow:hidden; }
-  .solcar-nav-track{
-    display:flex;
-    width:166.6667%;
-    transform:translateX(-20%);
-    transition:transform 400ms cubic-bezier(0.16,1,0.3,1);
-  }
-  .solcar-nav-slot{
-    flex:0 0 20%;
-    min-width:0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:3px;
-    padding:4px 4px;
-    background:none;
-    border:0;
-    border-radius:6px;
-    color:#374151;
-    opacity:0.6;
-    cursor:pointer;
-    transition:opacity var(--dur) var(--ease);
-  }
-  .solcar-nav-icon{ width:20px; height:20px; flex-shrink:0; transition:color var(--dur) var(--ease); }
-  .solcar-nav-text{
-    font-size:13px;
-    font-weight:600;
-    letter-spacing:-0.01em;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:100%;
-    transition:font-size var(--dur) var(--ease), color var(--dur) var(--ease);
-  }
-  .solcar-nav-slot.is-active{ opacity:1; background:rgba(30,64,175,0.08); }
-  .solcar-nav-slot.is-active .solcar-nav-icon{ color:var(--accent); }
-  .solcar-nav-slot.is-active .solcar-nav-text{ font-size:16px; font-weight:700; color:var(--ink); }
-  .solcar-nav-slot.is-pop{ animation:solcarLabelPop 300ms var(--ease); }
-
-  @keyframes solcarLabelPop{ 0%{ transform:scale(1); } 50%{ transform:scale(1.05); } 100%{ transform:scale(1); } }
-
-  /* ---- flyer image ----
-     max-width:460px deliberately matches the flyer SVGs' own
-     viewBox="0 0 460 300" 1:1 — shrinking the wrapper further while
-     keeping the 460:300 aspect-ratio below would start letterboxing the
-     SVGs (their fixed-position text/icon coordinates are drawn for that
-     exact canvas), so 460px is the floor for a distortion-free reduction;
-     it also lands the rendered height at exactly 300px, the top of the
-     target 300-350px band. */
-  .solcar-image-wrap{
-    max-width:460px;
-    margin:0 auto;
-    opacity:0;
-    transform:translateX(-24px);
-    animation:solcarFadeSlideIn 400ms var(--ease) 100ms both;
-  }
-  .solcar-image-track{
-    position:relative;
-    width:100%;
-    aspect-ratio:460/300;
-    border-radius:16px;
-  }
-  .solcar-flyer{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    display:block;
-    overflow:hidden;
-    border-radius:16px;
-    border:1px solid rgba(96,165,250,0.3);
-    box-shadow:0 0 30px rgba(30,64,175,0.4);
-    opacity:0;
-    transform:translateX(40px);
-    transition:opacity 400ms cubic-bezier(0.16,1,0.3,1), transform 400ms cubic-bezier(0.16,1,0.3,1);
-    pointer-events:none;
-  }
-  .solcar-flyer.is-active{ opacity:1; transform:translateX(0); pointer-events:auto; }
-
-  /* ---- description ---- */
-  .solcar-desc-wrap{
-    max-width:520px;
-    margin:0 auto;
-    padding:16px 0;
-    text-align:center;
-    opacity:0;
-    animation:solcarFadeIn 300ms var(--ease) 200ms both;
-    transition:opacity 300ms var(--ease);
-  }
-  .solcar-desc-wrap.is-updating{ opacity:0; }
-  .solcar-desc-title{ font-size:18px; font-weight:700; letter-spacing:-0.01em; color:var(--ink); margin:0 0 8px; }
-  .solcar-desc-text{ font-size:14px; font-weight:400; line-height:1.45; color:var(--ink); opacity:0.8; margin:0; }
-  .solcar-desc-cta{
-    display:inline-flex; align-items:center; justify-content:center;
-    margin-top:12px;
-    padding:12px 32px;
-    border:0; border-radius:8px;
-    background:var(--accent);
-    color:#fff;
-    font:inherit; font-size:14px; font-weight:700;
-    letter-spacing:0.04em;
-    cursor:pointer;
-    transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
-  }
-  .solcar-desc-cta:hover{ transform:translateY(-2px); box-shadow:0 10px 24px -6px rgba(30,64,175,0.5); background:var(--accent-hover); }
-  .solcar-desc-cta:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-
-  @keyframes solcarFadeIn{ from{opacity:0;} to{opacity:1;} }
-  @keyframes solcarFadeSlideIn{ from{opacity:0;transform:translateX(-24px);} to{opacity:1;transform:translateX(0);} }
-
-  /* mobile: still exactly 3 slots (same track mechanism); arrows already
-     meet the 44px+ tap-target floor at all sizes. */
-  @media (max-width:768px){
-    #what-we-do{ padding:36px 24px; }
-    .solcar-nav{ padding:8px 12px; gap:4px; margin-bottom:16px; }
-    .solcar-nav-slot{ padding:3px 2px; }
-    .solcar-nav-text{ font-size:12px; }
-    .solcar-nav-slot.is-active .solcar-nav-text{ font-size:14px; }
-    .solcar-image-wrap{ max-width:90vw; }
-    .solcar-desc-wrap{ padding:12px 0; }
-    .solcar-desc-title{ font-size:16px; margin-bottom:6px; }
-    .solcar-desc-text{ font-size:13px; }
-    .solcar-desc-cta{ margin-top:12px; }
-  }
-
-  @media (prefers-reduced-motion:reduce){
-    .solcar-nav,.solcar-image-wrap,.solcar-desc-wrap{ animation:none; opacity:1; transform:none; }
-    .solcar-flyer{ transition:opacity 200ms linear; }
-    .solcar-nav-arrow,.solcar-nav-slot,.solcar-nav-track,.solcar-nav-text,.solcar-desc-cta,.solcar-desc-wrap{ transition:none; }
-    .solcar-nav-slot.is-pop{ animation:none; }
-    .solcar-desc-cta:hover{ transform:none; }
-  }
-
   /* ---------- Selected work ----------
-     Compact clickable thumbnails, not tall feature cards: 16px card padding,
-     a short fixed-height image strip, and a single-line caption. A 2x2 card
-     lands around ~235px tall (well under the old ~540px). */
+     Responsive grid gallery (was a carousel): clickable case-study cards,
+     image on top with project label + headline below. 4 columns at
+     desktop (1024px+), 3 at tablet (768px+), 2 at mobile. */
   .gallery{
     display:grid;
-    grid-template-columns:1fr;
-    gap:12px;                                   /* mobile: 12px */
+    grid-template-columns:repeat(2,1fr);       /* mobile: 2-up */
+    gap:16px;
   }
-  @media (min-width:760px){ .gallery{grid-template-columns:repeat(2,1fr);gap:20px;} }  /* desktop: 2x2, 20px */
+  @media (min-width:768px){ .gallery{grid-template-columns:repeat(3,1fr);gap:20px;} }   /* tablet: 3-up */
+  @media (min-width:1024px){ .gallery{grid-template-columns:repeat(4,1fr);gap:24px;} }  /* desktop: 4-up */
 
-  .gallery-item{display:block;padding:16px;}    /* was .dark-card's 20px */
+  .gallery-item{display:block;padding:14px;}    /* was .dark-card's 20px */
   .gallery-frame{
     position:relative;
-    height:150px;                               /* short strip — replaces aspect-ratio:4/3 (~425px tall) */
+    aspect-ratio:4/3;                           /* consistent proportions, scales with the column */
     overflow:hidden;
     border-radius:10px;
     /* branded fallback that shows if a thumbnail is missing or still lazy-loading */
@@ -1210,28 +805,39 @@
   .gallery-thumb{
     position:absolute;inset:0;
     width:100%;height:100%;
-    object-fit:cover;
+    object-fit:cover;                           /* fill without distortion */
     z-index:1;
     transition:transform 480ms var(--ease);
   }
-  .gallery-item:hover .gallery-thumb{transform:scale(1.03);}
+  .gallery-item:hover .gallery-thumb{transform:scale(1.04);}
   .gallery-frame::after{
     content:"";
     position:absolute;inset:0;
     z-index:2;
-    background:linear-gradient(180deg, rgba(5,5,7,0) 35%, rgba(5,5,7,0.55) 100%);
+    background:linear-gradient(180deg, rgba(5,5,7,0) 45%, rgba(5,5,7,0.45) 100%);
     opacity:1;
     transition:opacity 400ms var(--ease);
     pointer-events:none;
   }
-  .gallery-item:hover .gallery-frame::after{opacity:0.4;}
+  .gallery-item:hover .gallery-frame::after{opacity:0.35;}
 
-  .gallery-meta{margin-top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+  .gallery-meta{margin-top:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
   .gallery-meta .chip{padding:4px 10px;font-size:10px;}
   .gallery-descriptor{
-    font-size:14px;line-height:1.2;margin-top:0;
+    font-size:15px;line-height:1.28;margin-top:0;
     max-width:100%;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;   /* one line max */
+    display:flex;align-items:baseline;gap:6px;
+  }
+  /* subtle arrow that slides in on hover to hint the card is clickable */
+  .gallery-arrow{
+    color:var(--accent-bright);
+    opacity:0;
+    transform:translateX(-4px);
+    transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  }
+  .gallery-item:hover .gallery-arrow{opacity:1;transform:translateX(0);}
+  @media (prefers-reduced-motion:reduce){
+    .gallery-arrow{transition:opacity var(--dur) var(--ease);transform:none;}
   }
 
   .gallery .gallery-item:nth-child(1){transition-delay:0ms;}
@@ -1777,6 +1383,15 @@
      grid, exactly the vertical centering .hero-content's base rule
      already does for the single-column mobile layout. */
   @media (min-width:1024px){
+    /* Cloth Barn hero rhythm, adopted: their left column doesn't use a
+       single uniform flex gap between every element — each pair gets its
+       own margin, loosening slightly as you move down (badge->headline
+       and headline->sub are closer to their own 24px, sub->actions opens
+       up more before the CTA block, actions->reassurance opens up again
+       before the final trust line). Content, colors, fonts, and the
+       quiz card are untouched — this block is spacing/rhythm only. The
+       generous top padding (was 48px) is the equivalent of Cloth Barn's
+       --space-8 (64px) above their badge. */
     .hero-content{
       display:grid;
       grid-template-columns:1.1fr 0.9fr;
@@ -1785,7 +1400,7 @@
       align-content:center;
       min-height:calc(100svh - var(--nav-h));
       max-width:1280px;
-      padding:48px 56px;
+      padding:64px 56px 48px;
       text-align:left;
     }
     .hero-copy{
@@ -1793,17 +1408,16 @@
       flex-direction:column;
       align-items:flex-start;
       text-align:left;
-      gap:0.85rem;
     }
-    .hero-badge{ align-self:flex-start; font-size:10px; margin-bottom:0; }
+    .hero-badge{ align-self:flex-start; font-size:clamp(0.75rem, 1.1vw, 0.95rem); font-weight:700; margin-bottom:20px; }
     .hero-headline{
       max-width:640px;
-      margin:0;
-      font-size:clamp(2.1rem, 2.6vw, 2.75rem);   /* noticeably smaller than the single-column size, still dominant */
+      margin:0 0 28px;
+      font-size:clamp(2.5rem, 5.5vw, 4.5rem);   /* Cloth Barn-scale: bold and commanding, not the previously-dialed-back single-column-minus size */
     }
-    .hero-sub{ margin:0; font-size:16px; max-width:52ch; }
+    .hero-sub{ margin:0 0 40px; font-size:clamp(1.05rem, 1.5vw, 1.25rem); line-height:1.55; max-width:52ch; }
     .hero-services{ display:none; }
-    .hero-actions{ justify-content:flex-start; margin:0; }
+    .hero-actions{ justify-content:flex-start; margin:0 0 32px; }
     .hero-reassurance{ justify-content:flex-start; margin:0; }
     .hero-reassurance-item{ text-align:left; }
 
@@ -1826,9 +1440,20 @@
      are true. */
   @media (min-width:1024px) and (max-height:820px){
     .hero-content{ padding:24px 56px; gap:clamp(1.5rem, 3vw, 3rem); }
-    .hero-copy{ gap:0.5rem; }
-    .hero-headline{ font-size:clamp(1.85rem, 2.2vw, 2.25rem); }
-    .hero-sub{ font-size:14px; }
+    /* Same progressive rhythm as the base desktop tier, just compressed —
+       .hero-copy has no gap of its own (removed above), so each margin
+       needs its own shrunk value here too, not just a single gap override. */
+    .hero-badge{ margin-bottom:10px; }
+    /* Scaled up proportionally with the base desktop tier's increase (not
+       left at the old, much smaller compressed size) — 1366x768 lands in
+       this tier (768 <= 820), so without this the headline/sub bump above
+       would be invisible at one of the two desktop sizes this task asks
+       to be tested at. Still noticeably more compact than the full
+       clamp(2.5rem,5.5vw,4.5rem)/clamp(1.05rem,1.5vw,1.25rem) sizes,
+       since short-viewport compression is still this tier's whole job. */
+    .hero-headline{ margin-bottom:12px; font-size:clamp(2.2rem, 3.2vw, 3rem); }
+    .hero-sub{ margin-bottom:16px; font-size:15px; line-height:1.5; }
+    .hero-actions{ margin-bottom:14px; }
     .hero-quiz{ padding:14px; }
     .hero-quiz .quiz-lead{ margin-bottom:4px; }
     .hero-quiz .quiz-list{ gap:6px; }
@@ -1854,6 +1479,7 @@
       <ul class="nav-links">
         <li><a href="#selected-work">Selected Work</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="about.html">About</a></li>
         <li><a href="#contact">Contact</a></li>
         <li><a href="calculator.html">Calculate Your Loss</a></li>
       </ul>
@@ -1876,6 +1502,7 @@
 <div class="nav-mobile" id="navMobile">
   <a href="#selected-work">Selected Work</a>
   <a href="#how-it-works">How It Works</a>
+  <a href="about.html">About</a>
   <a href="#contact">Contact</a>
   <a href="calculator.html">Calculate Your Loss</a>
 </div>
@@ -1886,38 +1513,20 @@
 
   <!-- ================= HERO ================= -->
   <section class="hero" id="heroWrap" aria-label="SiteSync introduction">
-    <div class="hero-media" id="heroMesh" aria-hidden="true">
-      <div class="mesh-blob mesh-blob-1"></div>
-      <div class="mesh-blob mesh-blob-2"></div>
-      <div class="mesh-blob mesh-blob-3"></div>
-    </div>
-    <svg class="hero-lines" id="heroLines" aria-hidden="true" viewBox="0 0 1440 900" preserveAspectRatio="none">
-      <g class="ln ln-1"><path d="M-40 170 C 320 40 700 330 1080 150 S 1520 380 1560 250"/><circle cx="360" cy="150" r="3"/><circle cx="900" cy="214" r="3"/></g>
-      <g class="ln ln-2"><path d="M1480 110 C 1080 300 800 40 420 260 S -80 130 -60 350"/><circle cx="1120" cy="206" r="3"/><circle cx="560" cy="212" r="3"/></g>
-      <g class="ln ln-3"><path d="M-60 620 C 260 800 640 500 1000 700 S 1460 520 1540 660"/><circle cx="420" cy="642" r="3"/><circle cx="1020" cy="690" r="3"/></g>
-    </svg>
+    <div class="hero-media" aria-hidden="true"></div>
     <div class="hero-veil" aria-hidden="true"></div>
     <div class="hero-right-scrim" aria-hidden="true"></div>
-    <div class="hero-glow" aria-hidden="true"></div>
-    <div class="hero-particles" id="heroParticles" aria-hidden="true">
-      <span class="hero-particle" style="left:8%;top:22%;--d:17s;--delay:-1s;--drift:34px;--s:1.1"></span>
-      <span class="hero-particle" style="left:19%;top:64%;--d:21s;--delay:-6s;--drift:-26px;--s:0.8"></span>
-      <span class="hero-particle" style="left:31%;top:38%;--d:15s;--delay:-3s;--drift:20px;--s:1"></span>
-      <span class="hero-particle" style="left:53%;top:18%;--d:18s;--delay:-8s;--drift:28px;--s:0.9"></span>
-      <span class="hero-particle" style="left:71%;top:30%;--d:16s;--delay:-13s;--drift:30px;--s:1.1"></span>
-      <span class="hero-particle" style="left:83%;top:70%;--d:22s;--delay:-5s;--drift:-28px;--s:0.85"></span>
-    </div>
 
     <div class="hero-content">
       <div class="hero-copy">
         <p class="hero-badge">SiteSync Automation &amp; Web Design</p>
         <h1 class="hero-headline">The lead was there. We'll capitalize on it.</h1>
-        <p class="hero-sub">When you pay to generate a lead, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</p>
+        <p class="hero-sub">Let's get started. When a new lead comes in, we make sure that lead gets contacted, qualified, organized, and prioritized before it goes cold.</p>
         <p class="hero-services">Lead Capture &bull; Instant Follow-Up &bull; Appointment Booking &bull; Review Generation &bull; Customer Reactivation</p>
 
         <div class="hero-actions">
           <button type="button" class="btn btn-accent js-book-meeting">Book a Quote</button>
-          <a class="btn btn-outline js-scroll-carousel" href="#what-we-do">Learn More</a>
+          <a class="btn btn-outline js-scroll-carousel" href="#selected-work">Learn More</a>
         </div>
         <div class="hero-reassurance">
           <span class="hero-reassurance-item">No contracts.</span>
@@ -2002,132 +1611,6 @@
     </div>
   </section>
 
-  <!-- ================= CAPABILITY CAROUSEL ================= -->
-  <section class="section on-light" id="what-we-do">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="micro-label">What this actually does</span>
-        <h2 class="display line-mask"><span class="line-mask-inner">What Are You Struggling With?</span></h2>
-        <p>We've built automations for these exact problems.</p>
-      </div>
-
-      <div class="solcar reveal" id="solutionCarousel">
-
-        <nav class="solcar-nav" id="solcarNav" aria-label="Choose a solution">
-          <button type="button" class="solcar-nav-arrow solcar-nav-arrow--prev" aria-label="Previous solution">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-
-          <div class="solcar-nav-viewport">
-            <div class="solcar-nav-track" id="solcarNavTrack">
-              <button type="button" class="solcar-nav-slot" data-offset="-2" tabindex="-1" aria-hidden="true">
-                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
-                <span class="solcar-nav-text"></span>
-              </button>
-              <button type="button" class="solcar-nav-slot" data-offset="-1">
-                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
-                <span class="solcar-nav-text"></span>
-              </button>
-              <button type="button" class="solcar-nav-slot is-active" data-offset="0" aria-current="true">
-                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
-                <span class="solcar-nav-text"></span>
-              </button>
-              <button type="button" class="solcar-nav-slot" data-offset="1">
-                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
-                <span class="solcar-nav-text"></span>
-              </button>
-              <button type="button" class="solcar-nav-slot" data-offset="2" tabindex="-1" aria-hidden="true">
-                <svg class="solcar-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
-                <span class="solcar-nav-text"></span>
-              </button>
-            </div>
-          </div>
-
-          <button type="button" class="solcar-nav-arrow solcar-nav-arrow--next" aria-label="Next solution">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </nav>
-
-        <div class="solcar-image-wrap">
-          <div class="solcar-image-track" id="solcarImageTrack">
-
-            <svg class="solcar-flyer is-active" data-index="0" viewBox="0 0 460 300" role="img" aria-label="Missed Calls Get Answered">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#60A5FA" opacity="0.16"/>
-              <g transform="translate(60,90)" stroke="#60A5FA" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M40 30.8v5.5a3.7 3.7 0 0 1-4 3.7 36.3 36.3 0 0 1-15.8-5.6 35.8 35.8 0 0 1-11-11 36.3 36.3 0 0 1-5.6-15.9A3.7 3.7 0 0 1 7.2 3h5.5a3.7 3.7 0 0 1 3.7 3.2c.2 1.8.7 3.5 1.3 5.2a3.7 3.7 0 0 1-.8 3.9l-2.3 2.3a29.4 29.4 0 0 0 11 11l2.3-2.3a3.7 3.7 0 0 1 3.9-.8c1.7.6 3.4 1.1 5.2 1.3a3.7 3.7 0 0 1 3.2 3.7z"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">MISSED CALLS</text>
-              <text x="60" y="236" fill="#60A5FA" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">GET ANSWERED</text>
-            </svg>
-
-            <svg class="solcar-flyer" data-index="1" viewBox="0 0 460 300" role="img" aria-label="Customers Book Themselves">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#2563EB" opacity="0.18"/>
-              <g transform="translate(58,75)" stroke="#2563EB" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="0" y="8" width="44" height="38" rx="4"/><path d="M0 20h44M11 0v8M33 0v8"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">CUSTOMERS BOOK</text>
-              <text x="60" y="236" fill="#2563EB" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">THEMSELVES</text>
-            </svg>
-
-            <svg class="solcar-flyer" data-index="2" viewBox="0 0 460 300" role="img" aria-label="A Site Built to Convert">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#0EA5E9" opacity="0.18"/>
-              <g transform="translate(58,68)" stroke="#0EA5E9" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="22" cy="22" r="22"/><path d="M0 22h44M22 0a37 37 0 0 1 0 44M22 0a37 37 0 0 0 0 44"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">A SITE BUILT</text>
-              <text x="60" y="236" fill="#0EA5E9" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">TO CONVERT</text>
-            </svg>
-
-            <svg class="solcar-flyer" data-index="3" viewBox="0 0 460 300" role="img" aria-label="5-Star Reviews on Autopilot">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#FBBF24" opacity="0.16"/>
-              <g transform="translate(58,68)" stroke="#FBBF24" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 0l5.4 11.8 12.6 1.4-9.4 8.6 2.6 12.6L22 28.2l-11.2 6.2 2.6-12.6-9.4-8.6 12.6-1.4z"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="26" letter-spacing="0.5">5-STAR REVIEWS</text>
-              <text x="60" y="236" fill="#FBBF24" font-family="Arial, sans-serif" font-weight="700" font-size="26" letter-spacing="0.5">ON AUTOPILOT</text>
-            </svg>
-
-            <svg class="solcar-flyer" data-index="4" viewBox="0 0 460 300" role="img" aria-label="Leads Never Go Cold">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#93A5C4" opacity="0.16"/>
-              <g transform="translate(58,80)" stroke="#93A5C4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M0 25l12-12 8 8 16-16"/><path d="M28 5h8v8"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">LEADS NEVER</text>
-              <text x="60" y="236" fill="#93A5C4" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">GO COLD</text>
-            </svg>
-
-            <svg class="solcar-flyer" data-index="5" viewBox="0 0 460 300" role="img" aria-label="First Response Wins">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#F97316" opacity="0.18"/>
-              <g transform="translate(64,64)" stroke="#F97316" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M26 4 6 28h14l-2 16 20-24h-14z"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">FIRST RESPONSE</text>
-              <text x="60" y="236" fill="#F97316" font-family="Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="0.5">WINS</text>
-            </svg>
-
-            <svg class="solcar-flyer" data-index="6" viewBox="0 0 460 300" role="img" aria-label="24/7 Lead Capture">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#6366F1" opacity="0.18"/>
-              <g transform="translate(56,58)" stroke="#6366F1" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M42 25.58A18 18 0 1 1 22.42 6 14 14 0 0 0 42 25.58z"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">24/7 LEAD</text>
-              <text x="60" y="236" fill="#6366F1" font-family="Arial, sans-serif" font-weight="700" font-size="30" letter-spacing="0.5">CAPTURE</text>
-            </svg>
-
-            <svg class="solcar-flyer" data-index="7" viewBox="0 0 460 300" role="img" aria-label="Turn Cold Leads Warm">
-              <rect width="460" height="300" fill="#050A18"/>
-              <circle cx="80" cy="70" r="130" fill="#14B8A6" opacity="0.18"/>
-              <g transform="translate(56,64)" stroke="#14B8A6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M46 8v12h-12"/><path d="M2 40v-12h12"/><path d="M7.02 18a18 18 0 0 1 29.7-6.72L46 20M2 28l9.28 8.72A18 18 0 0 0 40.98 30"/></g>
-              <text x="60" y="200" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="700" font-size="24" letter-spacing="0.5">TURN COLD LEADS</text>
-              <text x="60" y="236" fill="#14B8A6" font-family="Arial, sans-serif" font-weight="700" font-size="24" letter-spacing="0.5">WARM</text>
-            </svg>
-
-          </div>
-        </div>
-
-        <div class="solcar-desc-wrap" id="solcarDescWrap">
-          <h3 class="solcar-desc-title" id="solcarDescTitle">Missed Calls Get Answered</h3>
-          <p class="solcar-desc-text" id="solcarDescText">Customers who can't reach you get a text back with your details and can book a time slot. Potential customers become booked jobs.</p>
-          <button type="button" class="solcar-desc-cta js-book-meeting">Book a Consultation</button>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
   <!-- ================= SELECTED WORK ================= -->
   <section class="section" id="selected-work">
     <div class="container">
@@ -2145,7 +1628,7 @@
           </div>
           <div class="gallery-meta">
             <span class="chip">Big Larry's Cookers</span>
-            <h3 class="display gallery-descriptor">Built to feed a crowd.</h3>
+            <h3 class="display gallery-descriptor">Built to feed a crowd.<span class="gallery-arrow" aria-hidden="true">&#8599;</span></h3>
           </div>
         </a>
         <a class="gallery-item dark-card reveal" href="https://oasis-clearing.vercel.app/" target="_blank" rel="noopener" aria-label="Oasis J&amp;R Land Clearing — bilingual residential land clearing and site work — view live site (opens in new tab)">
@@ -2155,7 +1638,7 @@
           </div>
           <div class="gallery-meta">
             <span class="chip">Oasis J&amp;R Land Clearing</span>
-            <h3 class="display gallery-descriptor">Cleared for what's next.</h3>
+            <h3 class="display gallery-descriptor">Cleared for what's next.<span class="gallery-arrow" aria-hidden="true">&#8599;</span></h3>
           </div>
         </a>
         <a class="gallery-item dark-card reveal" href="https://wizardworks.vercel.app/" target="_blank" rel="noopener" aria-label="WizardWorks — driveways, hardscaping, and landscape renewal in Raleigh, NC — view live site (opens in new tab)">
@@ -2165,7 +1648,7 @@
           </div>
           <div class="gallery-meta">
             <span class="chip">WizardWorks</span>
-            <h3 class="display gallery-descriptor">Hardscape, elevated.</h3>
+            <h3 class="display gallery-descriptor">Hardscape, elevated.<span class="gallery-arrow" aria-hidden="true">&#8599;</span></h3>
           </div>
         </a>
         <a class="gallery-item dark-card reveal" href="https://jlovesrestore.com/" target="_blank" rel="noopener" aria-label="JLove Restorations — sneaker restoration and cleaning, RDU &amp; Charlotte — view live site (opens in new tab)">
@@ -2175,7 +1658,7 @@
           </div>
           <div class="gallery-meta">
             <span class="chip">JLove Restorations</span>
-            <h3 class="display gallery-descriptor">Sneakers, restored right.</h3>
+            <h3 class="display gallery-descriptor">Sneakers, restored right.<span class="gallery-arrow" aria-hidden="true">&#8599;</span></h3>
           </div>
         </a>
       </div>
@@ -2252,6 +1735,7 @@
           <ul>
             <li><a href="#selected-work">Selected Work</a></li>
             <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="about.html">About</a></li>
           </ul>
         </div>
         <div class="footer-col">
@@ -2378,14 +1862,14 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
     });
   }
 
-  /* ---------- Hero "Learn More" -> scroll to the carousel ----------
-     href="#what-we-do" is a solid no-JS fallback (correct target either
+  /* ---------- Hero "Learn More" -> scroll to Selected Work ----------
+     href="#selected-work" is a solid no-JS fallback (correct target either
      way); the click handler pre-empts the native jump so scrollIntoView
      can control the exact alignment (block:'start') instead of whatever
      the browser's own anchor-scroll would land on. */
   (function(){
     var trigger = document.querySelector('.js-scroll-carousel');
-    var target = document.getElementById('what-we-do');
+    var target = document.getElementById('selected-work');
     if (!trigger || !target) return;
     trigger.addEventListener('click', function(e){
       e.preventDefault();
@@ -2438,271 +1922,6 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
 
   /* Selected Work is now static <img> thumbnails — no iframe previews, no
      per-frame scaling JS, no extra resize listener. */
-
-  /* ---------- "What Are You Struggling With?" solution carousel ----------
-     5 fixed nav "slots" (offsets -2..+2 relative to the active solution)
-     sit in a track past the 3-wide viewport; a step slides the whole
-     track by one slot-width (400ms), then, once settled, snaps the track
-     back to its resting position and rebinds every slot's icon/text to
-     the new index — same "animate, then reset + rebind" trick used
-     elsewhere in this file for infinite-loop carousels, applied here to
-     text labels instead of a cloned card. The slot about to become the
-     new center gets .is-active added right before the slide starts, so
-     its bold/accent styling transitions concurrently with the motion;
-     rebindSlots() briefly zeroes each slot's own transitions while it
-     swaps content, so the post-slide snap-and-rebind never visibly
-     re-animates. Both the outgoing and incoming flyer are moved with
-     plain inline transform/opacity (snap the incoming one off-screen on
-     the entry side with transition:none, force a reflow, then animate
-     both to their resting state over 400ms) so the same code animates
-     correctly in either direction — nextBtn passes dir=+1 (exit left,
-     enter from right), prevBtn passes dir=-1 (mirrored); slot clicks
-     infer dir from their fixed offset. The description cross-fades out
-     fast and back in only once the image has settled (400ms), never
-     simultaneously with the slide. Reuses the same auto-advance/pause/
-     resume/visibility pattern as the rest of this file (8s interval, 5s
-     resume delay, paused off-screen or tab-hidden). CTA carries
-     .js-book-meeting (wired later by initHeroQuiz) for the
-     scroll-to-quiz. */
-  (function initSolutionCarousel(){
-    var root       = document.getElementById('solutionCarousel');
-    var nav        = document.getElementById('solcarNav');
-    var track      = document.getElementById('solcarNavTrack');
-    var imageTrack = document.getElementById('solcarImageTrack');
-    var descWrap   = document.getElementById('solcarDescWrap');
-    var descTitle  = document.getElementById('solcarDescTitle');
-    var descText   = document.getElementById('solcarDescText');
-    if (!root || !nav || !track || !imageTrack || !descWrap) return;
-
-    var prevBtn = nav.querySelector('.solcar-nav-arrow--prev');
-    var nextBtn = nav.querySelector('.solcar-nav-arrow--next');
-    var slots   = Array.prototype.slice.call(track.querySelectorAll('.solcar-nav-slot'));
-    var flyers  = Array.prototype.slice.call(imageTrack.querySelectorAll('.solcar-flyer'));
-    var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    var solutions = [
-      { label: 'Missed Calls', title: 'Missed Calls Get Answered', desc: "Customers who can't reach you get a text back with your details and can book a time slot. Potential customers become booked jobs.",
-        icon: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>' },
-      { label: 'Missing Bookings', title: 'Customers Book Themselves', desc: "Online appointment scheduling means customers don't wait for your callback. 24/7 availability = more bookings.",
-        icon: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>' },
-      { label: 'Website Revamp', title: 'A Site Built to Convert', desc: 'Fast, mobile-perfect, trust-building. Your site becomes your best salesperson, not just a digital business card.',
-        icon: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>' },
-      { label: 'More Google Reviews', title: '5-Star Reviews on Autopilot', desc: 'Happy customers get automatic review requests. More stars = higher rankings = more calls.',
-        icon: '<path d="M12 3l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 17.8 6.1 20.5l1.3-6.3L2.7 9.6l6.3-.7z"/>' },
-      { label: 'Losing Leads', title: 'Leads Never Go Cold', desc: 'Every inquiry gets followed up automatically via text and email. Cold leads become booked jobs.',
-        icon: '<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>' },
-      { label: 'Speed to Lead', title: 'First Response Wins', desc: 'Respond to inquiries within minutes, not hours. Prospects who get contacted first are 3x more likely to book. Automation ensures you\'re always first.',
-        icon: '<path d="M13 2 3 14h7l-1 8 10-12h-7z"/>' },
-      { label: 'Off Hours Receptionist', title: '24/7 Lead Capture', desc: 'Customers calling after hours get answered. Automated responses capture their info, book appointments, or transfer to voicemail. No missed leads while you sleep.',
-        icon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>' },
-      { label: 'Reactivation System', title: 'Turn Cold Leads Warm', desc: 'Past prospects who went quiet get re-engaged automatically. Personalized follow-ups remind them why they called in the first place. Second chances become second sales.',
-        icon: '<path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>' }
-    ];
-    var count = solutions.length;
-    if (flyers.length !== count) return;
-
-    var index = 0;
-    var busy  = false;
-    var descTimer = null;
-    var BASE_PCT = -20;   // resting translateX for the 5-slot track (one slot-width in)
-
-    function fillSlot(slot, solIndex, active){
-      var s = solutions[solIndex];
-      var icon = slot.querySelector('.solcar-nav-icon');
-      var text = slot.querySelector('.solcar-nav-text');
-      if (icon) icon.innerHTML = s.icon;
-      if (text) text.textContent = s.label;
-      slot.classList.toggle('is-active', active);
-      slot.setAttribute('aria-current', active ? 'true' : 'false');
-    }
-
-    /* rebind every slot to `index` with transitions briefly suppressed, so
-       the settle-time content swap (which happens in the same tick as the
-       track's instant snap back to BASE_PCT) never plays its own fade. */
-    function rebuildSlots(){
-      slots.forEach(function(slot){ slot.style.transition = 'none'; });
-      slots.forEach(function(slot){
-        var offset = parseInt(slot.getAttribute('data-offset'), 10);
-        var solIndex = ((index + offset) % count + count) % count;
-        fillSlot(slot, solIndex, offset === 0);
-      });
-      void track.offsetWidth;
-      slots.forEach(function(slot){ slot.style.transition = ''; });
-    }
-
-    function popActive(){
-      if (rm) return;
-      var active = slots[2];
-      if (!active) return;
-      active.classList.remove('is-pop');
-      void active.offsetWidth;
-      active.classList.add('is-pop');
-      setTimeout(function(){ active.classList.remove('is-pop'); }, 300);
-    }
-
-    function setTrack(pct, animate){
-      if (!animate) track.style.transition = 'none';
-      track.style.transform = 'translateX(' + pct + '%)';
-      if (!animate){ void track.offsetWidth; track.style.transition = ''; }
-    }
-
-    function setActiveImage(newIndex, dir){
-      var outEl = flyers[index];
-      var inEl  = flyers[newIndex];
-      if (outEl === inEl) return;
-      if (rm){
-        outEl.classList.remove('is-active');
-        outEl.style.cssText = '';
-        inEl.classList.add('is-active');
-        inEl.style.cssText = '';
-        return;
-      }
-      inEl.style.transition = 'none';
-      inEl.style.opacity = '0';
-      inEl.style.transform = 'translateX(' + (dir * 40) + 'px)';
-      inEl.classList.add('is-active');
-      void inEl.offsetWidth;               // commit the off-screen start state
-      inEl.style.transition = '';
-      requestAnimationFrame(function(){
-        outEl.style.transition = '';
-        outEl.style.opacity = '0';
-        outEl.style.transform = 'translateX(' + (-dir * 40) + 'px)';
-        inEl.style.opacity = '1';
-        inEl.style.transform = 'translateX(0)';
-      });
-      setTimeout(function(){
-        outEl.classList.remove('is-active');
-        outEl.style.cssText = '';
-        inEl.style.cssText = '';
-      }, 400);
-    }
-
-    function setDescription(newIndex){
-      var s = solutions[newIndex];
-      if (!s) return;
-      if (rm){
-        if (descTitle) descTitle.textContent = s.title;
-        if (descText) descText.textContent = s.desc;
-        return;
-      }
-      descWrap.classList.add('is-updating');
-      clearTimeout(descTimer);
-      descTimer = setTimeout(function(){
-        if (descTitle) descTitle.textContent = s.title;
-        if (descText) descText.textContent = s.desc;
-        descWrap.classList.remove('is-updating');
-      }, 400);
-    }
-
-    function navigate(newIndex, dir){
-      newIndex = ((newIndex % count) + count) % count;
-      if (busy || newIndex === index) return;
-      busy = true;
-
-      /* pre-activate the slot about to become the new center so its
-         bold/accent styling transitions concurrently with the slide */
-      var futureActive = slots[2 + dir];
-      if (futureActive) futureActive.classList.add('is-active');
-      slots[2].classList.remove('is-active');
-
-      setActiveImage(newIndex, dir);
-      setDescription(newIndex);
-
-      if (rm){
-        index = newIndex;
-        rebuildSlots();
-        setTrack(BASE_PCT, false);
-        busy = false;
-        return;
-      }
-
-      setTrack(BASE_PCT - dir * 20, true);
-      setTimeout(function(){
-        index = newIndex;
-        setTrack(BASE_PCT, false);
-        rebuildSlots();
-        popActive();
-        busy = false;
-      }, 400);
-    }
-
-    rebuildSlots();
-    setTrack(BASE_PCT, false);
-
-    /* ---- auto-advance: every 8s, paused by interaction (resume 5s
-       later) and by the carousel being off-screen or the tab hidden ---- */
-    var AUTO_MS = 8000, RESUME_MS = 5000;
-    var autoTimer = null, resumeTimer = null, inView = false;
-
-    function scheduleAuto(){
-      clearTimeout(autoTimer);
-      if (document.hidden || !inView) return;
-      autoTimer = setTimeout(function(){ navigate(index + 1, 1); scheduleAuto(); }, AUTO_MS);
-    }
-    function pauseAuto(){
-      clearTimeout(autoTimer);
-      autoTimer = null;
-      clearTimeout(resumeTimer);
-      resumeTimer = setTimeout(scheduleAuto, RESUME_MS);
-    }
-
-    if (prevBtn) prevBtn.addEventListener('click', function(){ pauseAuto(); navigate(index - 1, -1); });
-    if (nextBtn) nextBtn.addEventListener('click', function(){ pauseAuto(); navigate(index + 1, 1); });
-    slots.forEach(function(slot){
-      slot.addEventListener('click', function(){
-        var offset = parseInt(slot.getAttribute('data-offset'), 10);
-        if (offset < -1 || offset > 1 || offset === 0) return;   // only the dimmed left/right neighbors are clickable
-        pauseAuto();
-        navigate(index + offset, offset > 0 ? 1 : -1);
-      });
-    });
-
-    Array.prototype.forEach.call(root.querySelectorAll('.solcar-desc-cta'), function(cta){
-      cta.addEventListener('click', function(){ pauseAuto(); });
-    });
-
-    nav.setAttribute('tabindex', '0');
-    nav.setAttribute('aria-roledescription', 'carousel');
-    nav.addEventListener('keydown', function(e){
-      if (e.key === 'ArrowLeft'){ e.preventDefault(); pauseAuto(); navigate(index - 1, -1); }
-      else if (e.key === 'ArrowRight'){ e.preventDefault(); pauseAuto(); navigate(index + 1, 1); }
-    });
-
-    /* touch swipe on the flyer itself: horizontal drag past 40px, and more
-       horizontal than vertical so page scrolling still wins otherwise */
-    var sx = null, sy = null;
-    imageTrack.addEventListener('touchstart', function(e){
-      if (!e.touches || e.touches.length !== 1) return;
-      sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-    }, { passive: true });
-    imageTrack.addEventListener('touchend', function(e){
-      if (sx === null) return;
-      var tch = e.changedTouches && e.changedTouches[0];
-      var dx = tch ? tch.clientX - sx : 0;
-      var dy = tch ? tch.clientY - sy : 0;
-      sx = sy = null;
-      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-      pauseAuto();
-      dx < 0 ? navigate(index + 1, 1) : navigate(index - 1, -1);
-    }, { passive: true });
-
-    /* ---- visibility: pause auto-advance off-screen or when the tab is
-       hidden; resume when back ---- */
-    if ('IntersectionObserver' in window){
-      var io = new IntersectionObserver(function(entries){
-        inView = entries[0].isIntersecting;
-        if (inView) scheduleAuto(); else { clearTimeout(autoTimer); autoTimer = null; }
-      }, { threshold: 0.2 });
-      io.observe(root);
-    } else {
-      inView = true;
-      scheduleAuto();
-    }
-    document.addEventListener('visibilitychange', function(){
-      if (document.hidden){ clearTimeout(autoTimer); autoTimer = null; }
-      else if (inView) scheduleAuto();
-    });
-  })();
 
   /* ---------- Hero form card ----------
      A guided 3-step flow. Step 1 captures name + phone + SMS consent;
@@ -3149,32 +2368,5 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
 })();
 </script>
 
-<script>
-/* Pause the hero mesh + line + particle animations whenever the hero leaves
-   the viewport (or the tab is hidden), so the page isn't burning GPU below
-   the fold. Transform/opacity animations only, so play-state toggling
-   triggers no layout. */
-(function(){
-  "use strict";
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; // already frozen by CSS
-  var hero = document.getElementById('heroWrap');
-  if (!hero || !('IntersectionObserver' in window)) return;
-  var animated = Array.prototype.slice.call(
-    document.querySelectorAll('#heroMesh .mesh-blob, #heroLines path, #heroParticles .hero-particle, .hero-glow')
-  );
-  if (!animated.length) return;
-  var inView = true;
-  function apply(){
-    var state = (inView && !document.hidden) ? 'running' : 'paused';
-    for (var i = 0; i < animated.length; i++){ animated[i].style.animationPlayState = state; }
-  }
-  var io = new IntersectionObserver(function(entries){
-    inView = entries[0].isIntersecting;
-    apply();
-  }, { threshold: 0 });
-  io.observe(hero);
-  document.addEventListener('visibilitychange', apply);
-})();
-</script>
 </body>
 </html>
