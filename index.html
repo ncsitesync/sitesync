@@ -11,8 +11,13 @@
 <meta name="twitter:image" content="https://ncsitesync.com/sitesync-poster.jpg">
 <link rel="icon" href="/favicon.png" sizes="any" type="image/png">
 <link rel="apple-touch-icon" href="/favicon.png">
-<link rel="preload" as="image" href="media/hero-walkaway-1920.webp"
-      imagesrcset="media/hero-walkaway-800.webp 800w, media/hero-walkaway-1200.webp 1200w, media/hero-walkaway-1920.webp 1920w"
+<!-- heroimage.png is a 1536px-wide source, so the "1920" file is capped
+     at 1536w rather than upscaled — matches the hero <img>'s own srcset
+     further down in the body. ?v=2 busts the cache for this second
+     re-encode of heroimage.png under the same filenames — bump it again
+     if the source is swapped in place without renaming. -->
+<link rel="preload" as="image" href="media/hero-1920.webp?v=2"
+      imagesrcset="media/hero-800.webp?v=2 800w, media/hero-1200.webp?v=2 1200w, media/hero-1920.webp?v=2 1536w"
       imagesizes="100vw" fetchpriority="high">
 
 <style>
@@ -148,18 +153,28 @@
     height:100svh;overflow:hidden;background:var(--dark);
     padding:calc(var(--header-h) + 16px + 32px) 0 28px;
   }
+  /* heroimage.png (2nd replacement) frames the van/construction site and
+     the storefronts/gym across the horizontal middle of the shot, with a
+     dark foreground desk (laptop, notebook) low in frame and sky/skyline
+     above. Cover crops mostly top/bottom on this wide band; 50%/36% keeps
+     the van-to-storefronts activity band in frame between the panel and
+     the quiz card while cropping out most of the dark foreground desk. */
   .hero-bg{
-    position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:50% 38%;
+    position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:50% 36%;
     filter:saturate(1.05) contrast(1.03);
   }
-  /* walkingaway.png runs darker than the old photo, so the left stop is
-     pulled back from .86 to .6 — the panel keeps its own glass fill and
-     backdrop darkening (see .hero-content/.hero-content::before) for its
-     own text contrast, so this only has to keep the raw photo legible. */
+  /* heroimage.png (2nd replacement) is brighter still — its golden-hour
+     sky dominates the visible crop behind the panel, sampled ~rgb(128,107,92)
+     even in the darkest (full-height, includes the shadowed foreground
+     desk) region — so the left stop is pulled back again, from .45 to .30
+     (same proportional shape, scaled by .667). The panel keeps its own
+     glass fill and backdrop darkening (see .hero-content/.hero-content::before)
+     for its own text contrast, so this only has to keep the raw photo
+     legible. */
   .hero-overlay{
     position:absolute;inset:0;z-index:1;pointer-events:none;
     background:
-      linear-gradient(90deg,rgba(10,14,22,.6) 0%,rgba(10,14,22,.4) 46%,rgba(10,14,22,.16) 72%,rgba(10,14,22,.32) 100%),
+      linear-gradient(90deg,rgba(10,14,22,.3) 0%,rgba(10,14,22,.2) 46%,rgba(10,14,22,.08) 72%,rgba(10,14,22,.16) 100%),
       linear-gradient(to top,rgba(10,14,22,.5) 0%,transparent 30%);
   }
   .hero-inner{
@@ -175,21 +190,22 @@
      (the darkening layer behind the panel, below) its own local stacking
      context, so its negative z-index keeps it scoped behind THIS panel only
      — not behind the whole hero. */
-  /* Frosted glass panel. Background alpha is .66, not the literally
-     requested .58 — at .58 the quote-rule text (.hero-sub-adjacent
-     .hero-below, see below) and the panel's own darkening layer combined
-     still fell short of 4.5:1 against a worst-case dark/shadowed patch of
-     the photo (assumed ~rgb(35,40,48), since blur(26px) tends to average
-     out anything darker than that over a panel-sized area); stepping the
-     background up by two of the specified .04 increments (.58→.62→.66)
-     clears it with margin while keeping the panel meaningfully more
-     translucent than the old .86. The headline itself clears 4.5:1 even
-     at the literal .58 and didn't need this. */
+  /* Frosted glass panel. Background alpha is .72, not the literally
+     requested .58 — originally set for walkingaway.png's much darker left
+     side, which at .58 left .hero-below (#3d4650) under 4.5:1. Re-verified
+     (not re-lowered) against each later photo since; with the current
+     heroimage.png and its .30 hero-overlay scrim (see above), the
+     worst-case sampled backdrop (~rgb(128,107,92), even in the darkest,
+     full-height crop) composites to ~rgb(206,203,202) behind the glass —
+     headline ~11.4:1, .hero-sub ~6.1:1, .hero-below ~5.9:1, all with
+     plenty of margin — while staying meaningfully more translucent than
+     the old .86. The pills (.hero-checks li) have their own near-opaque
+     background and were never at risk. */
   .hero-content{
     position:relative;z-index:0;
     max-width:min(560px,52vw);padding:32px 36px;
     display:flex;flex-direction:column;align-items:flex-start;text-align:left;
-    background:rgba(255,255,255,.66);
+    background:rgba(255,255,255,.72);
     backdrop-filter:blur(26px) saturate(1.25) brightness(1.06);
     -webkit-backdrop-filter:blur(26px) saturate(1.25) brightness(1.06);
     border:1px solid rgba(255,255,255,.75);border-radius:26px;
@@ -1209,6 +1225,343 @@
     .dispatch-mobile-stage #dispatchTechPhone,.dispatch-mobile-stage #dispatchCustomerPhone{opacity:1;}
   }
 
+  /* ---------- database reactivation demo ----------
+     Same shell/shape as #dispatch (id selector for the same specificity
+     reason; same header-clearance/gap/padding formula) and the same
+     rail | stage | panel three-sibling-zone approach, but built directly
+     in place — no relocation needed since, unlike #dispatch, there's no
+     legacy two-column structure here to migrate from. Step 1's list rows
+     are written in the HTML already "cold," so the section renders
+     correctly with zero JavaScript; initReactivationDemo below only
+     confirms that state and wires up the animated transitions. */
+  #reactivation{
+    height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    overflow:hidden;gap:28px;
+    padding:calc(var(--header-h) + 16px + 20px) 24px 24px;
+  }
+  .dbr-controls{position:relative;}
+  .dbr-sr-summary{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  /* mobile-only stand-in for the rail (hidden here unconditionally; the
+     max-width:900px block turns it on) — driven by the same updateControls
+     call as the rail, caption, and counters, so it can never drift out of
+     sync with them. */
+  .dbr-mobile-progress{display:none;}
+  @keyframes dbrCursorBlink{0%,50%{opacity:1;}50.01%,100%{opacity:0;}}
+  @keyframes dbrTap{0%{transform:scale(1);}50%{transform:scale(.94);}100%{transform:scale(1);}}
+  @keyframes dbrNextPulse{0%{box-shadow:0 0 0 0 rgba(30,64,175,.5);}100%{box-shadow:0 0 0 14px rgba(30,64,175,0);}}
+
+  @media (min-width:901px){
+    .dbr-row{
+      flex:1 1 auto;min-height:0;width:100%;max-width:1180px;margin-inline:auto;
+      display:flex;align-items:stretch;gap:32px;
+    }
+    .dbr-rail{flex:0 0 200px;display:flex;min-width:0;}
+    .dbr-stage{flex:1 1 auto;min-width:0;position:relative;display:flex;align-items:center;justify-content:center;}
+    .dbr-panel{
+      flex:0 0 280px;min-width:0;display:flex;flex-direction:column;gap:16px;justify-content:space-between;
+      background:#fff;border:1px solid #e6eaef;border-radius:16px;padding:20px;
+      box-shadow:0 18px 44px rgba(17,24,34,.12);
+    }
+
+    /* -- rail: vertical tracker, same visual language as #dispatch's -- */
+    .dbr-tracker{width:100%;display:flex;align-items:stretch;}
+    .dbr-steps{display:flex;flex-direction:column;align-items:stretch;width:100%;}
+    .dbr-step{flex:1 1 0;display:flex;flex-direction:row;align-items:flex-start;gap:12px;min-width:0;}
+    .dbr-step:last-child{flex:0 0 auto;}
+    .dbr-step-row{display:flex;flex-direction:column;align-items:center;width:auto;height:100%;}
+    .dbr-step-circle{
+      width:30px;height:30px;font-size:.8rem;flex-shrink:0;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;
+      border:1px solid #c5ccd4;background:none;color:#9aa4b0;opacity:.4;
+      transition:background-color .3s var(--ease),color .3s var(--ease),opacity .3s var(--ease),border-color .3s var(--ease);
+    }
+    .dbr-step.done .dbr-step-circle,.dbr-step.active .dbr-step-circle{
+      border-color:transparent;background:var(--accent);color:#fff;opacity:1;
+    }
+    .dbr-step.active .dbr-step-circle{box-shadow:0 0 0 4px rgba(30,64,175,.18);}
+    .dbr-step.done .dbr-step-circle{font-size:0;position:relative;}
+    .dbr-step.done .dbr-step-circle::after{
+      content:"";position:absolute;width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;
+      transform:rotate(-45deg) translate(1px,-2px);
+    }
+    .dbr-step-line{width:2px;height:auto;flex:1 1 auto;min-height:18px;margin:3px 0;background:#e6eaef;position:relative;overflow:hidden;}
+    .dbr-step-line::after{
+      content:"";position:absolute;inset:0;background:var(--accent);transform:scaleY(0);transform-origin:top;transition:transform .5s var(--ease);
+    }
+    .dbr-step-line.filled::after{transform:scaleY(1);}
+    .dbr-step-label{
+      text-align:left;font-family:var(--font-display);font-weight:600;font-size:.82rem;margin-top:4px;
+      color:#9aa4b0;opacity:.4;transition:opacity .3s var(--ease),color .3s var(--ease);
+    }
+    .dbr-step.done .dbr-step-label,.dbr-step.active .dbr-step-label{color:var(--ink);opacity:1;}
+    .dbr-step-actor{
+      display:block;margin-top:2px;font-family:var(--font-display);font-weight:700;font-size:.66rem;
+      text-transform:uppercase;letter-spacing:.06em;color:#9aa4b0;opacity:.4;
+      transition:opacity .3s var(--ease),color .3s var(--ease);
+    }
+    .dbr-step-actor[data-tone="tech"]{color:var(--accent);}
+    .dbr-step.done .dbr-step-actor,.dbr-step.active .dbr-step-actor{opacity:1;color:#6a7480;}
+    .dbr-step.done .dbr-step-actor[data-tone="tech"],.dbr-step.active .dbr-step-actor[data-tone="tech"]{color:var(--accent);}
+
+    /* -- stage: the customer-list card -- */
+    .dbr-card{
+      position:relative;width:100%;max-width:480px;height:460px;max-height:100%;
+      background:#fff;border:1px solid #e6eaef;border-radius:16px;overflow:hidden;
+      box-shadow:0 18px 44px rgba(17,24,34,.12);display:flex;flex-direction:column;
+    }
+    .dbr-card-head{
+      flex:none;height:44px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+      border-bottom:1px solid #eef1f4;
+    }
+    .dbr-card-title{font-family:var(--font-display);font-weight:700;font-size:.92rem;color:var(--ink);}
+    .dbr-card-chip{
+      flex-shrink:0;height:24px;padding:0 10px;border-radius:999px;background:#eef1f4;color:#45505c;
+      display:inline-flex;align-items:center;font-family:var(--font-display);font-weight:700;font-size:.7rem;
+      transition:opacity .2s var(--ease);
+    }
+    .dbr-subbar{
+      flex:none;height:26px;padding:0 16px;display:flex;align-items:center;background:#f7f9fb;
+      font-size:.68rem;color:#6a7480;border-bottom:1px solid #eef1f4;
+      transition:opacity .25s var(--ease),max-height .25s var(--ease);
+    }
+    .dbr-subbar.hide{opacity:0;max-height:0;height:0;padding-top:0;padding-bottom:0;overflow:hidden;border-bottom:none;}
+    .dbr-list{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:6px 0;}
+    .dbr-list-row{
+      flex:1 1 0;min-height:0;display:flex;align-items:center;gap:10px;padding:0 16px;
+      opacity:1;transition:opacity .4s var(--ease);
+    }
+    .dbr-list-row.is-cold{opacity:.5;}
+    .dbr-avatar{
+      flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#dbe4fb;color:var(--accent);
+      display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:.66rem;
+      filter:grayscale(0);box-shadow:0 0 0 0 rgba(30,64,175,0);
+      transition:filter .4s var(--ease),box-shadow .3s var(--ease);
+    }
+    .dbr-list-row.is-cold .dbr-avatar{filter:grayscale(1);}
+    .dbr-list-row.has-ring .dbr-avatar{box-shadow:0 0 0 3px rgba(30,64,175,.25);}
+    .dbr-list-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
+    .dbr-list-name{font-family:var(--font-display);font-weight:600;font-size:.84rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .dbr-list-detail{font-size:.7rem;color:#6a7480;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;}
+    .dbr-list-reply{
+      display:block;font-size:.7rem;font-style:italic;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      max-height:0;opacity:0;transition:max-height .3s var(--ease),opacity .3s var(--ease);
+    }
+    .dbr-list-reply.show{max-height:20px;opacity:1;}
+    .dbr-list-chip{
+      flex-shrink:0;height:22px;padding:0 9px;border-radius:999px;display:inline-flex;align-items:center;gap:3px;
+      font-family:var(--font-display);font-weight:700;font-size:.64rem;background:#eef1f4;color:#45505c;
+      transition:background-color .3s var(--ease),color .3s var(--ease),opacity .25s var(--ease);
+    }
+    .dbr-list-chip[data-tone="sent"]{background:#dbe4fb;color:#1E40AF;}
+    .dbr-list-chip[data-tone="replied"]{background:#fef3c7;color:#92610a;}
+    .dbr-list-chip[data-tone="booked"]{background:#e3f5ea;color:#146c3a;}
+    .dbr-list-chip svg{width:9px;height:9px;stroke:currentColor;stroke-width:2.4;fill:none;}
+
+    /* -- compose card: slides up over the list for step 2 -- */
+    .dbr-compose{
+      position:absolute;left:0;right:0;bottom:0;top:44px;background:#fff;
+      display:flex;flex-direction:column;gap:12px;padding:16px;
+      transform:translateY(100%);opacity:0;pointer-events:none;
+      transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s var(--ease);
+    }
+    .dbr-compose.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+    .dbr-compose-head{font-family:var(--font-display);font-weight:700;font-size:.86rem;color:var(--ink);}
+    .dbr-compose-field{display:flex;flex-direction:column;gap:4px;}
+    .dbr-compose-label{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9aa4b0;}
+    .dbr-compose-draft{font-size:.82rem;line-height:1.45;color:var(--ink);padding:10px 12px;background:#f7f9fb;border-radius:10px;border:1px solid #eef1f4;}
+    .dbr-compose-cursor{display:inline-block;width:1.5px;height:1em;margin-left:1px;background:var(--ink);vertical-align:text-bottom;animation:dbrCursorBlink 1s step-end infinite;}
+    .dbr-compose-value{font-size:.82rem;font-weight:600;color:var(--ink);padding:10px 12px;background:#f7f9fb;border-radius:10px;border:1px solid #eef1f4;}
+    .dbr-compose-send{
+      margin-top:auto;height:40px;border-radius:10px;background:var(--accent);color:#fff;
+      display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:.82rem;
+    }
+    .dbr-compose-send.tapped{animation:dbrTap .3s var(--ease);}
+
+    /* -- send animation: small dots rising off the list header, staggered -- */
+    .dbr-send-icon{
+      position:absolute;left:20px;top:38px;width:16px;height:16px;border-radius:50%;background:var(--accent);
+      display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;z-index:5;
+      transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .35s var(--ease);
+    }
+    .dbr-send-icon svg{width:8px;height:8px;stroke:#fff;stroke-width:2.5;fill:none;}
+    .dbr-send-icon.fly{opacity:1;}
+
+    /* -- summary bar: slides up for step 5 -- */
+    .dbr-summary{
+      position:absolute;left:0;right:0;bottom:0;padding:14px 16px;background:var(--accent);color:#fff;
+      display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
+      transform:translateY(100%);opacity:0;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s var(--ease);
+    }
+    .dbr-summary.show{transform:translateY(0);opacity:1;}
+    .dbr-summary-main{font-family:var(--font-display);font-weight:700;font-size:.92rem;}
+    .dbr-summary-note{font-size:.7rem;color:rgba(255,255,255,.82);}
+
+    /* -- panel -- */
+    .dbr-campaign-card{flex:0 0 auto;}
+    .dbr-campaign-title{display:block;font-family:var(--font-display);font-weight:700;font-size:.86rem;color:var(--ink);margin-bottom:10px;}
+    .dbr-counters{display:flex;gap:8px;}
+    .dbr-counter{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;background:#f7f9fb;border-radius:10px;}
+    .dbr-counter-value{font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--accent);transition:opacity .15s var(--ease);}
+    .dbr-counter-label{font-size:.6rem;color:#6a7480;text-align:center;line-height:1.2;}
+
+    .dbr-caption{flex:0 0 auto;display:flex;flex-direction:column;gap:4px;}
+    .dbr-caption-text{display:flex;flex-direction:column;gap:2px;transition:opacity .34s cubic-bezier(.22,1,.36,1),transform .34s cubic-bezier(.22,1,.36,1);}
+    .dbr-caption.out .dbr-caption-text{opacity:0;transform:translateY(-8px);transition-duration:.26s;}
+    .dbr-caption.snap .dbr-caption-text{opacity:0;transform:translateY(8px);transition:none;}
+    .dbr-caption-actor{font-family:var(--font-display);font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:#6a7480;}
+    .dbr-caption-actor[data-tone="tech"]{color:var(--accent);}
+    .dbr-caption-desc{font-family:var(--font-display);font-weight:500;font-size:.88rem;color:var(--ink);line-height:1.4;}
+
+    .dbr-controls{display:flex;flex-direction:column;gap:10px;}
+    .dbr-next-btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 20px;border-radius:999px;width:100%;
+      background:var(--accent);color:#fff;border:1.5px solid transparent;
+      font-family:var(--font-display);font-weight:700;font-size:.88rem;cursor:pointer;white-space:nowrap;
+      transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease),opacity .2s var(--ease);
+    }
+    .dbr-next-btn .icon{width:15px;height:15px;flex-shrink:0;transition:transform .35s var(--spring);}
+    .dbr-next-btn:hover:not(:disabled){background:var(--accent-hover);}
+    .dbr-next-btn:disabled{opacity:.5;cursor:default;}
+    .dbr-next-btn.replay{background:#fff;border-color:var(--accent);color:var(--accent);}
+    .dbr-next-btn.replay .icon{transform:rotate(-70deg);}
+    .dbr-next-btn.pulse{animation:dbrNextPulse .7s var(--ease) 1;}
+    .dbr-back-btn{
+      display:none;align-items:center;justify-content:center;height:36px;padding:0 6px;
+      background:none;border:none;color:var(--accent);font-family:var(--font-display);
+      font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;
+    }
+    .dbr-back-btn.show{display:inline-flex;}
+    .dbr-back-btn:hover{color:var(--accent-hover);}
+    .dbr-next-btn:focus-visible,.dbr-back-btn:focus-visible{outline:3px solid rgba(30,64,175,.45);outline-offset:2px;}
+    .dbr-caption-count{font-size:.72rem;color:#626c78;text-align:center;}
+    .dbr-nudge-hint{
+      position:absolute;top:100%;left:0;right:0;margin-top:6px;text-align:center;
+      font-size:.74rem;color:#6a7480;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .3s ease;
+    }
+    .dbr-nudge-hint.show{opacity:1;}
+  }
+  @media (max-height:800px) and (min-width:901px){
+    #reactivation .demo-head .lead{display:none;}
+  }
+
+  @media (max-width:900px){
+    #reactivation{height:auto;display:block;overflow:visible;padding:40px 24px;}
+    .dbr-row{display:flex;flex-direction:column;gap:24px;max-width:480px;margin:0 auto;width:100%;}
+    /* the rail is too congested for mobile — hidden entirely; the compact
+       progress line above the list card (below) stands in for it. */
+    .dbr-rail{display:none;}
+    .dbr-stage{order:1;position:relative;}
+    .dbr-panel{order:2;display:flex;flex-direction:column;gap:16px;}
+
+    /* compact progress line, replacing the rail: step name + actor chip on
+       the left, "Step X of 5" on the right, one row, bottom border. */
+    .dbr-mobile-progress{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding-bottom:10px;margin-bottom:2px;border-bottom:1px solid #e6eaef;
+    }
+    .dbr-mobile-progress-left{display:flex;align-items:center;gap:8px;min-width:0;}
+    .dbr-mobile-progress-step{
+      font-family:var(--font-display);font-weight:700;font-size:.82rem;color:var(--ink);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .dbr-mobile-progress-actor{
+      flex-shrink:0;display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:999px;
+      background:#eef1f4;color:#45505c;font-family:var(--font-display);font-weight:700;font-size:.6rem;
+      text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;
+    }
+    .dbr-mobile-progress-actor[data-tone="tech"]{background:#dbe4fb;color:#1E40AF;}
+    .dbr-mobile-progress-count{flex-shrink:0;font-size:.74rem;color:#6a7480;}
+
+    /* stage / list card */
+    .dbr-card{width:100%;max-width:none;height:auto;max-height:none;}
+    .dbr-card-head{height:40px;padding:0 14px;}
+    .dbr-card-title{font-size:.88rem;}
+    .dbr-card-chip{font-size:.68rem;}
+    .dbr-subbar{height:24px;padding:0 14px;font-size:.66rem;}
+    .dbr-list{padding:4px 0;}
+    .dbr-list-row{min-height:64px;padding:0 14px;}
+    .dbr-list-row[data-row="1"],.dbr-list-row[data-row="3"]{display:none;} /* 6 -> 4 rows on mobile, keeping the 3 rows that reply/book plus one filler */
+    .dbr-list-name{font-size:.84rem;}
+    .dbr-list-detail{font-size:.72rem;}
+    .dbr-list-reply{font-size:.72rem;}
+    .dbr-list-chip{font-size:.66rem;}
+
+    .dbr-compose{position:absolute;left:0;right:0;bottom:0;top:40px;background:#fff;display:flex;flex-direction:column;gap:10px;padding:14px;
+      transform:translateY(100%);opacity:0;pointer-events:none;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s var(--ease);}
+    .dbr-compose.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+    .dbr-compose-head{font-family:var(--font-display);font-weight:700;font-size:.84rem;color:var(--ink);}
+    .dbr-compose-field{display:flex;flex-direction:column;gap:4px;}
+    .dbr-compose-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9aa4b0;}
+    .dbr-compose-draft,.dbr-compose-value{font-size:.82rem;line-height:1.4;color:var(--ink);padding:9px 11px;background:#f7f9fb;border-radius:10px;border:1px solid #eef1f4;}
+    .dbr-compose-cursor{display:inline-block;width:1.5px;height:1em;margin-left:1px;background:var(--ink);vertical-align:text-bottom;animation:dbrCursorBlink 1s step-end infinite;}
+    .dbr-compose-send{margin-top:auto;height:40px;border-radius:10px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:.82rem;}
+    .dbr-compose-send.tapped{animation:dbrTap .3s var(--ease);}
+
+    .dbr-send-icon{
+      position:absolute;left:18px;top:34px;width:14px;height:14px;border-radius:50%;background:var(--accent);
+      display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;z-index:5;
+      transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .35s var(--ease);
+    }
+    .dbr-send-icon svg{width:7px;height:7px;stroke:#fff;stroke-width:2.5;fill:none;}
+    .dbr-send-icon.fly{opacity:1;}
+
+    .dbr-summary{position:absolute;left:0;right:0;bottom:0;padding:12px 14px;background:var(--accent);color:#fff;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;
+      transform:translateY(100%);opacity:0;transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .4s var(--ease);}
+    .dbr-summary.show{transform:translateY(0);opacity:1;}
+    .dbr-summary-main{font-family:var(--font-display);font-weight:700;font-size:.86rem;}
+    .dbr-summary-note{font-size:.68rem;color:rgba(255,255,255,.82);}
+
+    /* panel: campaign card, then counters 3-across, then caption + controls */
+    .dbr-campaign-card{flex:0 0 auto;}
+    .dbr-campaign-title{display:block;font-family:var(--font-display);font-weight:700;font-size:.84rem;color:var(--ink);margin-bottom:10px;}
+    .dbr-counters{display:flex;gap:6px;}
+    .dbr-counter{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;background:#f7f9fb;border-radius:10px;}
+    .dbr-counter-value{font-family:var(--font-display);font-weight:700;font-size:1.05rem;color:var(--accent);transition:opacity .15s var(--ease);}
+    .dbr-counter-label{font-size:.58rem;color:#6a7480;text-align:center;line-height:1.2;}
+
+    .dbr-caption{flex:0 0 auto;display:flex;flex-direction:column;gap:4px;}
+    .dbr-caption-text{display:flex;flex-direction:column;gap:2px;transition:opacity .34s cubic-bezier(.22,1,.36,1),transform .34s cubic-bezier(.22,1,.36,1);}
+    .dbr-caption.out .dbr-caption-text{opacity:0;transform:translateY(-8px);transition-duration:.26s;}
+    .dbr-caption.snap .dbr-caption-text{opacity:0;transform:translateY(8px);transition:none;}
+    .dbr-caption-actor{font-family:var(--font-display);font-weight:700;font-size:.64rem;text-transform:uppercase;letter-spacing:.12em;color:#6a7480;}
+    .dbr-caption-actor[data-tone="tech"]{color:var(--accent);}
+    .dbr-caption-desc{font-family:var(--font-display);font-weight:500;font-size:.86rem;color:var(--ink);line-height:1.4;}
+
+    .dbr-controls{display:flex;flex-direction:column;gap:10px;}
+    .dbr-next-btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 20px;border-radius:999px;width:100%;
+      background:var(--accent);color:#fff;border:1.5px solid transparent;
+      font-family:var(--font-display);font-weight:700;font-size:.88rem;cursor:pointer;white-space:nowrap;
+      transition:background-color .2s var(--ease),color .2s var(--ease),border-color .2s var(--ease),opacity .2s var(--ease);
+    }
+    .dbr-next-btn .icon{width:15px;height:15px;flex-shrink:0;transition:transform .35s var(--spring);}
+    .dbr-next-btn:disabled{opacity:.5;cursor:default;}
+    .dbr-next-btn.replay{background:#fff;border-color:var(--accent);color:var(--accent);}
+    .dbr-next-btn.replay .icon{transform:rotate(-70deg);}
+    .dbr-next-btn.pulse{animation:dbrNextPulse .7s var(--ease) 1;}
+    .dbr-back-btn{
+      display:none;align-items:center;justify-content:center;height:40px;padding:0 6px;
+      background:none;border:none;color:var(--accent);font-family:var(--font-display);
+      font-weight:700;font-size:.84rem;cursor:pointer;white-space:nowrap;
+    }
+    .dbr-back-btn.show{display:inline-flex;}
+    .dbr-next-btn:focus-visible,.dbr-back-btn:focus-visible{outline:3px solid rgba(30,64,175,.45);outline-offset:2px;}
+    .dbr-caption-count{font-size:.72rem;color:#626c78;text-align:center;}
+    .dbr-nudge-hint{
+      position:absolute;top:100%;left:0;right:0;margin-top:6px;text-align:center;
+      font-size:.74rem;color:#6a7480;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .3s ease;
+    }
+    .dbr-nudge-hint.show{opacity:1;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .dbr-step-circle,.dbr-step-label,.dbr-step-actor,.dbr-step-line::after,.dbr-list-chip,.dbr-list-row,.dbr-avatar,
+    .dbr-caption-text,.dbr-next-btn,.dbr-next-btn .icon,.dbr-nudge-hint,.dbr-compose,.dbr-summary,
+    .dbr-send-icon,.dbr-list-reply,.dbr-counter-value,.dbr-card-chip,.dbr-subbar,.dbr-compose-send,.dbr-compose-cursor{
+      transition:none;animation:none;
+    }
+  }
+
   /* ---------- shared card pieces ----------
      .card/.photo/.badge/.card-body/.checks/.card-link are no longer referenced
      by any markup — the automation cards moved to their own .auto-card-*
@@ -1559,12 +1912,6 @@
   .pricing-list .icon{width:18px;height:18px;padding:4px;border-radius:50%;background:var(--green);color:#fff;stroke-width:3.4;flex-shrink:0;}
   .pricing-card .btn{margin-top:26px;}
 
-  /* ---------- about ---------- */
-  .about-video-slot{
-    position:relative;width:100%;max-width:880px;margin:28px auto 0;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;
-    background:repeating-linear-gradient(135deg,#f6f3ec 0 14px,#e9e6df 14px 28px);border:1px solid var(--line);
-  }
-
   /* ---------- faq ---------- */
   .faq{max-width:780px;margin-inline:auto;display:grid;gap:10px;}
   .faq-item{background:var(--card);border-radius:16px;box-shadow:var(--shadow-card);overflow:hidden;}
@@ -1590,7 +1937,7 @@
   .footer p,.footer li{font-size:var(--fs-body);color:#c3c8cd;}
   .footer li+li{margin-top:6px;}
   .footer a:hover{color:#fff;text-decoration:underline;}
-  .foot-brand p{margin-top:12px;max-width:34ch;}
+  .foot-brand p{margin-top:12px;max-width:42ch;}
   .foot-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 20px;margin-top:32px;padding-top:18px;border-top:1px solid rgba(255,255,255,.14);font-size:var(--fs-small);color:#aab0b6;}
 
   /* ---------- sticky call pill ---------- */
@@ -1623,7 +1970,12 @@
 
     /* ---- MOBILE HERO: split layout, photo band on top, content below, quiz full-width beneath (not overlapping) ---- */
     .hero{--hero-band:clamp(300px,40svh,520px);display:block;height:auto;min-height:0;overflow:visible;padding:0;background:#fff;}
-    .hero-bg{position:relative;inset:auto;z-index:0;display:block;width:100%;height:var(--hero-band);object-fit:cover;object-position:92% 58%;filter:saturate(1.06) contrast(1.04);}
+    /* heroimage.png (2nd replacement) is 3:2 landscape; against this
+       taller, closer-to-square mobile band the crop is purely horizontal
+       (full height always shows, only ~13% is trimmed off each side), so
+       50% keeps the whole van-to-storefronts scene comfortably in frame —
+       vertical position has no effect here but 36% matches desktop. */
+    .hero-bg{position:relative;inset:auto;z-index:0;display:block;width:100%;height:var(--hero-band);object-fit:cover;object-position:50% 36%;filter:saturate(1.06) contrast(1.04);}
     .hero-overlay{
       position:relative;inset:auto;z-index:1;height:var(--hero-band);margin-top:calc(var(--hero-band) * -1);
       background:linear-gradient(to bottom,rgba(255,255,255,.5) 0%,transparent 22%),linear-gradient(to bottom,transparent 90%,#fff 100%);
@@ -1719,7 +2071,6 @@
         <li><a href="#how">How It Works</a></li>
         <li><a href="#work">Selected Work</a></li>
         <li><a href="#pricing">Pricing</a></li>
-        <li><a href="#about">About</a></li>
       </ul>
     </nav>
     <a class="header-phone" href="tel:+19109901576">
@@ -1740,7 +2091,6 @@
     <li><a href="#how">How It Works</a></li>
     <li><a href="#work">Selected Work</a></li>
     <li><a href="#pricing">Pricing</a></li>
-    <li><a href="#about">About</a></li>
   </ul>
   <div class="overlay-cta">
     <a class="btn btn-primary js-book-meeting" href="#quiz">Get My Free Plan <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -1754,10 +2104,10 @@
 
   <!-- HERO -->
   <section class="hero" id="heroWrap" aria-labelledby="hero-title">
-    <picture>
-      <source srcset="media/hero-walkaway-800.webp 800w, media/hero-walkaway-1200.webp 1200w, media/hero-walkaway-1920.webp 1920w" sizes="100vw" type="image/webp">
-      <img class="hero-bg" src="media/hero-walkaway-1920.webp" alt="" fetchpriority="high" decoding="async">
-    </picture>
+    <img class="hero-bg" src="media/hero-1920.webp?v=2"
+         srcset="media/hero-800.webp?v=2 800w, media/hero-1200.webp?v=2 1200w, media/hero-1920.webp?v=2 1536w"
+         sizes="100vw" alt="A golden-hour job site: a loaded work van and a house under construction beside a parking lot and small commercial plaza with a restaurant and gym, city skyline behind, with a laptop and notebook open on a desk in the foreground"
+         fetchpriority="high" decoding="async">
     <div class="hero-overlay" aria-hidden="true"></div>
     <div class="container hero-inner">
       <div class="hero-grid">
@@ -2049,6 +2399,173 @@
          as #dispatchBoard above (whose own role/aria-label travels with it
          when relocated in here). -->
     <div class="dispatch-mobile-stage" id="dispatchMobileStage"></div>
+  </section>
+
+  <!-- DATABASE REACTIVATION DEMO -->
+  <section class="section" id="reactivation" aria-labelledby="reactivation-title">
+    <div class="container demo-head reveal">
+      <span class="eyebrow">Database Reactivation</span>
+      <h2 id="reactivation-title">The jobs are already in your phone.</h2>
+      <p class="lead">Your past customers haven&rsquo;t heard from you in months. One campaign brings them back &mdash; without you lifting a finger.</p>
+    </div>
+    <!-- same three-sibling-zone shell as #dispatch: rail | stage | panel,
+         built in their final desktop positions directly (no relocation
+         needed here since, unlike #dispatch, this section has no legacy
+         two-column structure to migrate from) — CSS alone reflows it for
+         mobile via .dbr-row switching to display:block. Step 1's row data
+         is written directly in the HTML (all "Cold", muted) so it renders
+         correctly with zero JavaScript, same as the dispatch strip. -->
+    <div class="dbr-row" id="dbrRow">
+      <div class="dbr-rail" id="dbrRail">
+        <div class="dbr-tracker">
+          <div class="dbr-steps" id="dbrSteps">
+            <div class="dbr-step active" data-step="0">
+              <div class="dbr-step-row"><span class="dbr-step-circle">1</span><span class="dbr-step-line"></span></div>
+              <span class="dbr-step-label">Find the Cold List</span>
+              <span class="dbr-step-actor" data-tone="auto">Automatic</span>
+            </div>
+            <div class="dbr-step" data-step="1">
+              <div class="dbr-step-row"><span class="dbr-step-circle">2</span><span class="dbr-step-line"></span></div>
+              <span class="dbr-step-label">Write the Offer</span>
+              <span class="dbr-step-actor" data-tone="tech">Tech</span>
+            </div>
+            <div class="dbr-step" data-step="2">
+              <div class="dbr-step-row"><span class="dbr-step-circle">3</span><span class="dbr-step-line"></span></div>
+              <span class="dbr-step-label">Send the Campaign</span>
+              <span class="dbr-step-actor" data-tone="auto">Automatic</span>
+            </div>
+            <div class="dbr-step" data-step="3">
+              <div class="dbr-step-row"><span class="dbr-step-circle">4</span><span class="dbr-step-line"></span></div>
+              <span class="dbr-step-label">Replies Come In</span>
+              <span class="dbr-step-actor" data-tone="auto">Automatic</span>
+            </div>
+            <div class="dbr-step" data-step="4">
+              <div class="dbr-step-row"><span class="dbr-step-circle">5</span></div>
+              <span class="dbr-step-label">Jobs Booked</span>
+              <span class="dbr-step-actor" data-tone="auto">Automatic</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dbr-stage" id="dbrStage">
+        <!-- mobile only (see max-width:900px): stands in for the hidden rail,
+           driven by the same pos/updateControls call as everything else. -->
+        <div class="dbr-mobile-progress" id="dbrMobileProgress">
+          <span class="dbr-mobile-progress-left">
+            <span class="dbr-mobile-progress-step" id="dbrMobileStepName">Find the Cold List</span>
+            <span class="dbr-mobile-progress-actor" id="dbrMobileActor" data-tone="auto">Automatic</span>
+          </span>
+          <span class="dbr-mobile-progress-count" id="dbrMobileCount">Step 1 of 5</span>
+        </div>
+        <div class="dbr-card" id="dbrCard">
+          <div class="dbr-card-head">
+            <span class="dbr-card-title">Past Customers</span>
+            <span class="dbr-card-chip" id="dbrCountChip">6 cold contacts</span>
+          </div>
+          <div class="dbr-subbar" id="dbrSubbar">Last contacted: 9&ndash;22 months ago</div>
+          <div class="dbr-list" id="dbrList">
+            <div class="dbr-list-row is-cold" data-row="0">
+              <span class="dbr-avatar">DW</span>
+              <span class="dbr-list-text">
+                <span class="dbr-list-name">Dana Whitfield</span>
+                <span class="dbr-list-detail" id="dbrDetail0">Deck rebuild &middot; 14 months ago</span>
+              </span>
+              <span class="dbr-list-chip" id="dbrChip0" data-tone="cold">Cold</span>
+            </div>
+            <div class="dbr-list-row is-cold" data-row="1">
+              <span class="dbr-avatar">RA</span>
+              <span class="dbr-list-text">
+                <span class="dbr-list-name">Roy Alston</span>
+                <span class="dbr-list-detail" id="dbrDetail1">Roof repair &middot; 11 months ago</span>
+              </span>
+              <span class="dbr-list-chip" id="dbrChip1" data-tone="cold">Cold</span>
+            </div>
+            <div class="dbr-list-row is-cold" data-row="2">
+              <span class="dbr-avatar">NC</span>
+              <span class="dbr-list-text">
+                <span class="dbr-list-name">Nina Cortez</span>
+                <span class="dbr-list-detail" id="dbrDetail2">Gutter install &middot; 18 months ago</span>
+              </span>
+              <span class="dbr-list-chip" id="dbrChip2" data-tone="cold">Cold</span>
+            </div>
+            <div class="dbr-list-row is-cold" data-row="3">
+              <span class="dbr-avatar">TB</span>
+              <span class="dbr-list-text">
+                <span class="dbr-list-name">Terrence Bell</span>
+                <span class="dbr-list-detail" id="dbrDetail3">Fence replace &middot; 9 months ago</span>
+              </span>
+              <span class="dbr-list-chip" id="dbrChip3" data-tone="cold">Cold</span>
+            </div>
+            <div class="dbr-list-row is-cold" data-row="4">
+              <span class="dbr-avatar">HG</span>
+              <span class="dbr-list-text">
+                <span class="dbr-list-name">Hollis Grant</span>
+                <span class="dbr-list-detail" id="dbrDetail4">Pressure wash &middot; 22 months ago</span>
+              </span>
+              <span class="dbr-list-chip" id="dbrChip4" data-tone="cold">Cold</span>
+            </div>
+            <div class="dbr-list-row is-cold" data-row="5">
+              <span class="dbr-avatar">MV</span>
+              <span class="dbr-list-text">
+                <span class="dbr-list-name">Marisol Vega</span>
+                <span class="dbr-list-detail" id="dbrDetail5">Siding repair &middot; 13 months ago</span>
+              </span>
+              <span class="dbr-list-chip" id="dbrChip5" data-tone="cold">Cold</span>
+            </div>
+          </div>
+          <div class="dbr-compose" id="dbrCompose" aria-hidden="true">
+            <div class="dbr-compose-head">Write the offer</div>
+            <div class="dbr-compose-field">
+              <span class="dbr-compose-label">Message</span>
+              <span class="dbr-compose-draft" id="dbrComposeDraft">Hi &mdash; it&rsquo;s been a while! We&rsquo;re running a spring special and thought of you.<span class="dbr-compose-cursor" aria-hidden="true"></span></span>
+            </div>
+            <div class="dbr-compose-field">
+              <span class="dbr-compose-label">Offer</span>
+              <span class="dbr-compose-value">15% off spring service</span>
+            </div>
+            <div class="dbr-compose-send" id="dbrComposeSend">Send to 6 customers</div>
+          </div>
+          <div class="dbr-summary" id="dbrSummaryBar" aria-hidden="true">
+            <span class="dbr-summary-main">2 jobs booked &middot; $6,400 in work</span>
+            <span class="dbr-summary-note">from customers you already had</span>
+          </div>
+        </div>
+      </div>
+      <div class="dbr-panel" id="dbrPanel">
+        <div class="dbr-campaign-card">
+          <span class="dbr-campaign-title">Campaign: Spring Reactivation</span>
+          <div class="dbr-counters">
+            <div class="dbr-counter">
+              <span class="dbr-counter-value" id="dbrCounterReached">0</span>
+              <span class="dbr-counter-label">Contacts reached</span>
+            </div>
+            <div class="dbr-counter">
+              <span class="dbr-counter-value" id="dbrCounterReplies">0</span>
+              <span class="dbr-counter-label">Replies</span>
+            </div>
+            <div class="dbr-counter">
+              <span class="dbr-counter-value" id="dbrCounterBooked">0</span>
+              <span class="dbr-counter-label">Jobs booked</span>
+            </div>
+          </div>
+        </div>
+        <div class="dbr-caption" id="dbrCaption">
+          <span class="dbr-caption-text" aria-live="polite">
+            <span class="dbr-caption-actor" id="dbrCaptionActor" data-tone="auto">Automatic</span>
+            <span class="dbr-caption-desc" id="dbrCaptionDesc">We pull every customer who hasn&rsquo;t been contacted in months.</span>
+          </span>
+        </div>
+        <div class="dbr-controls">
+          <button type="button" class="dbr-next-btn" id="dbrNextBtn" aria-label="Next &mdash; Write the Offer">
+            <span id="dbrNextLabel">Next</span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="dbr-back-btn" id="dbrBackBtn">Back</button>
+          <span class="dbr-caption-count" id="dbrCaptionCount">Step 1 of 5</span>
+          <span class="dbr-nudge-hint" id="dbrNudgeHint">Tap through the campaign</span>
+        </div>
+      </div>
+    </div>
+    <p class="dbr-sr-summary">Database reactivation demo: a cold list of six past customers moves through five stages. Step 1: the system finds six customers who haven&rsquo;t been contacted in months. Step 2, Technician Action: you approve one offer &mdash; a 15% spring service discount. Step 3, Automatic: the campaign sends to all six customers at once. Step 4, Automatic: three customers reply &mdash; Dana Whitfield, Nina Cortez, and Marisol Vega. Step 5, Automatic: two of those replies convert to booked jobs, Dana Whitfield and Marisol Vega, totaling two jobs booked and roughly $6,400 in work from customers the business already had.</p>
   </section>
 
   <!-- SERVICE CARDS (AUTOMATIONS) -->
@@ -2362,19 +2879,6 @@
     </div>
   </section>
 
-  <!-- ABOUT -->
-  <section class="section" id="about" aria-labelledby="about-title">
-    <div class="container">
-      <div class="section-head reveal">
-        <span class="eyebrow">About SiteSync</span>
-        <h2 id="about-title">The team behind the automation.</h2>
-        <p class="lead">SiteSync builds websites and automated follow-up systems for contractors, barbershops, gyms, and local trades across North Carolina. We started it because too many good businesses were losing jobs to a phone that rang once and was never answered. Every site and system we build exists to turn more of your leads into booked work.</p>
-      </div>
-      <!-- Video embed slot: intentionally empty, an <iframe> or <video> can be dropped in later with zero layout changes. -->
-      <div class="about-video-slot reveal" aria-hidden="true"></div>
-    </div>
-  </section>
-
   <!-- FAQ -->
   <section class="section" id="faq" aria-labelledby="faq-title">
     <div class="container">
@@ -2410,9 +2914,9 @@
     <div class="foot-grid">
       <div class="foot-brand">
         <a class="logo" href="#top"><img src="media/herologo-88.webp" alt="" width="24" height="24" loading="lazy" decoding="async">SiteSync</a>
-        <p>Web design and automation for local service businesses across North Carolina.</p>
+        <p>We build websites and automated follow-up systems for local service businesses across North Carolina &mdash; so no good lead goes cold waiting on a call back that never comes.</p>
       </div>
-      <div><h3>Company</h3><ul><li><a href="#services">Automations</a></li><li><a href="#how">How It Works</a></li><li><a href="#work">Selected Work</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#about">About</a></li></ul></div>
+      <div><h3>Company</h3><ul><li><a href="#services">Automations</a></li><li><a href="#how">How It Works</a></li><li><a href="#work">Selected Work</a></li><li><a href="#pricing">Pricing</a></li></ul></div>
       <div><h3>Contact</h3><ul><li><a href="tel:+19109901576">(910) 990-1576</a></li><li><a href="mailto:ncsitesync@gmail.com">ncsitesync@gmail.com</a></li><li>Based in North Carolina</li></ul></div>
       <div><h3>Where We Work</h3><p>Contractors, barbershops, gyms, and local trades across North Carolina.</p></div>
     </div>
@@ -3602,6 +4106,365 @@ const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzt8SB5H
     });
 
     renderPositionInstant(0);
+  })();
+
+  /* ---- database reactivation demo: click-to-advance, 5 steps, same
+     single-source-of-truth pattern as initDispatchDemo above — one pos
+     variable (1-5, matching "Step X of 5" directly) drives the rail, the
+     customer-list state, the counters, the caption, and the step counter
+     together. Step 1 is already correct in the raw HTML (all rows "cold")
+     so it needs no JS to render; renderPositionInstant(1) below just
+     reconfirms that, same as the dispatch board's own first render.
+     prefers-reduced-motion renders the END state by default instead (all
+     replies/bookings resolved, summary bar visible) since there's no
+     animation available to tell the "cold list warms up" story — Next/Back/
+     Replay still work from there, just instantly. ---- */
+  (function initReactivationDemo(){
+    var section = $('#reactivation');
+    var stepsWrap = $('#dbrSteps');
+    var card = $('#dbrCard'), list = $('#dbrList'), countChip = $('#dbrCountChip'), subbar = $('#dbrSubbar');
+    var compose = $('#dbrCompose'), composeSend = $('#dbrComposeSend');
+    var summaryBar = $('#dbrSummaryBar');
+    var captionEl = $('#dbrCaption'), captionActor = $('#dbrCaptionActor'), captionDesc = $('#dbrCaptionDesc'), captionCount = $('#dbrCaptionCount');
+    var backBtn = $('#dbrBackBtn'), nextBtn = $('#dbrNextBtn'), nextLabel = $('#dbrNextLabel');
+    var nudgeHint = $('#dbrNudgeHint');
+    var counterReached = $('#dbrCounterReached'), counterReplies = $('#dbrCounterReplies'), counterBooked = $('#dbrCounterBooked');
+    var mobileStepName = $('#dbrMobileStepName'), mobileActor = $('#dbrMobileActor'), mobileCount = $('#dbrMobileCount');
+    if (!section || !stepsWrap || !card || !list || !countChip || !subbar || !compose || !composeSend ||
+        !summaryBar || !captionEl || !captionActor || !captionDesc || !captionCount || !backBtn || !nextBtn || !nextLabel ||
+        !nudgeHint || !counterReached || !counterReplies || !counterBooked ||
+        !mobileStepName || !mobileActor || !mobileCount) return;
+    var steps = $$('.dbr-step', stepsWrap);
+    var rows = $$('.dbr-list-row', list);
+    if (!steps.length || !rows.length) return;
+
+    /* index-aligned with the 6 HTML rows (Dana, Roy, Nina, Terrence, Hollis,
+       Marisol) — only the three with a reply ever move past "Sent", and of
+       those only the two marked booked ever convert. */
+    var ROWS = [
+      {reply:'Yes, we’ve been meaning to call you', booked:true},
+      {},
+      {reply:'What’s your availability next week?', booked:false},
+      {},
+      {},
+      {reply:'Send me a quote', booked:true}
+    ];
+    var CAPTIONS = [
+      {actor:'Automatic', tone:'auto', desc:'We pull every customer who hasn’t been contacted in months.'},
+      {actor:'Technician Action', tone:'tech', desc:'You approve one offer. That’s the only step you touch.'},
+      {actor:'Automatic', tone:'auto', desc:'The campaign goes out to the whole list at once.'},
+      {actor:'Automatic', tone:'auto', desc:'Replies come straight back — and get answered automatically.'},
+      {actor:'Automatic', tone:'auto', desc:'Two jobs booked from customers you already had.'}
+    ];
+    var NEXT_DEST = ['Write the Offer', 'Send the Campaign', 'Replies Come In', 'Jobs Booked'];
+    var COUNT_CHIP = ['6 cold contacts', '6 cold contacts', '6 sent', '3 replied', '2 booked'];
+    /* same 5 names as the rail's own .dbr-step-label text — kept as a
+       separate array (rather than read from the DOM) so the mobile
+       progress line update is a simple, synchronous array lookup alongside
+       everything else in updateControls(). */
+    var STEP_NAMES = ['Find the Cold List', 'Write the Offer', 'Send the Campaign', 'Replies Come In', 'Jobs Booked'];
+
+    function checkSvg(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4,13 9,18 20,6"/></svg>'; }
+    function mailSvg(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'; }
+
+    var gen = 0, timers = [];
+    function after(ms, fn){
+      var g = gen;
+      timers.push(setTimeout(function(){ if (g === gen) fn(); }, ms));
+    }
+    function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+    function wait(ms, fn){ if (reduce){ fn(); return; } after(ms, fn); }
+
+    function setTracker(stageIdx){
+      steps.forEach(function(s, idx){
+        s.classList.toggle('done', idx < stageIdx);
+        s.classList.toggle('active', idx === stageIdx);
+        var line = s.querySelector('.dbr-step-line');
+        if (line) line.classList.toggle('filled', idx < stageIdx);
+      });
+    }
+
+    function applyCaption(idx){
+      var data = CAPTIONS[idx];
+      captionActor.textContent = data.actor;
+      captionActor.setAttribute('data-tone', data.tone);
+      captionDesc.textContent = data.desc;
+    }
+    function setCaption(idx, instant){
+      if (instant){ applyCaption(idx); return; }
+      captionEl.classList.add('out');
+      after(260, function(){
+        applyCaption(idx);
+        captionEl.classList.remove('out');
+        captionEl.classList.add('snap');
+        void captionEl.offsetWidth; /* force reflow so removing 'snap' animates from this starting point */
+        captionEl.classList.remove('snap');
+      });
+    }
+
+    function animateCounter(el, target){
+      if ((parseInt(el.textContent, 10) || 0) === target) return;
+      el.style.opacity = '0';
+      after(150, function(){ el.textContent = String(target); el.style.opacity = '1'; });
+    }
+    function setCounters(reached, replies, booked, instant){
+      if (instant){
+        counterReached.textContent = reached; counterReplies.textContent = replies; counterBooked.textContent = booked;
+        return;
+      }
+      animateCounter(counterReached, reached);
+      animateCounter(counterReplies, replies);
+      animateCounter(counterBooked, booked);
+    }
+
+    function setRowState(i, tone, opts){
+      opts = opts || {};
+      var row = rows[i], data = ROWS[i];
+      if (!row) return;
+      row.classList.toggle('is-cold', tone === 'cold');
+      row.classList.toggle('has-ring', !!opts.ring);
+      var chip = row.querySelector('.dbr-list-chip');
+      if (chip){
+        chip.setAttribute('data-tone', tone);
+        if (tone === 'cold') chip.innerHTML = 'Cold';
+        else if (tone === 'sent') chip.innerHTML = 'Sent';
+        else if (tone === 'replied') chip.innerHTML = 'Replied';
+        else chip.innerHTML = checkSvg() + '<span>Booked</span>';
+      }
+      var replyEl = row.querySelector('.dbr-list-reply');
+      if (opts.showReply && data.reply){
+        if (!replyEl){
+          replyEl = document.createElement('span');
+          replyEl.className = 'dbr-list-reply';
+          replyEl.textContent = '“' + data.reply + '”';
+          row.querySelector('.dbr-list-text').appendChild(replyEl);
+        }
+        requestAnimationFrame(function(){ replyEl.classList.add('show'); });
+      } else if (replyEl){
+        replyEl.remove();
+      }
+    }
+
+    /* -- state -- */
+    var pos = 1;
+    var animating = false;
+
+    function updateControls(p){
+      captionCount.textContent = 'Step ' + p + ' of 5';
+      backBtn.classList.toggle('show', p >= 2);
+      backBtn.disabled = animating;
+      nextBtn.disabled = animating;
+      if (p >= 5){
+        nextBtn.classList.add('replay');
+        nextLabel.textContent = 'Replay';
+        nextBtn.setAttribute('aria-label', 'Replay the campaign');
+      } else {
+        nextBtn.classList.remove('replay');
+        nextLabel.textContent = 'Next';
+        nextBtn.setAttribute('aria-label', 'Next — ' + NEXT_DEST[p - 1]);
+      }
+      /* mobile progress line — same p as everything else above, so it can
+         never drift out of sync with the rail/caption/counters. */
+      var stepData = CAPTIONS[p - 1];
+      mobileStepName.textContent = STEP_NAMES[p - 1];
+      mobileActor.textContent = stepData.actor;
+      mobileActor.setAttribute('data-tone', stepData.tone);
+      mobileCount.textContent = 'Step ' + p + ' of 5';
+    }
+
+    /* the single place every settled position (1-5) is fully reconstructed —
+       tracker, count chip, sub-bar, every row, counters, and caption all
+       update together, synchronously, with no animation — used for Back,
+       Replay, and the very first render. */
+    function renderPositionInstant(p){
+      gen++;
+      clearTimers();
+      pos = p;
+      animating = false;
+      captionEl.classList.remove('out', 'snap');
+      compose.classList.remove('show');
+      summaryBar.classList.toggle('show', p >= 5);
+      $$('.dbr-send-icon', card).forEach(function(el){ el.remove(); });
+
+      var idx = p - 1;
+      setTracker(idx);
+      setCaption(idx, true);
+      countChip.textContent = COUNT_CHIP[idx];
+      subbar.classList.toggle('hide', p >= 3);
+
+      rows.forEach(function(row, i){
+        var data = ROWS[i];
+        if (p <= 2){
+          setRowState(i, 'cold', {});
+        } else if (p === 3){
+          setRowState(i, 'sent', {});
+        } else if (p === 4){
+          if (data.reply) setRowState(i, 'replied', {ring:true, showReply:true});
+          else setRowState(i, 'sent', {});
+        } else {
+          if (data.reply && data.booked) setRowState(i, 'booked', {ring:true, showReply:true});
+          else if (data.reply) setRowState(i, 'replied', {ring:true, showReply:true});
+          else setRowState(i, 'sent', {});
+        }
+      });
+
+      setCounters(p >= 3 ? 6 : 0, p >= 4 ? 3 : 0, p >= 5 ? 2 : 0, true);
+      updateControls(p);
+    }
+
+    /* -- animated arrivals, one per Next press -- */
+    function playWriteOffer(done){
+      pos = 2;
+      setTracker(1);
+      setCaption(1);
+      updateControls(pos);
+      if (reduce){ done(); return; }
+      composeSend.classList.remove('tapped');
+      wait(200, function(){
+        compose.classList.add('show');
+        wait(900, function(){
+          composeSend.classList.add('tapped');
+          wait(500, function(){
+            compose.classList.remove('show');
+            wait(450, done);
+          });
+        });
+      });
+    }
+    function playSendCampaign(done){
+      pos = 3;
+      setTracker(2);
+      setCaption(2);
+      countChip.textContent = COUNT_CHIP[2];
+      subbar.classList.add('hide');
+      updateControls(pos);
+      if (reduce){
+        rows.forEach(function(row, i){ setRowState(i, 'sent', {}); });
+        setCounters(6, 0, 0, true);
+        done();
+        return;
+      }
+      var n = rows.length, cardRect = card.getBoundingClientRect();
+      rows.forEach(function(row, i){
+        after(i * 90, function(){
+          var icon = document.createElement('span');
+          icon.className = 'dbr-send-icon';
+          icon.innerHTML = mailSvg();
+          card.appendChild(icon);
+          var rowRect = row.getBoundingClientRect();
+          var dy = (rowRect.top + rowRect.height / 2) - (cardRect.top + 46);
+          requestAnimationFrame(function(){
+            icon.classList.add('fly');
+            icon.style.transform = 'translateY(' + dy + 'px)';
+          });
+          after(450, function(){ icon.remove(); });
+          setRowState(i, 'sent', {});
+        });
+      });
+      after((n - 1) * 90 + 500, function(){
+        setCounters(6, 0, 0);
+        done();
+      });
+    }
+    function playReplies(done){
+      pos = 4;
+      setTracker(3);
+      setCaption(3);
+      countChip.textContent = COUNT_CHIP[3];
+      updateControls(pos);
+      if (reduce){
+        rows.forEach(function(row, i){ if (ROWS[i].reply) setRowState(i, 'replied', {ring:true, showReply:true}); });
+        setCounters(6, 3, 0, true);
+        done();
+        return;
+      }
+      var replyRows = [];
+      rows.forEach(function(row, i){ if (ROWS[i].reply) replyRows.push(i); });
+      replyRows.forEach(function(i, order){
+        after(order * 400, function(){ setRowState(i, 'replied', {ring:true, showReply:true}); });
+      });
+      after((replyRows.length - 1) * 400 + 400, function(){
+        setCounters(6, 3, 0);
+        done();
+      });
+    }
+    function playBooked(done){
+      pos = 5;
+      setTracker(4);
+      setCaption(4);
+      countChip.textContent = COUNT_CHIP[4];
+      updateControls(pos);
+      if (reduce){
+        rows.forEach(function(row, i){ if (ROWS[i].reply && ROWS[i].booked) setRowState(i, 'booked', {ring:true, showReply:true}); });
+        setCounters(6, 3, 2, true);
+        summaryBar.classList.add('show');
+        done();
+        return;
+      }
+      var bookedRows = [];
+      rows.forEach(function(row, i){ if (ROWS[i].reply && ROWS[i].booked) bookedRows.push(i); });
+      bookedRows.forEach(function(i, order){
+        after(order * 350, function(){ setRowState(i, 'booked', {ring:true, showReply:true}); });
+      });
+      after(bookedRows.length * 350 + 300, function(){
+        setCounters(6, 3, 2);
+        wait(300, function(){
+          summaryBar.classList.add('show');
+          done();
+        });
+      });
+    }
+    function playNext(){
+      if (animating || pos >= 5) return;
+      dismissNudge();
+      animating = true;
+      updateControls(pos);
+      function done(){ animating = false; updateControls(pos); }
+      if (pos === 1) playWriteOffer(done);
+      else if (pos === 2) playSendCampaign(done);
+      else if (pos === 3) playReplies(done);
+      else if (pos === 4) playBooked(done);
+    }
+
+    /* -- scroll-in nudge: fires once per load -- */
+    var nudgeShown = false;
+    function dismissNudge(){
+      nudgeShown = true;
+      nextBtn.classList.remove('pulse');
+      nudgeHint.classList.remove('show');
+    }
+    if ('IntersectionObserver' in window){
+      var nudgeObs = new IntersectionObserver(function(en){
+        if (en[0].isIntersecting && !nudgeShown){
+          nudgeShown = true;
+          nextBtn.classList.add('pulse');
+          nudgeHint.classList.add('show');
+          nudgeObs.disconnect();
+        }
+      }, {threshold:.35});
+      nudgeObs.observe(card);
+    }
+
+    nextBtn.addEventListener('click', function(){
+      if (nextBtn.classList.contains('replay')){ renderPositionInstant(1); return; }
+      playNext();
+    });
+    backBtn.addEventListener('click', function(){
+      if (animating || pos < 2) return;
+      dismissNudge();
+      renderPositionInstant(pos - 1);
+    });
+    section.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowRight'){
+        e.preventDefault();
+        if (!nextBtn.disabled) nextBtn.click();
+      } else if (e.key === 'ArrowLeft'){
+        e.preventDefault();
+        if (backBtn.classList.contains('show') && !backBtn.disabled) backBtn.click();
+      }
+    });
+
+    renderPositionInstant(reduce ? 5 : 1);
   })();
 
   /* ---- FAQ ---- */
